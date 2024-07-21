@@ -1,7 +1,8 @@
 import sys
-from tuning.methods import fine_tune, push, merge
+from text.methods import fine_tune, push, merge
 
 from argparse import ArgumentParser
+
 
 def parse_arguments(arg_parser):
     a_args = sys.argv
@@ -44,15 +45,12 @@ parser.add_argument('-ssp', '--save-steps', help="Save steps(default: 1)", defau
 args = parse_arguments(parser)
 
 base_model = "openlm-research/open_llama_3b_v2"
-#model_id="google/flan-t5-xl"
-#model_id="google/flan-t5-xxl"
-new_model = "newton_dv_11"
-# data_train="/home/dev/ollama/tuning/data/newton-beta-0-10.txt.tmp"
-# logs_output_dir="/home/dev/ollama/tuning/logs"
-training_data_dir = "/home/robert/IdeaProjects/ai/openai-chat-module/lora/training-data/newton"
+
+new_model = ""
+training_data_dir = "./"
 logs_output_dir = "../../logs"
 epochs = 10
-train_file = "newton-beta-0-11.txt.tmp"
+train_file = ""
 r = 8
 a = 32
 merge_only = False
