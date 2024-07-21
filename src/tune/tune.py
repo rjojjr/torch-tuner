@@ -13,7 +13,8 @@ def parse_arguments(arg_parser):
 parser = ArgumentParser(
     prog='AI LoRA Torch Text Fine-Tuner',
     description='Fine-Tune LLM models with text using Torch and LoRA.')
-parser.add_argument('-b', '--base-model', help="Base model to tune")
+
+parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
 parser.add_argument('-n', '--new-model', help="Name of the fine-tuned model")
 parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
 parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
@@ -70,6 +71,8 @@ if args.lora_alpha is not None:
     a = args.lora_alpha
 if args.epochs is not None:
     epochs = args.epochs
+
+# TODO - impl. proper way to parse bool
 if args.merge_only is not None and args.merge_only.lower().strip() == 'true':
     merge_only = True
 if args.training_data_dir is not None and args.training_data_dir.strip() != '':

@@ -37,6 +37,7 @@ def merge(model_base, new_model_name):
 
 
 def push(new_model):
+    # TODO - change default dirs
     model_dir = f'../../models/{new_model}'
 
     print(f"pushing {new_model} to HF")
@@ -114,6 +115,8 @@ def fine_tune(r, alpha, epochs, base_model, new_model, data_train, train_file, b
         report_to="tensorboard",
         do_eval=True
     )
+
+    # TODO - customize training data format
     train = SFTTrainer(
         model=model,
         train_dataset=ds['train'],
