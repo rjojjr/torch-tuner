@@ -11,8 +11,8 @@ def parse_arguments(arg_parser):
 
 
 parser = ArgumentParser(
-    prog='AI LoRA Torch Text Fine-Tuner',
-    description='Fine-Tune LLM models with text using Torch and LoRA.')
+    prog='LoRA AI LLM Text Fine-Tuner',
+    description='Fine-Tune AI LLM models with text using Torch and LoRA.')
 
 parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
 parser.add_argument('-n', '--new-model', help="Name of the fine-tuned model")
@@ -45,7 +45,7 @@ parser.add_argument('-ssp', '--save-steps', help="Save steps(default: 1)", defau
 
 args = parse_arguments(parser)
 
-base_model = "openlm-research/open_llama_3b_v2"
+base_model = "meta-llama/Meta-Llama-3-8B-Instruct"
 
 new_model = ""
 training_data_dir = "./"
