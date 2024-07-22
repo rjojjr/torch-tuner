@@ -12,15 +12,18 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
 
-def merge(model_base, new_model_name):
+def merge(model_base, new_model_name, is_f32):
     lora_dir = f"../../models/in-progress/{new_model_name}/adapter"
     model_dir = f'../../models/{new_model_name}'
-    print(f"merging {model_base} with LoRA into {new_model_name}")
+    print(f"merging {model_base} with LoRA Adapter into {new_model_name}")
+    dtype = torch.float16
+    if is_f32:
+        dtype = torch.float32
     base_model = LlamaForCausalLM.from_pretrained(
         model_base,
         low_cpu_mem_usage=False,
         return_dict=True,
-        torch_dtype=torch.float16,
+        torch_dtype=dtype,
         # device_map="auto"
     )
     model = PeftModel.from_pretrained(base_model, lora_dir)
@@ -36,16 +39,19 @@ def merge(model_base, new_model_name):
     tokenizer.save_pretrained(model_dir)
 
 
-def push(new_model):
+def push(new_model, is_f32):
     # TODO - change default dirs
     model_dir = f'../../models/{new_model}'
 
     print(f"pushing {new_model} to HF")
+    dtype = torch.float16
+    if is_f32:
+        dtype = torch.float32
     model = LlamaForCausalLM.from_pretrained(
         model_dir,
         low_cpu_mem_usage=False,
         return_dict=True,
-        torch_dtype=torch.float16,
+        torch_dtype=dtype,
         # device_map="auto"
     )
 

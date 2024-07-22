@@ -101,7 +101,7 @@ if not merge_only:
     fine_tune(r, a, epochs, base_model, new_model, training_data_dir, train_file, args.batch_size, use_fp_16, use_bf_16, args.learning_rate_base, args.lora_dropout, no_checkpoint, args.bias, args.optimizer_type, args.gradient_accumulation_steps, args.weight_decay, args.max_gradient_norm, use_tf_32, args.save_strategy, args.save_steps)
 
 if merge_model:
-    merge(base_model, new_model)
+    merge(base_model, new_model, use_tf_32)
 
 if push_model:
-    push(new_model)
+    push(new_model, use_tf_32)
