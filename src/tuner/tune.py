@@ -41,6 +41,7 @@ parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(defau
 parser.add_argument('-tf32', '--tf-32', help="Use TF32(default: true)", default="true")
 parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")
 parser.add_argument('-ssp', '--save-steps', help="Save steps(default: 1)", default=1, type=int)
+parser.add_argument('-de', '--do-eval', help="Do eval(default: true)", default="true")
 
 
 args = parse_arguments(parser)
@@ -61,6 +62,9 @@ use_fp_16 = False
 use_bf_16 = False
 no_checkpoint = False
 use_tf_32 = False
+do_eval = False
+if args.do_eval is not None and args.do_eval.lower().strip() == 'true':
+    do_eval = True
 if args.base_model is not None and args.base_model.strip() != '':
     base_model = args.base_model.strip()
 if args.new_model is not None and args.new_model.strip() != '':
@@ -98,7 +102,7 @@ if args.no_checkpoint is not None and args.no_checkpoint.lower().strip() == 'tru
     no_checkpoint = True
 
 if not merge_only:
-    fine_tune(r, a, epochs, base_model, new_model, training_data_dir, train_file, args.batch_size, use_fp_16, use_bf_16, args.learning_rate_base, args.lora_dropout, no_checkpoint, args.bias, args.optimizer_type, args.gradient_accumulation_steps, args.weight_decay, args.max_gradient_norm, use_tf_32, args.save_strategy, args.save_steps)
+    fine_tune(r, a, epochs, base_model, new_model, training_data_dir, train_file, args.batch_size, use_fp_16, use_bf_16, args.learning_rate_base, args.lora_dropout, no_checkpoint, args.bias, args.optimizer_type, args.gradient_accumulation_steps, args.weight_decay, args.max_gradient_norm, use_tf_32, args.save_strategy, args.save_steps, do_eval)
 
 if merge_model:
     merge(base_model, new_model, use_tf_32)

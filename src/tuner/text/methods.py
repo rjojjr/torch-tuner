@@ -66,7 +66,7 @@ def push(new_model, is_f32):
     tokenizer.push_to_hub(new_model, private=True)
 
 
-def fine_tune(r, alpha, epochs, base_model, new_model, data_train, train_file, batch_size, use_fp_16, use_bf_16, learning_rate_base, lora_dropout, no_checkpoint, bias, optimizer_type, gradient_accumulation_steps, weight_decay, max_gradient_norm, tf_32, save_strategy, save_steps):
+def fine_tune(r, alpha, epochs, base_model, new_model, data_train, train_file, batch_size, use_fp_16, use_bf_16, learning_rate_base, lora_dropout, no_checkpoint, bias, optimizer_type, gradient_accumulation_steps, weight_decay, max_gradient_norm, tf_32, save_strategy, save_steps, do_eval):
     print(f"Starting fresh tuning of {new_model}")
     output_dir = "../../models/in-progress/" + new_model
     lora_dir = "../../models/in-progress/" + new_model + "/adapter"
@@ -119,7 +119,7 @@ def fine_tune(r, alpha, epochs, base_model, new_model, data_train, train_file, b
         group_by_length=True,
         lr_scheduler_type="constant",
         report_to="tensorboard",
-        do_eval=True
+        do_eval=do_eval
     )
 
     # TODO - customize training data format
