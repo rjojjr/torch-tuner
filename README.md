@@ -1,7 +1,7 @@
 # Torch Tuner README
 
 This project serves as a simple convenient wrapper for fine-tuning 
-llama based LLM models with simple text using LoRA and Torch.
+llama(and other models) based LLM models with simple text samples using LoRA and Torch.
 
 Ideally, in the future, this project will support more complex training data structures
 as well as fine-tuning vision and speech models.
@@ -9,7 +9,8 @@ as well as fine-tuning vision and speech models.
 ## Running the Tuner
 
 You should probably use a virtual environment
-when installing dependencies and running the app, but that is up to you.
+when installing dependencies and running the app, 
+but that is up to you.
 
 ### Install Dependencies
 
@@ -24,13 +25,13 @@ pip install -r requirements.txt
 From the project root, run:
 
 ```shell
-python src/tune/tune.py <your args>
+python src/tune/main.py <your args>
 ```
 
 To List Available Arguments:
 
 ```shell
-python src/tune/tune.py -h
+python src/tune/main.py -h || python src/tune/main.py --help
 ```
 
 ## CONTRIBUTING
