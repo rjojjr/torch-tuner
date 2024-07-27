@@ -3,3 +3,4 @@ torch-tuner.iml
 /.idea/
 /models/
 /logs/
+/.venv/
