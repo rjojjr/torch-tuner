@@ -1,5 +1,6 @@
 from transformers import TrainingArguments
-import os.path, shutil
+import os.path
+import shutil
 
 import torch
 from trl import SFTTrainer
@@ -11,7 +12,7 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 
 from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
-from tuner.text.arguments import TuneArguments
+from text.arguments import TuneArguments
 
 
 def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit):

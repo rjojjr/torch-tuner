@@ -4,7 +4,7 @@ from text.arguments import TuneArguments
 
 from argparse import ArgumentParser
 
-from tuner.utils.argument_utils import parse_arguments
+from utils.argument_utils import parse_arguments
 
 version = '1.0.0'
 
