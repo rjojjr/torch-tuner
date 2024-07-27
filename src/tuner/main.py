@@ -52,18 +52,7 @@ def parse_arguments(arg_parser):
 
 args = parse_arguments(parser)
 
-base_model = "meta-llama/Meta-Llama-3-8B-Instruct"
-#model_id="google/flan-t5-xl"
-#model_id="google/flan-t5-xxl"
-new_model = "newton_dv_11"
-# data_train="/home/dev/ollama/tuning/data/newton-beta-0-10.txt.tmp"
-# logs_output_dir="/home/dev/ollama/tuning/logs"
-training_data_dir = "/home/robert/IdeaProjects/ai/openai-chat-module/lora/training-data/newton"
 logs_output_dir = "../../logs"
-epochs = 10
-train_file = "newton-beta-0-11.txt.tmp"
-r = 8
-a = 32
 merge_only = False
 push_model = False
 merge_model = False
@@ -76,16 +65,6 @@ use_8bit = False
 use_4bit = False
 fp32_cpu_offload = False
 save_embeddings = False
-if args.base_model is not None and args.base_model.strip() != '':
-    base_model = args.base_model.strip()
-if args.new_model is not None and args.new_model.strip() != '':
-    new_model = args.new_model.strip()
-if args.lora_r is not None:
-    r = args.lora_r
-if args.lora_alpha is not None:
-    a = args.lora_alpha
-if args.epochs is not None:
-    epochs = args.epochs
 if args.fp32_cpu_offload is not None and args.fp32_cpu_offload.lower().strip() == 'true':
     fp32_cpu_offload = True
 if args.merge_only is not None and args.merge_only.lower().strip() == 'true':
@@ -98,10 +77,6 @@ if args.do_eval is not None and args.do_eval.lower().strip() == 'true':
     do_eval = True
 if args.save_embeddings_layer is not None and args.save_embeddings_layer.lower().strip() == 'true':
     save_embeddings = True
-if args.training_data_dir is not None and args.training_data_dir.strip() != '':
-    training_data_dir = args.training_data_dir
-if args.training_data_file is not None and args.training_data_file.strip() != '':
-    train_file = args.training_data_file
 if args.push is not None and args.push.lower().strip() == 'true':
     push_model = True
 
@@ -124,9 +99,9 @@ print(f'AI LLM LoRA Torch Text Fine-Tuner v{version}')
 print('---------------------------------------------')
 print('Run with --help flag for a list of available arguments.')
 print('')
-print(f'Epochs: {epochs}')
-print(f'Using LoRA Alpha: {a}')
-print(f'Using LoRA R: {r}')
+print(f'Epochs: {args.epochs}')
+print(f'Using LoRA Alpha: {args.lora_alpha}')
+print(f'Using LoRA R: {args.lora_r}')
 print(f'Using tf32: {use_tf_32}')
 print(f'Using bf16: {use_bf_16}')
 print(f'Using pf16: {use_fp_16}')
@@ -144,21 +119,21 @@ print(f'Using Save Strategy: {args.save_strategy}')
 
 if not merge_only:
     print('')
-    print(f'Tuning model {new_model} with base model {base_model} to {epochs} epochs')
-    fine_tune(r, a, epochs, base_model, new_model, training_data_dir, train_file, args.batch_size, use_fp_16, use_bf_16, args.learning_rate_base, args.lora_dropout, no_checkpoint, args.bias, args.optimizer_type, args.gradient_accumulation_steps, args.weight_decay, args.max_gradient_norm, use_tf_32, args.save_strategy, args.save_steps, do_eval, args.max_saved, use_8bit, use_4bit, save_embeddings, fp32_cpu_offload)
-    print(f'Tuned model {new_model} with base model {base_model} to {epochs} epochs')
+    print(f'Tuning model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+    fine_tune(args.lora_r, args.lora_alpha, args.epochs, args.base_model, args.new_model, args.training_data_dir, args.training_data_file, args.batch_size, use_fp_16, use_bf_16, args.learning_rate_base, args.lora_dropout, no_checkpoint, args.bias, args.optimizer_type, args.gradient_accumulation_steps, args.weight_decay, args.max_gradient_norm, use_tf_32, args.save_strategy, args.save_steps, do_eval, args.max_saved, use_8bit, use_4bit, save_embeddings, fp32_cpu_offload)
+    print(f'Tuned model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
 if merge_model:
     print('')
-    print(f'Merging LoRA Adapter for {new_model} with base model {base_model}')
-    merge(base_model, new_model, use_fp_16, use_bf_16, use_4bit, use_8bit)
-    print(f'Merged LoRA Adapter for {new_model} with base model {base_model}')
+    print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
+    merge(args.base_model, args.new_model, use_fp_16, use_bf_16, use_4bit, use_8bit)
+    print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
 
 if push_model:
     print('')
-    print(f'Pushing {new_model} to Huggingface')
-    push(new_model, use_fp_16, use_bf_16, use_4bit, use_8bit)
-    print(f'Pushed {new_model} to Huggingface')
+    print(f'Pushing {args.new_model} to Huggingface')
+    push(args.new_model, use_fp_16, use_bf_16, use_4bit, use_8bit)
+    print(f'Pushed {args.new_model} to Huggingface')
 
 print('')
 print('---------------------------------------------')
