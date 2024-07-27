@@ -1,7 +1,10 @@
 import sys
 from text.functions import fine_tune, push, merge
+from text.arguments import TuneArguments
 
 from argparse import ArgumentParser
+
+from tuner.utils.argument_utils import parse_arguments
 
 version = '1.0.0'
 
@@ -42,13 +45,6 @@ parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch
 parser.add_argument('-ssp', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
 parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(default: 3)", default=3, type=int)
 parser.add_argument('-de', '--do-eval', help="Do eval(default: true)", default="true")
-
-
-def parse_arguments(arg_parser):
-    a_args = sys.argv
-    a_args.pop(0)
-    return arg_parser.parse_args(a_args)
-
 
 args = parse_arguments(parser)
 
@@ -118,9 +114,38 @@ print(f'Using Save Strategy: {args.save_strategy}')
 
 
 if not merge_only:
+    tune_arguments = TuneArguments(
+        base_model=args.base_model,
+        new_model=args.new_model,
+        training_data_dir=args.training_data_dir,
+        train_file=args.training_data_file,
+        r=args.lora_r,
+        alpha=args.lora_alpha,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        use_fp_16=use_fp_16,
+        use_bf_16=use_bf_16,
+        learning_rate_base=args.learning_rate_base,
+        lora_dropout=args.lora_dropout,
+        no_checkpoint=no_checkpoint,
+        bias=args.bias,
+        optimizer_type=args.optimizer_type,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        weight_decay=args.weight_decay,
+        max_gradient_norm=args.max_gradient_norm,
+        tf_32=use_tf_32,
+        save_strategy=args.save_strategy,
+        save_steps=args.save_steps,
+        do_eval=do_eval,
+        max_checkpoints=args.max_saved,
+        use_8bit=use_8bit,
+        use_4bit=use_4bit,
+        save_embeddings=save_embeddings,
+        fp32_cpu_offload=fp32_cpu_offload
+    )
     print('')
     print(f'Tuning model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
-    fine_tune(args.lora_r, args.lora_alpha, args.epochs, args.base_model, args.new_model, args.training_data_dir, args.training_data_file, args.batch_size, use_fp_16, use_bf_16, args.learning_rate_base, args.lora_dropout, no_checkpoint, args.bias, args.optimizer_type, args.gradient_accumulation_steps, args.weight_decay, args.max_gradient_norm, use_tf_32, args.save_strategy, args.save_steps, do_eval, args.max_saved, use_8bit, use_4bit, save_embeddings, fp32_cpu_offload)
+    fine_tune(tune_arguments)
     print(f'Tuned model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
 if merge_model:

@@ -4,13 +4,14 @@ import os.path, shutil
 import torch
 from trl import SFTTrainer
 
-from transformers import LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-from datasets import load_dataset, Features, Value
+from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 
 from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
+from tuner.text.arguments import TuneArguments
 
 
 def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit):
@@ -104,88 +105,89 @@ def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit):
 
 
 # TODO - create args class for cleaner and more flexible signatures
-def fine_tune(r, alpha, epochs, base_model, new_model, data_train, train_file, batch_size, use_fp_16, use_bf_16, learning_rate_base, lora_dropout, no_checkpoint, bias, optimizer_type, gradient_accumulation_steps, weight_decay, max_gradient_norm, tf_32, save_strategy, save_steps, do_eval, max_checkpoints, use_8bit, use_4bit, save_embeddings, fp32_cpu_offload):
-    print(f"Starting fresh tuning of {new_model}")
-    output_dir = "../../models/in-progress/" + new_model
-    lora_dir = "../../models/in-progress/" + new_model + "/adapter"
+def fine_tune(arguments: TuneArguments):
+    print(f"Starting fresh tuning of {arguments.new_model}")
+    output_dir = "../../models/in-progress/" + arguments.new_model
+    lora_dir = "../../models/in-progress/" + arguments.new_model + "/adapter"
 
     login(os.environ.get('HUGGING_FACE_TOKEN'))
 
-    tokenizer = AutoTokenizer.from_pretrained(base_model)
+    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
 
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    ds = load_dataset(data_train, data_files={"train": train_file})
+    ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
     dtype = torch.float32
-    if use_fp_16:
+    if arguments.use_fp_16:
         dtype = torch.float16
-    if use_bf_16:
+    if arguments.use_bf_16:
         dtype = torch.bfloat16
 
     bnb_config = BitsAndBytesConfig(
-        llm_int8_enable_fp32_cpu_offload=fp32_cpu_offload
+        llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
     )
-    if use_8bit:
+    if arguments.use_8bit:
         bnb_config = BitsAndBytesConfig(
             load_in_8bit=True,
             bnb_8bit_compute_dtype=dtype,
-            llm_int8_enable_fp32_cpu_offload=fp32_cpu_offload
+            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
         )
-    if use_4bit:
+    if arguments.use_4bit:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=dtype,
             bnb_4bit_use_double_quant=True,
-            llm_int8_enable_fp32_cpu_offload=fp32_cpu_offload
+            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
         )
 
-    model = LlamaForCausalLM.from_pretrained(base_model, quantization_config=bnb_config, device_map="auto")
+    model = LlamaForCausalLM.from_pretrained(arguments.base_model, quantization_config=bnb_config, device_map="auto")
 
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
-    if save_embeddings:
+    if arguments.save_embeddings:
         target_modules.append("embed_tokens")
     lora_config = LoraConfig(
-        r=r,
-        lora_alpha=alpha,
+        r=arguments.r,
+        lora_alpha=arguments.alpha,
         target_modules=target_modules,
-        lora_dropout=lora_dropout,
-        bias=bias,
+        lora_dropout=arguments.lora_dropout,
+        bias=arguments.bias,
         task_type=TaskType.CAUSAL_LM
     )
     model = prepare_model_for_kbit_training(model)
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
-    learning_rate = batch_size * learning_rate_base
+    learning_rate = arguments.batch_size * arguments.learning_rate_base
 
     train_params = TrainingArguments(
         output_dir=output_dir,
-        num_train_epochs=epochs,
-        per_device_train_batch_size=batch_size,
-        per_device_eval_batch_size=batch_size,
-        gradient_accumulation_steps=gradient_accumulation_steps,
+        num_train_epochs=arguments.epochs,
+        per_device_train_batch_size=arguments.batch_size,
+        per_device_eval_batch_size=arguments.batch_size,
+        gradient_accumulation_steps=arguments.gradient_accumulation_steps,
         overwrite_output_dir=True,
-        optim=optimizer_type,
-        save_strategy=save_strategy,
-        save_steps=save_steps,
-        logging_strategy=save_strategy,
-        logging_steps=save_steps,
-        save_total_limit=max_checkpoints,
+        optim=arguments.optimizer_type,
+        save_strategy=arguments.save_strategy,
+        save_steps=arguments.save_steps,
+        logging_strategy=arguments.save_strategy,
+        logging_steps=arguments.save_steps,
+        save_total_limit=arguments.max_checkpoints,
         learning_rate=learning_rate,
-        weight_decay=weight_decay,
-        fp16=use_fp_16,
-        tf32=tf_32,
-        bf16=use_bf_16,
-        max_grad_norm=max_gradient_norm,
+        weight_decay=arguments.weight_decay,
+        fp16=arguments.use_fp_16,
+        tf32=arguments.tf_32,
+        bf16=arguments.use_bf_16,
+        max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
         warmup_ratio=0.03,
         group_by_length=True,
         lr_scheduler_type="constant",
         report_to="tensorboard",
-        do_eval=do_eval
+        do_eval=arguments.do_eval
     )
+
     train = SFTTrainer(
         model=model,
         train_dataset=ds['train'],
@@ -197,7 +199,7 @@ def fine_tune(r, alpha, epochs, base_model, new_model, data_train, train_file, b
 
     model.config.use_cache = False
 
-    if os.path.exists(output_dir) and not no_checkpoint:
+    if os.path.exists(output_dir) and not arguments.no_checkpoint:
         last_checkpoint = get_last_checkpoint(output_dir)
         train.train(resume_from_checkpoint=last_checkpoint)
     else:

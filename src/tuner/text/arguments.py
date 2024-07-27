@@ -1,0 +1,56 @@
+class TuneArguments:
+    def __init__(self,
+                 base_model,
+                 new_model,
+                 training_data_dir,
+                 train_file,
+                 r=8,
+                 alpha=16,
+                 epochs=10,
+                 batch_size=4,
+                 use_fp_16=False,
+                 use_bf_16=False,
+                 learning_rate_base=2e-5,
+                 lora_dropout=0.05,
+                 no_checkpoint=False,
+                 bias="none",
+                 optimizer_type='paged_adamw_32bit',
+                 gradient_accumulation_steps=4,
+                 weight_decay=0.01,
+                 max_gradient_norm=0.0,
+                 tf_32=False,
+                 save_strategy="epoch",
+                 save_steps=50,
+                 do_eval=False,
+                 max_checkpoints=3,
+                 use_8bit=False,
+                 use_4bit=False,
+                 save_embeddings=False,
+                 fp32_cpu_offload=True):
+        self.r = r
+        self.alpha = alpha
+        self.epochs = epochs
+        self.base_model = base_model
+        self.new_model = new_model
+        self.training_data_dir = training_data_dir
+        self.train_file = train_file
+        self.batch_size = batch_size
+        self.use_fp_16 = use_fp_16
+        self.use_bf_16 = use_bf_16
+        self.learning_rate_base = learning_rate_base
+        self.lora_dropout = lora_dropout
+        self.no_checkpoint = no_checkpoint
+        self.bias = bias
+        self.optimizer_type = optimizer_type
+        self.gradient_accumulation_steps = gradient_accumulation_steps
+        self.weight_decay = weight_decay
+        self.max_gradient_norm = max_gradient_norm
+        self.tf_32 = tf_32
+        self.save_strategy = save_strategy
+        self.save_steps = save_steps
+        self.do_eval = do_eval
+        self.max_checkpoints = max_checkpoints
+        self.use_8bit = use_8bit
+        self.use_4bit = use_4bit
+        self.save_embeddings = save_embeddings
+        self.fp32_cpu_offload = fp32_cpu_offload
