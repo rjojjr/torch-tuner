@@ -4,3 +4,4 @@ torch-tuner.iml
 /models/
 /logs/
 /.venv/
+/src/tuner/tuner.iml
