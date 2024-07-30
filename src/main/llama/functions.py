@@ -105,7 +105,6 @@ def push(arguments: PushArguments) -> None:
     tokenizer.push_to_hub(arguments.new_model, private=is_private)
 
 
-# TODO - create args class for cleaner and more flexible signatures
 def fine_tune(arguments: TuneArguments) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
