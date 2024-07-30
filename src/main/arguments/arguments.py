@@ -1,9 +1,9 @@
 class TuneArguments:
     def __init__(self,
-                 base_model: str,
                  new_model: str,
                  training_data_dir: str,
                  train_file: str,
+                 base_model: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
                  r: int = 8,
                  alpha: int = 16,
                  epochs: int = 10,
