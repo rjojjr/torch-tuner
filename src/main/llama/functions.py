@@ -12,7 +12,7 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 
 from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
-from llama.arguments import TuneArguments, MergeArguments, PushArguments
+from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 
 def merge(arguments: MergeArguments) -> None:

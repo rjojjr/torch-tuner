@@ -1,5 +1,5 @@
 from llama.functions import fine_tune, push, merge
-from llama.arguments import TuneArguments, MergeArguments, PushArguments
+from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 from argparse import ArgumentParser
 
