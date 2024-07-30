@@ -15,7 +15,7 @@ from transformers.trainer_utils import get_last_checkpoint
 from llama.arguments import TuneArguments, MergeArguments, PushArguments
 
 
-def merge(arguments: MergeArguments):
+def merge(arguments: MergeArguments) -> None:
     lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
@@ -62,7 +62,7 @@ def merge(arguments: MergeArguments):
     tokenizer.save_pretrained(model_dir)
 
 
-def push(arguments: PushArguments):
+def push(arguments: PushArguments) -> None:
     print(f"pushing {arguments.new_model} to HF")
     dtype = torch.float32
     if arguments.is_fp16:
@@ -105,7 +105,7 @@ def push(arguments: PushArguments):
 
 
 # TODO - create args class for cleaner and more flexible signatures
-def fine_tune(arguments: TuneArguments):
+def fine_tune(arguments: TuneArguments) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
     lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
