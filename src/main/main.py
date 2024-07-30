@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 
 from utils.argument_utils import parse_arguments
 
-version = '1.0.0'
+version = '1.0.1'
 
 parser = ArgumentParser(
     prog=f'AI LLM LoRA Torch Text Fine-Tuner v{version}',
