@@ -1,12 +1,9 @@
-import sys
 from llama.functions import fine_tune, push, merge
 from llama.arguments import TuneArguments, MergeArguments, PushArguments
 
 from argparse import ArgumentParser
 
 from utils.argument_utils import parse_arguments
-
-build = 4
 
 version = '1.0.0'
 
@@ -104,7 +101,6 @@ lora_scale = round(args.lora_alpha / args.lora_r, 1)
 model_dir = f'{args.output_directory}/{args.new_model}'
 
 print(f'AI LLM LoRA Torch Text Fine-Tuner v{version}')
-print(f'Build: {str(build)}')
 print('---------------------------------------------')
 print('Run with --help flag for a list of available arguments.')
 print('')
