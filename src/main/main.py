@@ -6,6 +6,8 @@ from argparse import ArgumentParser
 
 from utils.argument_utils import parse_arguments
 
+build = 4
+
 version = '1.0.0'
 
 parser = ArgumentParser(
@@ -49,7 +51,6 @@ parser.add_argument('-de', '--do-eval', help="Do eval(default: true)", default="
 
 args = parse_arguments(parser)
 
-logs_output_dir = "../../logs"
 merge_only = False
 push_model = False
 merge_model = False
@@ -70,6 +71,7 @@ if args.use_8bit is not None and args.use_8bit.lower().strip() == 'true':
     use_8bit = True
 if args.use_4bit is not None and args.use_4bit.lower().strip() == 'true':
     use_4bit = True
+    use_8bit = False
 if args.do_eval is not None and args.do_eval.lower().strip() == 'true':
     do_eval = True
 if args.save_embeddings_layer is not None and args.save_embeddings_layer.lower().strip() == 'true':
@@ -81,37 +83,60 @@ if args.merge is not None and args.merge.lower().strip() == 'true':
     merge_model = True
 
 if args.fp_16 is not None and args.fp_16.lower().strip() == 'true':
+    use_bf_16 = False
     use_fp_16 = True
+    use_tf_32 = False
 
 if args.bf_16 is not None and args.bf_16.lower().strip() == 'true':
     use_bf_16 = True
+    use_fp_16 = False
+    use_tf_32 = False
 
 if args.tf_32 is not None and args.tf_32.lower().strip() == 'true':
     use_tf_32 = True
+    use_bf_16 = False
+    use_fp_16 = False
 
 if args.no_checkpoint is not None and args.no_checkpoint.lower().strip() == 'true':
     no_checkpoint = True
+    
+lora_scale = round(args.lora_alpha / args.lora_r, 1)
 
 print(f'AI LLM LoRA Torch Text Fine-Tuner v{version}')
+print(f'Build: {str(build)}')
 print('---------------------------------------------')
 print('Run with --help flag for a list of available arguments.')
 print('')
-print(f'Epochs: {args.epochs}')
-print(f'Using LoRA Alpha: {args.lora_alpha}')
-print(f'Using LoRA R: {args.lora_r}')
-print(f'Using tf32: {use_tf_32}')
-print(f'Using bf16: {use_bf_16}')
-print(f'Using pf16: {use_fp_16}')
-print(f'Using 8bit: {use_8bit}')
-print(f'Using 4bit: {use_4bit}')
-
+print(f'Output Directory: {args.output_directory}')
+print(f'Base Model: {args.base_model}')
+print('')
+print(f'Epochs: {str(args.epochs)}')
+print(f'Using LoRA R: {str(args.lora_r)}')
+print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
+print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
+print(f'Using Base Learning Rate: {str(args.learning_rate_base)}')
+print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
+print('')
+print(f'Using tf32: {str(use_tf_32)}')
+print(f'Using bf16: {str(use_bf_16)}')
+print(f'Using pf16: {str(use_fp_16)}')
+print(f'Using 8bit: {str(use_8bit)}')
+print(f'Using 4bit: {str(use_4bit)}')
+print(f'Using 4bit: {str(use_4bit)}')
+print(f'Using fp32 CPU Offload: {str(fp32_cpu_offload)}')
+print('')
 print(f'Is Merging: {merge_model}')
 print(f'Is Pushing: {push_model}')
-print(f'Is Merge/Push Only: {merge_only}')
+print(f'Is Merge/Push Only: {str(merge_only)}')
 
-print(f'Using Batch Size: {args.batch_size}')
+print('')
+print(f'Using Checkpointing: {str(not no_checkpoint)}')
+print(f'Using Max Saves: {str(args.max_saved)}')
+print(f'Using Batch Size: {str(args.batch_size)}')
 print(f'Using Optimizer: {args.optimizer_type}')
 print(f'Using Save Strategy: {args.save_strategy}')
+print(f'Using Save Steps: {args.save_steps}')
+print(f'Using Save Embeddings: {str(save_embeddings)}')
 
 
 if not merge_only:
