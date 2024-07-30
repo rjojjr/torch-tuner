@@ -12,29 +12,29 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 
 from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
-from llama.arguments import TuneArguments
+from llama.arguments import TuneArguments, MergeArguments
 
 
-def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit, output_dir):
-    lora_dir = f"{output_dir}/in-progress/{new_model_name}/adapter"
-    model_dir = f'{output_dir}/{new_model_name}'
-    print(f"merging {model_base} with LoRA into {new_model_name}")
+def merge(arguments: MergeArguments):
+    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model}/adapter"
+    model_dir = f'{arguments.output_dir}/{arguments.new_model}'
+    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
 
     login(os.environ.get('HUGGING_FACE_TOKEN'))
 
     dtype = torch.float32
-    if is_fp16:
+    if arguments.is_fp16:
         dtype = torch.float16
-    if is_bf16:
+    if arguments.is_bf16:
         dtype = torch.bfloat16
 
     bnb_config = BitsAndBytesConfig()
-    if use_8bit:
+    if arguments.use_8bit:
         bnb_config = BitsAndBytesConfig(
             load_in_8bit=True,
             bnb_8bit_compute_dtype=dtype,
         )
-    if use_4bit:
+    if arguments.use_4bit:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -43,7 +43,7 @@ def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit, outp
         )
 
     base_model = LlamaForCausalLM.from_pretrained(
-        model_base,
+        arguments.model_base,
         low_cpu_mem_usage=False,
         return_dict=True,
         torch_dtype=dtype
@@ -51,7 +51,7 @@ def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit, outp
     model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config)
     model = model.merge_and_unload(progressbar=True)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_base)
+    tokenizer = AutoTokenizer.from_pretrained(arguments.model_base)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 

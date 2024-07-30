@@ -56,3 +56,21 @@ class TuneArguments:
         self.save_embeddings = save_embeddings
         self.output_directory = output_directory
         self.fp32_cpu_offload = fp32_cpu_offload
+
+
+class MergeArguments:
+    def __init__(self,
+                 new_model_name: str,
+                 model_base: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
+                 is_fp16: bool = False,
+                 is_bf16: bool = False,
+                 use_4bit: bool = False,
+                 use_8bit: bool = False,
+                 output_dir: str = '../../models'):
+        self.new_model_name = new_model_name
+        self.model_base = model_base
+        self.is_fp16 = is_fp16
+        self.is_bf16 = is_bf16
+        self.use_4bit = use_4bit
+        self.use_8bit = use_8bit
+        self.output_dir = output_dir
