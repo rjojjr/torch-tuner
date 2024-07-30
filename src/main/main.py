@@ -1,6 +1,6 @@
 import sys
-from text.functions import fine_tune, push, merge
-from text.arguments import TuneArguments
+from llama.functions import fine_tune, push, merge
+from llama.arguments import TuneArguments
 
 from argparse import ArgumentParser
 
