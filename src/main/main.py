@@ -19,6 +19,7 @@ parser.add_argument('-p', '--push', help="Push merged model to Huggingface(defau
 parser.add_argument('-bs', '--batch-size', help="Samples per iteration(default 4)", type=int, default=4)
 parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
 parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
+parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ../../models)", default="../../models")
 
 parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
 parser.add_argument('-mo', '--merge-only', default="false", help="Only merge/push model(no tuning)(default: false)")
@@ -141,6 +142,7 @@ if not merge_only:
         use_8bit=use_8bit,
         use_4bit=use_4bit,
         save_embeddings=save_embeddings,
+        output_directory=args.output_directory,
         fp32_cpu_offload=fp32_cpu_offload
     )
     print('')

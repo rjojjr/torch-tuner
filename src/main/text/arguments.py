@@ -26,6 +26,7 @@ class TuneArguments:
                  use_8bit=False,
                  use_4bit=False,
                  save_embeddings=False,
+                 output_directory="../../models",
                  fp32_cpu_offload=True):
         self.r = r
         self.alpha = alpha
@@ -53,4 +54,5 @@ class TuneArguments:
         self.use_8bit = use_8bit
         self.use_4bit = use_4bit
         self.save_embeddings = save_embeddings
+        self.output_directory = output_directory
         self.fp32_cpu_offload = fp32_cpu_offload

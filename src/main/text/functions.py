@@ -108,8 +108,8 @@ def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit):
 # TODO - create args class for cleaner and more flexible signatures
 def fine_tune(arguments: TuneArguments):
     print(f"Starting fresh tuning of {arguments.new_model}")
-    output_dir = "../../models/in-progress/" + arguments.new_model
-    lora_dir = "../../models/in-progress/" + arguments.new_model + "/adapter"
+    output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
+    lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
 
     login(os.environ.get('HUGGING_FACE_TOKEN'))
 
