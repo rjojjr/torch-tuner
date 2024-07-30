@@ -29,6 +29,7 @@ parser.add_argument('-m', '--merge', default="false",
 parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)")
 
 parser.add_argument('-4bit', '--use-4bit', help="Use 4bit quantization(default: false)", default="false")
+parser.add_argument('-pp', '--public-push', help="Push to public repo(default: false)", default="false")
 parser.add_argument('-8bit', '--use-8bit', help="Use 8bit quantization(default: false)", default="false")
 parser.add_argument('-fp16', '--fp-16', help="Use fp-16 precision(default: false)", default="false")
 parser.add_argument('-bf16', '--bf-16', help="Use bf-16 precision(default: false)", default="false")
@@ -60,6 +61,7 @@ use_8bit = False
 use_4bit = False
 fp32_cpu_offload = False
 save_embeddings = False
+public_push = False
 if args.fp32_cpu_offload is not None and args.fp32_cpu_offload.lower().strip() == 'true':
     fp32_cpu_offload = True
 if args.merge_only is not None and args.merge_only.lower().strip() == 'true':
@@ -75,6 +77,9 @@ if args.save_embeddings_layer is not None and args.save_embeddings_layer.lower()
     save_embeddings = True
 if args.push is not None and args.push.lower().strip() == 'true':
     push_model = True
+
+if args.public_push is not None and args.public_push.lower().strip() == 'true':
+    public_push = True
 
 if args.merge is not None and args.merge.lower().strip() == 'true':
     merge_model = True

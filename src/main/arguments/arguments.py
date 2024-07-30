@@ -83,10 +83,12 @@ class PushArguments:
                  is_fp16: bool = False,
                  is_bf16: bool = False,
                  use_4bit: bool = False,
-                 use_8bit: bool = False):
+                 use_8bit: bool = False,
+                 public_push: bool = False):
         self.new_model = new_model
         self.model_dir = model_dir
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
+        self.public_push = public_push

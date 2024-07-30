@@ -100,8 +100,9 @@ def push(arguments: PushArguments) -> None:
     # Huggingface auth token should be set in 'HUGGING_FACE_TOKEN' evv. var.
     login(os.environ.get('HUGGING_FACE_TOKEN'))
 
-    model.push_to_hub(arguments.new_model, private=True)
-    tokenizer.push_to_hub(arguments.new_model, private=True)
+    is_private = not arguments.public_push
+    model.push_to_hub(arguments.new_model, private=is_private)
+    tokenizer.push_to_hub(arguments.new_model, private=is_private)
 
 
 # TODO - create args class for cleaner and more flexible signatures
