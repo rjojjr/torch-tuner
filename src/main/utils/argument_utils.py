@@ -2,8 +2,8 @@ import sys
 from argparse import ArgumentParser
 
 
-def parse_arguments(version: str):
-    return _parse_arguments(_build_program_argument_parser(version))
+def parse_arguments(title: str, description: str):
+    return _parse_arguments(_build_program_argument_parser(title, description))
 
 
 def parse_boolean_args(args):
@@ -63,10 +63,10 @@ def _parse_arguments(arg_parser):
     return arg_parser.parse_args(a_args)
 
 
-def _build_program_argument_parser(version: str) -> ArgumentParser:
+def _build_program_argument_parser(title: str, description: str) -> ArgumentParser:
     parser = ArgumentParser(
-        prog=f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}',
-        description='Fine-Tune Llama LLM models with text using Torch and LoRA.')
+        prog=title,
+        description=description)
     parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-n', '--new-model', help="Name of the new fine-tuned model")
     parser.add_argument('-tdd', '--training-data-dir', help="Training data directory")

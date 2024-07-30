@@ -7,14 +7,18 @@ version = '1.0.1'
 
 
 def main() -> None:
-    args = parse_arguments(version)
+    title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
+    description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
+    args = parse_arguments(title, description)
 
     merge_only, push_model, merge_model, use_fp_16, use_bf_16, do_eval, no_checkpoint, use_tf_32, use_8bit, use_4bit, fp32_cpu_offload, save_embeddings, public_push = parse_boolean_args(args)
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'
 
-    print(f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}')
+    print(title)
+    print('---------------------------------------------')
+    print(description)
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     print('')
