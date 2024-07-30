@@ -68,9 +68,9 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
         prog=title,
         description=description)
     parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
-    parser.add_argument('-n', '--new-model', help="Name of the new fine-tuned model")
-    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory")
-    parser.add_argument('-tf', '--training-data-file', help="Training dataset filename")
+    parser.add_argument('-n', '--new-model', help="Name of the new fine-tuned model(REQUIRED)")
+    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED)")
+    parser.add_argument('-tf', '--training-data-file', help="Training dataset filename(REQUIRED)")
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: false)", default="false")
     parser.add_argument('-bs', '--batch-size', help="Samples per iteration(default 4)", type=int, default=4)
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)

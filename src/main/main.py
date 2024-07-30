@@ -35,16 +35,14 @@ def main() -> None:
     print('')
     print(f'Using tf32: {str(use_tf_32)}')
     print(f'Using bf16: {str(use_bf_16)}')
-    print(f'Using pf16: {str(use_fp_16)}')
+    print(f'Using fp16: {str(use_fp_16)}')
     print(f'Using 8bit: {str(use_8bit)}')
-    print(f'Using 4bit: {str(use_4bit)}')
     print(f'Using 4bit: {str(use_4bit)}')
     print(f'Using fp32 CPU Offload: {str(fp32_cpu_offload)}')
     print('')
     print(f'Is Merging: {merge_model}')
     print(f'Is Pushing: {push_model}')
     print(f'Is Merge/Push Only: {str(merge_only)}')
-
     print('')
     print(f'Using Checkpointing: {str(not no_checkpoint)}')
     print(f'Using Max Saves: {str(args.max_saved)}')
@@ -53,7 +51,6 @@ def main() -> None:
     print(f'Using Save Strategy: {args.save_strategy}')
     print(f'Using Save Steps: {args.save_steps}')
     print(f'Using Save Embeddings: {str(save_embeddings)}')
-
 
     if not merge_only:
         tune_arguments = TuneArguments(
@@ -87,9 +84,9 @@ def main() -> None:
             fp32_cpu_offload=fp32_cpu_offload
         )
         print('')
-        print(f'Tuning model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+        print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
         fine_tune(tune_arguments)
-        print(f'Tuned model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+        print(f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
     if merge_model:
         merge_arguments = MergeArguments(
@@ -122,7 +119,7 @@ def main() -> None:
 
     print('')
     print('---------------------------------------------')
-    print('AI LLM LoRA Torch Text Fine-Tuner COMPLETED')
+    print(f'{title} COMPLETED')
 
 
 main()

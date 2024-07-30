@@ -17,3 +17,4 @@ SentencePiece
 tensorboardX
 trl
 huggingface_hub
+requests

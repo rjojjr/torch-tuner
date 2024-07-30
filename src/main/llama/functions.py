@@ -165,6 +165,8 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     train_params = TrainingArguments(
         output_dir=output_dir,
+        include_tokens_per_second=False,
+        include_num_input_tokens_seen=False,
         num_train_epochs=arguments.epochs,
         per_device_train_batch_size=arguments.batch_size,
         per_device_eval_batch_size=arguments.batch_size,
@@ -202,6 +204,7 @@ def fine_tune(arguments: TuneArguments) -> None:
     model.config.use_cache = False
 
     if os.path.exists(output_dir) and not arguments.no_checkpoint:
+        model.gradient_checkpointing_enable()
         last_checkpoint = get_last_checkpoint(output_dir)
         train.train(resume_from_checkpoint=last_checkpoint)
     else:
