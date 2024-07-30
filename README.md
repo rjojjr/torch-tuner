@@ -33,19 +33,19 @@ variable set to the Huggingface auth token that you would like to use.
 From the project root(using the virtual environment(if any) that you used to install its dependencies), run:
 
 ```shell
-python src/tune/main.py <your args>
+python src/main/main.py <your args>
 ```
 
 To List Available Arguments:
 
 ```shell
-python src/tune/main.py -h
+python src/main/main.py -h
 ```
 
 or
 
 ```shell
-python src/tune/main.py --help
+python src/main/main.py --help
 ```
 
 ## CONTRIBUTING
