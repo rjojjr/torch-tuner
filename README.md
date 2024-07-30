@@ -10,7 +10,7 @@ Use this project to fine-tune a suitable(Llama only ATM) base model that exists 
 
 ## Running the Tuner
 
-This tuner will tune, merge and push your new model to Huggingface, depending on the arguments
+This tuner will fine-tune, merge and push your new model to Huggingface depending on the arguments
 you run it with.
 
 ### Install Dependencies
@@ -30,7 +30,7 @@ pip install -r requirements.txt
 The tuner requires that you have the `HUGGING_FACE_TOKEN` environment
 variable set to the Huggingface auth token that you would like to use.
 
-To run the tuner, from the project root, run:
+From the project root(using the virtual environment(if any) that you used to install its dependencies), run:
 
 ```shell
 python src/tune/main.py <your args>
