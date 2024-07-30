@@ -12,13 +12,13 @@ from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_t
 
 from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
-from llama.arguments import TuneArguments, MergeArguments
+from llama.arguments import TuneArguments, MergeArguments, PushArguments
 
 
 def merge(arguments: MergeArguments):
-    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model}/adapter"
-    model_dir = f'{arguments.output_dir}/{arguments.new_model}'
-    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
+    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
+    model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
+    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
 
     login(os.environ.get('HUGGING_FACE_TOKEN'))
 
@@ -62,21 +62,21 @@ def merge(arguments: MergeArguments):
     tokenizer.save_pretrained(model_dir)
 
 
-def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit, model_dir):
-    print(f"pushing {new_model} to HF")
+def push(arguments: PushArguments):
+    print(f"pushing {arguments.new_model} to HF")
     dtype = torch.float32
-    if is_fp16:
+    if arguments.is_fp16:
         dtype = torch.float16
-    if is_bf16:
+    if arguments.is_bf16:
         dtype = torch.bfloat16
 
     bnb_config = BitsAndBytesConfig()
-    if use_8bit:
+    if arguments.use_8bit:
         bnb_config = BitsAndBytesConfig(
             load_in_8bit=True,
             bnb_8bit_compute_dtype=dtype,
         )
-    if use_4bit:
+    if arguments.use_4bit:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -85,7 +85,7 @@ def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit, model_dir):
         )
 
     model = LlamaForCausalLM.from_pretrained(
-        model_dir,
+        arguments.model_dir,
         low_cpu_mem_usage=False,
         return_dict=True,
         torch_dtype=dtype,
@@ -93,15 +93,15 @@ def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit, model_dir):
         # device_map="auto"
     )
 
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
     # Huggingface auth token should be set in 'HUGGING_FACE_TOKEN' evv. var.
     login(os.environ.get('HUGGING_FACE_TOKEN'))
 
-    model.push_to_hub(new_model, private=True)
-    tokenizer.push_to_hub(new_model, private=True)
+    model.push_to_hub(arguments.new_model, private=True)
+    tokenizer.push_to_hub(arguments.new_model, private=True)
 
 
 # TODO - create args class for cleaner and more flexible signatures

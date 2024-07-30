@@ -1,6 +1,6 @@
 import sys
 from llama.functions import fine_tune, push, merge
-from llama.arguments import TuneArguments, MergeArguments
+from llama.arguments import TuneArguments, MergeArguments, PushArguments
 
 from argparse import ArgumentParser
 
@@ -183,9 +183,8 @@ if merge_model:
         model_base=args.base_mode,
         use_4bit=use_4bit,
         use_8bit=use_8bit,
-        use_bf_16=use_bf_16,
-        use_fp_16=use_fp_16,
-        use_tf_32=use_tf_32,
+        is_bf16=use_bf_16,
+        is_fp16=use_fp_16,
         output_dir=args.output_directory
     )
     print('')
@@ -194,9 +193,17 @@ if merge_model:
     print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
 
 if push_model:
+    push_arguments = PushArguments(
+        new_model=args.new_model,
+        model_dir=model_dir,
+        use_4bit=use_4bit,
+        use_8bit=use_8bit,
+        is_bf16=use_bf_16,
+        is_fp16=use_fp_16
+    )
     print('')
     print(f'Pushing {args.new_model} to Huggingface')
-    push(args.new_model, use_fp_16, use_bf_16, use_4bit, use_8bit, model_dir)
+    push(push_arguments)
     print(f'Pushed {args.new_model} to Huggingface')
 
 print('')
