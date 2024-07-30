@@ -15,9 +15,9 @@ from transformers.trainer_utils import get_last_checkpoint
 from text.arguments import TuneArguments
 
 
-def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit):
-    lora_dir = f"../../models/in-progress/{new_model_name}/adapter"
-    model_dir = f'../../models/{new_model_name}'
+def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit, output_dir):
+    lora_dir = f"{output_dir}/in-progress/{new_model_name}/adapter"
+    model_dir = f'{output_dir}/{new_model_name}'
     print(f"merging {model_base} with LoRA into {new_model_name}")
 
     login(os.environ.get('HUGGING_FACE_TOKEN'))
@@ -55,15 +55,14 @@ def merge(model_base, new_model_name, is_fp16, is_bf16, use_4bit, use_8bit):
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
+    print(f'Saving model to {model_dir}')
     if os.path.exists(model_dir):
         shutil.rmtree(model_dir)
     model.save_pretrained(model_dir)
     tokenizer.save_pretrained(model_dir)
 
 
-def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit):
-    model_dir = f'../../models/{new_model}'
-
+def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit, model_dir):
     print(f"pushing {new_model} to HF")
     dtype = torch.float32
     if is_fp16:
@@ -107,9 +106,11 @@ def push(new_model, is_fp16, is_bf16, use_4bit, use_8bit):
 
 # TODO - create args class for cleaner and more flexible signatures
 def fine_tune(arguments: TuneArguments):
-    print(f"Starting fresh tuning of {arguments.new_model}")
+    print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
     lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
+    if not arguments.no_checkpoint:
+        print(f'Checkpointing to {output_dir}')
 
     login(os.environ.get('HUGGING_FACE_TOKEN'))
 
@@ -206,8 +207,10 @@ def fine_tune(arguments: TuneArguments):
     else:
         train.train()
 
+    print(f'Saving LoRA adapter to {lora_dir}')
     if os.path.exists(lora_dir):
         shutil.rmtree(lora_dir)
+
     train.model.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
 

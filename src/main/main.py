@@ -101,6 +101,7 @@ if args.no_checkpoint is not None and args.no_checkpoint.lower().strip() == 'tru
     no_checkpoint = True
     
 lora_scale = round(args.lora_alpha / args.lora_r, 1)
+model_dir = f'{args.output_directory}/{args.new_model}'
 
 print(f'AI LLM LoRA Torch Text Fine-Tuner v{version}')
 print(f'Build: {str(build)}')
@@ -109,6 +110,7 @@ print('Run with --help flag for a list of available arguments.')
 print('')
 print(f'Output Directory: {args.output_directory}')
 print(f'Base Model: {args.base_model}')
+print(f'Model Save Directory: {model_dir}')
 print('')
 print(f'Epochs: {str(args.epochs)}')
 print(f'Using LoRA R: {str(args.lora_r)}')
@@ -178,13 +180,13 @@ if not merge_only:
 if merge_model:
     print('')
     print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
-    merge(args.base_model, args.new_model, use_fp_16, use_bf_16, use_4bit, use_8bit)
+    merge(args.base_model, args.new_model, use_fp_16, use_bf_16, use_4bit, use_8bit, args.output_directory)
     print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
 
 if push_model:
     print('')
     print(f'Pushing {args.new_model} to Huggingface')
-    push(args.new_model, use_fp_16, use_bf_16, use_4bit, use_8bit)
+    push(args.new_model, use_fp_16, use_bf_16, use_4bit, use_8bit, model_dir)
     print(f'Pushed {args.new_model} to Huggingface')
 
 print('')
