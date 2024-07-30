@@ -13,6 +13,11 @@ Use this project to fine-tune a suitable(Llama only ATM) base model that exists 
 This tuner will fine-tune, merge and push your new model to Huggingface depending on the arguments
 you run it with.
 
+### Tuning Data
+
+The tuner will load data from a text(`.txt`) file. It expects each sample
+to consume exactly one line.
+
 ### Install Dependencies
 
 You should probably use a virtual environment
