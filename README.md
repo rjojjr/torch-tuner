@@ -1,18 +1,23 @@
 # Torch Tuner README
 
 This project serves as a simple convenient wrapper for fine-tuning 
-llama(and other models) based LLM models with simple text samples using LoRA and Torch.
+Llama(and other model types in the future) based LLM models with simple text samples using LoRA and Torch.
 
-Ideally, in the future, this project will support more complex training data structures
-as well as fine-tuning vision and speech models.
+Ideally, in the future, this project will support more complex training data structures,
+non-llama LLM types and fine-tuning vision and speech models.
+
+Use this project to fine-tune a suitable(Llama only ATM) base model that exists on Huggingface.
 
 ## Running the Tuner
 
-You should probably use a virtual environment
-when installing dependencies and running the app, 
-but that is up to you.
+This tuner will tune, merge and push your new model to Huggingface, depending on the arguments
+you run it with.
 
 ### Install Dependencies
+
+You should probably use a virtual environment
+when installing dependencies and running the app,
+but that is up to you.
 
 From the project root, run:
 
@@ -22,7 +27,10 @@ pip install -r requirements.txt
 
 ### Run the Tuner
 
-From the project root, run:
+The tuner requires that you have the `HUGGING_FACE_TOKEN` environment
+variable set to the Huggingface auth token that you would like to use.
+
+To run the tuner, from the project root, run:
 
 ```shell
 python src/tune/main.py <your args>
@@ -31,10 +39,21 @@ python src/tune/main.py <your args>
 To List Available Arguments:
 
 ```shell
-python src/tune/main.py -h || python src/tune/main.py --help
+python src/tune/main.py -h
+```
+
+or
+
+```shell
+python src/tune/main.py --help
 ```
 
 ## CONTRIBUTING
 
 Please feel free to submit a PR if you would to contribute to 
 this project.
+
+### Feature Requests
+
+To request a feature or modification, please
+submit a Github Issue.
