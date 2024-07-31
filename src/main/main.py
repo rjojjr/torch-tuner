@@ -2,22 +2,13 @@ from llama.functions import fine_tune, push, merge
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 from utils.argument_utils import parse_arguments, parse_boolean_args, do_initial_arg_validation
-from exception.exceptions import TunerException, HuggingfaceAuthException, exception_handler
-from huggingface_hub import login
-import os
+from exception.exceptions import exception_handler
+from hf.hf_auth import authenticate_with_hf
 
 version = '1.0.1'
 
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
 description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
-
-
-def _authenticate_with_hf() -> None:
-    print('Authenticating with Huggingface')
-    try:
-        login(os.environ.get('HUGGING_FACE_TOKEN'))
-    except Exception as e:
-        raise HuggingfaceAuthException(f'error authenticating with huggingface: {str(e)}')
 
 
 def main() -> None:
@@ -34,7 +25,7 @@ def main() -> None:
 
     do_initial_arg_validation(args, merge_model, merge_only, push_model)
 
-    _authenticate_with_hf()
+    authenticate_with_hf()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'
@@ -69,7 +60,6 @@ def main() -> None:
     print(f'Using Save Strategy: {args.save_strategy}')
     print(f'Using Save Steps: {args.save_steps}')
     print(f'Using Save Embeddings: {str(save_embeddings)}')
-
 
     if not merge_only:
         tune_arguments = TuneArguments(
