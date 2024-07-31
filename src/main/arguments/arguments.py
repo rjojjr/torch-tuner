@@ -104,3 +104,12 @@ class PushArguments:
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
         self.public_push = public_push
+
+
+    def validate(self) -> None:
+        is_valid = self.new_model is not None and self.model_dir is not None
+        is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
+        is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None
+        is_valid = is_valid and self.public_push is not None
+        if not is_valid:
+            raise ArgumentValidationException("'Merge Arguments' are missing required properties")

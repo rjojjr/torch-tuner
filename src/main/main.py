@@ -10,22 +10,6 @@ version = '1.0.1'
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
 description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
 
-def _validate_merge_args(args, merge_model: bool, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
-    merge_arguments = MergeArguments(new_model_name=args.new_model)
-    if merge_model:
-        merge_arguments = MergeArguments(
-            new_model_name=args.new_model,
-            model_base=args.base_model,
-            use_4bit=use_4bit,
-            use_8bit=use_8bit,
-            is_bf16=use_bf_16,
-            is_fp16=use_fp_16,
-            output_dir=args.output_directory
-        )
-        merge_arguments.validate()
-
-    return merge_arguments
-
 
 def main() -> None:
     args = parse_arguments(title, description)
@@ -40,12 +24,14 @@ def main() -> None:
     print('')
 
     do_initial_arg_validation(args, merge_model, merge_only, push_model)
-    merge_arguments = _validate_merge_args(args, merge_model, use_4bit, use_8bit, use_bf_16, use_fp_16)
-
-    authenticate_with_hf()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'
+
+    merge_arguments = _build_and_validate_merge_args(merge_model, args, use_4bit, use_8bit, use_bf_16, use_fp_16)
+    push_arguments = _build_and_validate_push_args(push_model, args, model_dir, use_4bit, use_8bit, use_bf_16, use_fp_16)
+
+    authenticate_with_hf()
 
     print('')
     print(f'Output Directory: {args.output_directory}')
@@ -121,14 +107,6 @@ def main() -> None:
         print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
 
     if push_model:
-        push_arguments = PushArguments(
-            new_model=args.new_model,
-            model_dir=model_dir,
-            use_4bit=use_4bit,
-            use_8bit=use_8bit,
-            is_bf16=use_bf_16,
-            is_fp16=use_fp_16
-        )
         print('')
         print(f'Pushing {args.new_model} to Huggingface')
         push(push_arguments)
@@ -138,6 +116,43 @@ def main() -> None:
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
     exit(0)
+
+
+def _build_and_validate_push_args(push_model: bool, args, model_dir: str, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
+    push_arguments = PushArguments(
+        new_model=args.new_model,
+        model_dir=model_dir
+    )
+
+    if push_model:
+        push_arguments = PushArguments(
+            new_model=args.new_model,
+            model_dir=model_dir,
+            use_4bit=use_4bit,
+            use_8bit=use_8bit,
+            is_bf16=use_bf_16,
+            is_fp16=use_fp_16
+        )
+        push_arguments.validate()
+
+    return push_arguments
+
+
+def _build_and_validate_merge_args(merge_model: bool, args, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
+    merge_arguments = MergeArguments(new_model_name=args.new_model)
+    if merge_model:
+        merge_arguments = MergeArguments(
+            new_model_name=args.new_model,
+            model_base=args.base_model,
+            use_4bit=use_4bit,
+            use_8bit=use_8bit,
+            is_bf16=use_bf_16,
+            is_fp16=use_fp_16,
+            output_dir=args.output_directory
+        )
+        merge_arguments.validate()
+
+    return merge_arguments
 
 
 exception_handler(main, title)
