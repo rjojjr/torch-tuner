@@ -11,11 +11,10 @@ from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 
 from transformers.trainer_utils import get_last_checkpoint
-from arguments.arguments import TuneArguments, MergeArguments, PushArguments
+from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 
 def merge(arguments: MergeArguments) -> None:
-    arguments.validate()
     lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
@@ -174,7 +173,7 @@ def fine_tune(arguments: TuneArguments) -> None:
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
         fp16=arguments.use_fp_16,
-        tf32=arguments.tf_32,
+        tf32=arguments.use_tf_32,
         bf16=arguments.use_bf_16,
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,

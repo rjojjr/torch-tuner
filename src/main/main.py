@@ -30,6 +30,8 @@ def main() -> None:
 
     merge_arguments = _build_and_validate_merge_args(merge_model, args, use_4bit, use_8bit, use_bf_16, use_fp_16)
     push_arguments = _build_and_validate_push_args(push_model, args, model_dir, use_4bit, use_8bit, use_bf_16, use_fp_16)
+    tune_arguments = _build_and_validate_tune_args(merge_only, args, do_eval, fp32_cpu_offload, no_checkpoint, save_embeddings,
+                                                   use_4bit, use_8bit, use_bf_16, use_fp_16, use_tf_32)
 
     authenticate_with_hf()
 
@@ -65,36 +67,6 @@ def main() -> None:
     print(f'Using Save Embeddings: {str(save_embeddings)}')
 
     if not merge_only:
-        tune_arguments = TuneArguments(
-            base_model=args.base_model,
-            new_model=args.new_model,
-            training_data_dir=args.training_data_dir,
-            train_file=args.training_data_file,
-            r=args.lora_r,
-            alpha=args.lora_alpha,
-            epochs=args.epochs,
-            batch_size=args.batch_size,
-            use_fp_16=use_fp_16,
-            use_bf_16=use_bf_16,
-            learning_rate_base=args.learning_rate_base,
-            lora_dropout=args.lora_dropout,
-            no_checkpoint=no_checkpoint,
-            bias=args.bias,
-            optimizer_type=args.optimizer_type,
-            gradient_accumulation_steps=args.gradient_accumulation_steps,
-            weight_decay=args.weight_decay,
-            max_gradient_norm=args.max_gradient_norm,
-            tf_32=use_tf_32,
-            save_strategy=args.save_strategy,
-            save_steps=args.save_steps,
-            do_eval=do_eval,
-            max_checkpoints=args.max_saved,
-            use_8bit=use_8bit,
-            use_4bit=use_4bit,
-            save_embeddings=save_embeddings,
-            output_directory=args.output_directory,
-            fp32_cpu_offload=fp32_cpu_offload
-        )
         print('')
         print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
         fine_tune(tune_arguments)
@@ -116,6 +88,49 @@ def main() -> None:
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
     exit(0)
+
+
+def _build_and_validate_tune_args(merge_only, args, do_eval, fp32_cpu_offload, no_checkpoint, save_embeddings, use_4bit, use_8bit,
+                                  use_bf_16, use_fp_16, use_tf_32):
+    tune_arguments = TuneArguments(
+        new_model=args.new_model,
+        training_data_dir=args.training_data_dir,
+        train_file=args.training_data_file
+    )
+    if merge_only:
+        tune_arguments = TuneArguments(
+            base_model=args.base_model,
+            new_model=args.new_model,
+            training_data_dir=args.training_data_dir,
+            train_file=args.training_data_file,
+            r=args.lora_r,
+            alpha=args.lora_alpha,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            use_fp_16=use_fp_16,
+            use_bf_16=use_bf_16,
+            learning_rate_base=args.learning_rate_base,
+            lora_dropout=args.lora_dropout,
+            no_checkpoint=no_checkpoint,
+            bias=args.bias,
+            optimizer_type=args.optimizer_type,
+            gradient_accumulation_steps=args.gradient_accumulation_steps,
+            weight_decay=args.weight_decay,
+            max_gradient_norm=args.max_gradient_norm,
+            use_tf_32=use_tf_32,
+            save_strategy=args.save_strategy,
+            save_steps=args.save_steps,
+            do_eval=do_eval,
+            max_checkpoints=args.max_saved,
+            use_8bit=use_8bit,
+            use_4bit=use_4bit,
+            save_embeddings=save_embeddings,
+            output_directory=args.output_directory,
+            fp32_cpu_offload=fp32_cpu_offload
+        )
+        tune_arguments.validate()
+
+    return tune_arguments
 
 
 def _build_and_validate_push_args(push_model: bool, args, model_dir: str, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):

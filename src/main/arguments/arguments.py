@@ -21,7 +21,7 @@ class TuneArguments:
                  gradient_accumulation_steps: int = 4,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,
-                 tf_32: bool = False,
+                 use_tf_32: bool = False,
                  save_strategy: str = "epoch",
                  save_steps: int = 50,
                  do_eval: bool = False,
@@ -49,7 +49,7 @@ class TuneArguments:
         self.gradient_accumulation_steps = gradient_accumulation_steps
         self.weight_decay = weight_decay
         self.max_gradient_norm = max_gradient_norm
-        self.tf_32 = tf_32
+        self.use_tf_32 = use_tf_32
         self.save_strategy = save_strategy
         self.save_steps = save_steps
         self.do_eval = do_eval
@@ -59,6 +59,24 @@ class TuneArguments:
         self.save_embeddings = save_embeddings
         self.output_directory = output_directory
         self.fp32_cpu_offload = fp32_cpu_offload
+
+    def validate(self) -> None:
+        is_valid = self.new_model is not None and self.base_model is not None
+        is_valid = is_valid and self.r is not None and self.alpha is not None
+        is_valid = is_valid and self.epochs is not None and self.training_data_dir is not None
+        is_valid = is_valid and self.train_file is not None and self.batch_size is not None
+        is_valid = is_valid and self.learning_rate_base is not None and self.lora_dropout is not None
+        is_valid = is_valid and self.no_checkpoint is not None and self.bias is not None
+        is_valid = is_valid and self.optimizer_type is not None and self.gradient_accumulation_steps is not None
+        is_valid = is_valid and self.weight_decay is not None and self.max_gradient_norm is not None
+        is_valid = is_valid and self.save_strategy is not None and self.save_steps is not None
+        is_valid = is_valid and self.do_eval is not None and self.max_checkpoints is not None
+        is_valid = is_valid and self.save_embeddings is not None
+        is_valid = is_valid and self.use_fp_16 is not None and self.use_bf_16 is not None
+        is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None and self.use_tf_32 is not None
+        is_valid = is_valid and self.output_directory is not None and self.fp32_cpu_offload is not None
+        if not is_valid:
+            raise ArgumentValidationException("'Tune Arguments' are missing required properties")
 
 
 class MergeArguments:
