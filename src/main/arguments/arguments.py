@@ -129,3 +129,83 @@ class PushArguments:
         is_valid = is_valid and self.public_push is not None
         if not is_valid:
             raise ArgumentValidationException("'Push Arguments' are missing required properties")
+
+
+def build_and_validate_push_args(push_model: bool, args, model_dir: str, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
+    push_arguments = PushArguments(
+        new_model=args.new_model,
+        model_dir=model_dir
+    )
+
+    if push_model:
+        push_arguments = PushArguments(
+            new_model=args.new_model,
+            model_dir=model_dir,
+            use_4bit=use_4bit,
+            use_8bit=use_8bit,
+            is_bf16=use_bf_16,
+            is_fp16=use_fp_16
+        )
+        push_arguments.validate()
+
+    return push_arguments
+
+
+def build_and_validate_merge_args(merge_model: bool, args, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
+    merge_arguments = MergeArguments(new_model_name=args.new_model)
+    if merge_model:
+        merge_arguments = MergeArguments(
+            new_model_name=args.new_model,
+            model_base=args.base_model,
+            use_4bit=use_4bit,
+            use_8bit=use_8bit,
+            is_bf16=use_bf_16,
+            is_fp16=use_fp_16,
+            output_dir=args.output_directory
+        )
+        merge_arguments.validate()
+
+    return merge_arguments
+
+
+def build_and_validate_tune_args(merge_only: bool, args, do_eval: bool, fp32_cpu_offload: bool, no_checkpoint: bool, save_embeddings: bool, use_4bit: bool, use_8bit: bool,
+                                 use_bf_16: bool, use_fp_16: bool, use_tf_32: bool):
+    tune_arguments = TuneArguments(
+        new_model=args.new_model,
+        training_data_dir=args.training_data_dir,
+        train_file=args.training_data_file
+    )
+    if merge_only:
+        tune_arguments = TuneArguments(
+            base_model=args.base_model,
+            new_model=args.new_model,
+            training_data_dir=args.training_data_dir,
+            train_file=args.training_data_file,
+            r=args.lora_r,
+            alpha=args.lora_alpha,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            use_fp_16=use_fp_16,
+            use_bf_16=use_bf_16,
+            learning_rate_base=args.learning_rate_base,
+            lora_dropout=args.lora_dropout,
+            no_checkpoint=no_checkpoint,
+            bias=args.bias,
+            optimizer_type=args.optimizer_type,
+            gradient_accumulation_steps=args.gradient_accumulation_steps,
+            weight_decay=args.weight_decay,
+            max_gradient_norm=args.max_gradient_norm,
+            use_tf_32=use_tf_32,
+            save_strategy=args.save_strategy,
+            save_steps=args.save_steps,
+            do_eval=do_eval,
+            max_checkpoints=args.max_saved,
+            use_8bit=use_8bit,
+            use_4bit=use_4bit,
+            save_embeddings=save_embeddings,
+            output_directory=args.output_directory,
+            fp32_cpu_offload=fp32_cpu_offload
+        )
+        tune_arguments.validate()
+
+    return tune_arguments
