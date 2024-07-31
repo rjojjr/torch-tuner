@@ -2,6 +2,7 @@ from huggingface_hub import login
 import os
 from main.exception.exceptions import HuggingfaceAuthException
 
+
 def authenticate_with_hf() -> None:
     print('Authenticating with Huggingface')
     try:
