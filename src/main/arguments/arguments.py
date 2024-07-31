@@ -39,8 +39,8 @@ class TuneArguments:
         self.training_data_dir = training_data_dir
         self.train_file = train_file
         self.batch_size = batch_size
-        self.use_fp_16 = use_fp_16
-        self.use_bf_16 = use_bf_16
+        self.is_fp16 = use_fp_16
+        self.is_bf16 = use_bf_16
         self.learning_rate_base = learning_rate_base
         self.lora_dropout = lora_dropout
         self.no_checkpoint = no_checkpoint
@@ -49,7 +49,7 @@ class TuneArguments:
         self.gradient_accumulation_steps = gradient_accumulation_steps
         self.weight_decay = weight_decay
         self.max_gradient_norm = max_gradient_norm
-        self.use_tf_32 = use_tf_32
+        self.is_tf32 = use_tf_32
         self.save_strategy = save_strategy
         self.save_steps = save_steps
         self.do_eval = do_eval
@@ -72,8 +72,8 @@ class TuneArguments:
         is_valid = is_valid and self.save_strategy is not None and self.save_steps is not None
         is_valid = is_valid and self.do_eval is not None and self.max_checkpoints is not None
         is_valid = is_valid and self.save_embeddings is not None
-        is_valid = is_valid and self.use_fp_16 is not None and self.use_bf_16 is not None
-        is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None and self.use_tf_32 is not None
+        is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
+        is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None and self.is_tf32 is not None
         is_valid = is_valid and self.output_directory is not None and self.fp32_cpu_offload is not None
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")

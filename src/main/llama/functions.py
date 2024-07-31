@@ -13,16 +13,22 @@ from transformers.trainer_utils import get_last_checkpoint
 from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 
-def merge(arguments: MergeArguments) -> None:
-    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
-    model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
-    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
-
+def _get_dtype(arguments: TuneArguments | MergeArguments | PushArguments) -> torch.dtype:
     dtype = torch.float32
     if arguments.is_fp16:
         dtype = torch.float16
     if arguments.is_bf16:
         dtype = torch.bfloat16
+
+    return dtype
+
+
+def merge(arguments: MergeArguments) -> None:
+    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
+    model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
+    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
+
+    dtype = _get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig()
     if arguments.use_8bit:
@@ -60,11 +66,7 @@ def merge(arguments: MergeArguments) -> None:
 
 def push(arguments: PushArguments) -> None:
     print(f"pushing {arguments.new_model} to HF")
-    dtype = torch.float32
-    if arguments.is_fp16:
-        dtype = torch.float16
-    if arguments.is_bf16:
-        dtype = torch.bfloat16
+    dtype = _get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig()
     if arguments.use_8bit:
@@ -100,10 +102,12 @@ def push(arguments: PushArguments) -> None:
 
 def fine_tune(arguments: TuneArguments) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
+    print('')
     output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
     lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
+        print('')
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
 
@@ -112,11 +116,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
-    dtype = torch.float32
-    if arguments.use_fp_16:
-        dtype = torch.float16
-    if arguments.use_bf_16:
-        dtype = torch.bfloat16
+    dtype = _get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig(
         llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
@@ -171,9 +171,9 @@ def fine_tune(arguments: TuneArguments) -> None:
         save_total_limit=arguments.max_checkpoints,
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
-        fp16=arguments.use_fp_16,
-        tf32=arguments.use_tf_32,
-        bf16=arguments.use_bf_16,
+        fp16=arguments.is_fp16,
+        tf32=arguments.is_tf32,
+        bf16=arguments.is_bf16,
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
         warmup_ratio=0.03,
