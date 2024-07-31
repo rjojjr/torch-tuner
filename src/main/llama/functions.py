@@ -1,9 +1,8 @@
-from transformers import TrainingArguments
 import os.path
 import shutil
 
 import torch
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 
 from transformers import LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
@@ -155,7 +154,7 @@ def fine_tune(arguments: TuneArguments) -> None:
     model.print_trainable_parameters()
     learning_rate = arguments.batch_size * arguments.learning_rate_base
 
-    train_params = TrainingArguments(
+    train_params = SFTConfig(
         output_dir=output_dir,
         include_tokens_per_second=False,
         include_num_input_tokens_seen=False,
@@ -181,16 +180,16 @@ def fine_tune(arguments: TuneArguments) -> None:
         group_by_length=True,
         lr_scheduler_type="constant",
         report_to="tensorboard",
-        do_eval=arguments.do_eval
+        do_eval=arguments.do_eval,
+        max_seq_length=10240,
+        dataset_text_field="text",
     )
 
     train = SFTTrainer(
         model=model,
         train_dataset=ds['train'],
-        dataset_text_field="text",
         tokenizer=tokenizer,
-        args=train_params,
-        max_seq_length=10240
+        args=train_params
     )
 
     model.config.use_cache = False
