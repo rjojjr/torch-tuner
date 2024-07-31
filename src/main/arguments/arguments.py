@@ -175,7 +175,7 @@ def build_and_validate_tune_args(merge_only: bool, prog_args, do_eval: bool, fp3
         training_data_dir=prog_args.training_data_dir,
         train_file=prog_args.training_data_file
     )
-    if merge_only:
+    if not merge_only:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
