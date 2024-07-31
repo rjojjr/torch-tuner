@@ -1,7 +1,17 @@
 from main.exception.exceptions import ArgumentValidationException
 
 
-class TuneArguments:
+class TunerFunctionArguments:
+    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False):
+        self.new_model = new_model
+        self.is_fp16 = is_fp16
+        self.is_bf16 = is_bf16
+
+    def validate(self) -> None:
+        pass
+
+
+class TuneArguments(TunerFunctionArguments):
     def __init__(self,
                  new_model: str,
                  training_data_dir: str,
@@ -31,16 +41,14 @@ class TuneArguments:
                  save_embeddings: bool = False,
                  output_directory: str = "../../models",
                  fp32_cpu_offload: bool = True):
+        super(TuneArguments, self).__init__(new_model, use_fp_16, use_bf_16)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
         self.base_model = base_model
-        self.new_model = new_model
         self.training_data_dir = training_data_dir
         self.train_file = train_file
         self.batch_size = batch_size
-        self.is_fp16 = use_fp_16
-        self.is_bf16 = use_bf_16
         self.learning_rate_base = learning_rate_base
         self.lora_dropout = lora_dropout
         self.no_checkpoint = no_checkpoint
@@ -79,25 +87,23 @@ class TuneArguments:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
 
 
-class MergeArguments:
+class MergeArguments(TunerFunctionArguments):
     def __init__(self,
-                 new_model_name: str,
+                 new_model: str,
                  model_base: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
                  is_fp16: bool = False,
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
                  output_dir: str = '../../models'):
-        self.new_model_name = new_model_name
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16)
         self.model_base = model_base
-        self.is_fp16 = is_fp16
-        self.is_bf16 = is_bf16
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
         self.output_dir = output_dir
 
     def validate(self) -> None:
-        is_valid = self.new_model_name is not None and self.model_base is not None
+        is_valid = self.new_model is not None and self.model_base is not None
         is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
         is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None
         is_valid = is_valid and self.output_dir is not None
@@ -105,7 +111,7 @@ class MergeArguments:
             raise ArgumentValidationException("'Merge Arguments' are missing required properties")
 
 
-class PushArguments:
+class PushArguments(TunerFunctionArguments):
     def __init__(self,
                  new_model: str,
                  model_dir: str,
@@ -114,10 +120,8 @@ class PushArguments:
                  use_4bit: bool = False,
                  use_8bit: bool = False,
                  public_push: bool = False):
-        self.new_model = new_model
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16)
         self.model_dir = model_dir
-        self.is_fp16 = is_fp16
-        self.is_bf16 = is_bf16
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
         self.public_push = public_push
@@ -152,10 +156,10 @@ def build_and_validate_push_args(push_model: bool, prog_args, model_dir: str, us
 
 
 def build_and_validate_merge_args(merge_model: bool, prog_args, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
-    merge_arguments = MergeArguments(new_model_name=prog_args.new_model)
+    merge_arguments = MergeArguments(new_model=prog_args.new_model)
     if merge_model:
         merge_arguments = MergeArguments(
-            new_model_name=prog_args.new_model,
+            new_model=prog_args.new_model,
             model_base=prog_args.base_model,
             use_4bit=use_4bit,
             use_8bit=use_8bit,

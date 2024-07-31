@@ -44,12 +44,6 @@ python src/main/main.py <your args>
 To List Available Arguments:
 
 ```shell
-python src/main/main.py -h
-```
-
-or
-
-```shell
 python src/main/main.py --help
 ```
 

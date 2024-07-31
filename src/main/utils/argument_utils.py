@@ -17,7 +17,8 @@ def do_initial_arg_validation(args, merge_model, merge_only, push_model):
 
 
 def parse_arguments(title: str, description: str):
-    return _parse_arguments(_build_program_argument_parser(title, description))
+    parser = _build_program_argument_parser(title, description)
+    return _parse_arguments(parser)
 
 
 def parse_boolean_args(args):

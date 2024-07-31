@@ -3,6 +3,7 @@ import shutil
 
 import torch
 from trl import SFTTrainer, SFTConfig
+from main.utils.tuner_utils import get_dtype
 
 from transformers import LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
@@ -13,23 +14,13 @@ from transformers.trainer_utils import get_last_checkpoint
 from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 
-def _get_dtype(arguments: TuneArguments | MergeArguments | PushArguments) -> torch.dtype:
-    dtype = torch.float32
-    if arguments.is_fp16:
-        dtype = torch.float16
-    if arguments.is_bf16:
-        dtype = torch.bfloat16
-
-    return dtype
-
-
 def merge(arguments: MergeArguments) -> None:
-    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
-    model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
-    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
+    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model}/adapter"
+    model_dir = f'{arguments.output_dir}/{arguments.new_model}'
+    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
     print('')
 
-    dtype = _get_dtype(arguments)
+    dtype = get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig()
     if arguments.use_8bit:
@@ -70,7 +61,7 @@ def merge(arguments: MergeArguments) -> None:
 def push(arguments: PushArguments) -> None:
     print(f"pushing {arguments.new_model} to HF")
     print('')
-    dtype = _get_dtype(arguments)
+    dtype = get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig()
     if arguments.use_8bit:
@@ -120,7 +111,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
-    dtype = _get_dtype(arguments)
+    dtype = get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig(
         llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
@@ -212,7 +203,3 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     train.model.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
-
-
-def _get_device_map() -> str:
-    return 'cuda' if torch.cuda.is_available() else 'auto'
