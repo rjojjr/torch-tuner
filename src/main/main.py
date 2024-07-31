@@ -2,7 +2,7 @@ from llama.functions import fine_tune, push, merge
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 from utils.argument_utils import parse_arguments, parse_boolean_args
-from exception.exceptions import TunerException
+from exception.exceptions import TunerException, ArgumentValidationException
 
 version = '1.0.1'
 
@@ -52,6 +52,9 @@ def main() -> None:
     print(f'Using Save Strategy: {args.save_strategy}')
     print(f'Using Save Steps: {args.save_steps}')
     print(f'Using Save Embeddings: {str(save_embeddings)}')
+
+    if merge_only and not merge_model and not push_model:
+        raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
 
     if not merge_only:
         tune_arguments = TuneArguments(
