@@ -100,6 +100,4 @@ def main() -> None:
     exit(0)
 
 
-
-
 exception_handler(main, title)
