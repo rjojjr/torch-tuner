@@ -1,32 +1,25 @@
-from transformers import TrainingArguments
 import os.path
 import shutil
 
-import torch
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
+from main.utils.torch_utils import get_dtype
 
 from transformers import LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 
-from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
-from arguments.arguments import TuneArguments, MergeArguments, PushArguments
+from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 
 def merge(arguments: MergeArguments) -> None:
-    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
-    model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
-    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
+    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model}/adapter"
+    model_dir = f'{arguments.output_dir}/{arguments.new_model}'
+    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
+    print('')
 
-    login(os.environ.get('HUGGING_FACE_TOKEN'))
-
-    dtype = torch.float32
-    if arguments.is_fp16:
-        dtype = torch.float16
-    if arguments.is_bf16:
-        dtype = torch.bfloat16
+    dtype = get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig()
     if arguments.use_8bit:
@@ -55,7 +48,9 @@ def merge(arguments: MergeArguments) -> None:
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
+    print('')
     print(f'Saving model to {model_dir}')
+    print('')
     if os.path.exists(model_dir):
         shutil.rmtree(model_dir)
     model.save_pretrained(model_dir)
@@ -64,11 +59,8 @@ def merge(arguments: MergeArguments) -> None:
 
 def push(arguments: PushArguments) -> None:
     print(f"pushing {arguments.new_model} to HF")
-    dtype = torch.float32
-    if arguments.is_fp16:
-        dtype = torch.float16
-    if arguments.is_bf16:
-        dtype = torch.bfloat16
+    print('')
+    dtype = get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig()
     if arguments.use_8bit:
@@ -97,9 +89,6 @@ def push(arguments: PushArguments) -> None:
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    # Huggingface auth token should be set in 'HUGGING_FACE_TOKEN' evv. var.
-    login(os.environ.get('HUGGING_FACE_TOKEN'))
-
     is_private = not arguments.public_push
     model.push_to_hub(arguments.new_model, private=is_private)
     tokenizer.push_to_hub(arguments.new_model, private=is_private)
@@ -107,12 +96,12 @@ def push(arguments: PushArguments) -> None:
 
 def fine_tune(arguments: TuneArguments) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
+    print('')
     output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
     lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
-
-    login(os.environ.get('HUGGING_FACE_TOKEN'))
+        print('')
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
 
@@ -121,11 +110,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
-    dtype = torch.float32
-    if arguments.use_fp_16:
-        dtype = torch.float16
-    if arguments.use_bf_16:
-        dtype = torch.bfloat16
+    dtype = get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig(
         llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
@@ -163,7 +148,7 @@ def fine_tune(arguments: TuneArguments) -> None:
     model.print_trainable_parameters()
     learning_rate = arguments.batch_size * arguments.learning_rate_base
 
-    train_params = TrainingArguments(
+    train_params = SFTConfig(
         output_dir=output_dir,
         include_tokens_per_second=False,
         include_num_input_tokens_seen=False,
@@ -180,25 +165,25 @@ def fine_tune(arguments: TuneArguments) -> None:
         save_total_limit=arguments.max_checkpoints,
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
-        fp16=arguments.use_fp_16,
-        tf32=arguments.tf_32,
-        bf16=arguments.use_bf_16,
+        fp16=arguments.is_fp16,
+        tf32=arguments.is_tf32,
+        bf16=arguments.is_bf16,
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
         warmup_ratio=0.03,
         group_by_length=True,
         lr_scheduler_type="constant",
         report_to="tensorboard",
-        do_eval=arguments.do_eval
+        do_eval=arguments.do_eval,
+        max_seq_length=10240,
+        dataset_text_field="text",
     )
 
     train = SFTTrainer(
         model=model,
         train_dataset=ds['train'],
-        dataset_text_field="text",
         tokenizer=tokenizer,
-        args=train_params,
-        max_seq_length=10240
+        args=train_params
     )
 
     model.config.use_cache = False
@@ -210,13 +195,10 @@ def fine_tune(arguments: TuneArguments) -> None:
     else:
         train.train()
 
+    print('')
     print(f'Saving LoRA adapter to {lora_dir}')
     if os.path.exists(lora_dir):
         shutil.rmtree(lora_dir)
 
     train.model.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
-
-
-def _get_device_map() -> str:
-    return 'cuda' if torch.cuda.is_available() else 'auto'
