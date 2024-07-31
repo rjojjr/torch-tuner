@@ -1,9 +1,8 @@
 import os.path
 import shutil
 
-import torch
 from trl import SFTTrainer, SFTConfig
-from main.utils.tuner_utils import get_dtype
+from main.utils.torch_utils import get_dtype
 
 from transformers import LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
