@@ -1,6 +1,6 @@
 import sys, os
 from argparse import ArgumentParser
-from exception.exceptions import ArgumentValidationException
+from main.exception.exceptions import ArgumentValidationException
 
 
 def do_initial_arg_validation(args, merge_model, merge_only, push_model):

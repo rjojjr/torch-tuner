@@ -1,6 +1,6 @@
 from huggingface_hub import login
 import os
-from exception.exceptions import TunerException, HuggingfaceAuthException
+from main.exception.exceptions import TunerException, HuggingfaceAuthException
 
 def authenticate_with_hf() -> None:
     print('Authenticating with Huggingface')

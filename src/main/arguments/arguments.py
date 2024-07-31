@@ -1,4 +1,4 @@
-from exception.exceptions import ArgumentValidationException
+from main.exception.exceptions import ArgumentValidationException
 
 
 class TuneArguments:
