@@ -10,6 +10,22 @@ version = '1.0.1'
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
 description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
 
+def _validate_merge_args(args, merge_model: bool, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
+    merge_arguments = MergeArguments(new_model_name=args.new_model)
+    if merge_model:
+        merge_arguments = MergeArguments(
+            new_model_name=args.new_model,
+            model_base=args.base_model,
+            use_4bit=use_4bit,
+            use_8bit=use_8bit,
+            is_bf16=use_bf_16,
+            is_fp16=use_fp_16,
+            output_dir=args.output_directory
+        )
+        merge_arguments.validate()
+
+    return merge_arguments
+
 
 def main() -> None:
     args = parse_arguments(title, description)
@@ -24,6 +40,7 @@ def main() -> None:
     print('')
 
     do_initial_arg_validation(args, merge_model, merge_only, push_model)
+    merge_arguments = _validate_merge_args(args, merge_model, use_4bit, use_8bit, use_bf_16, use_fp_16)
 
     authenticate_with_hf()
 
@@ -98,15 +115,6 @@ def main() -> None:
         print(f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
     if merge_model:
-        merge_arguments = MergeArguments(
-            new_model_name=args.new_model,
-            model_base=args.base_model,
-            use_4bit=use_4bit,
-            use_8bit=use_8bit,
-            is_bf16=use_bf_16,
-            is_fp16=use_fp_16,
-            output_dir=args.output_directory
-        )
         print('')
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
         merge(merge_arguments)
