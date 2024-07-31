@@ -1,7 +1,8 @@
 from llama.functions import fine_tune, push, merge
-from arguments.arguments import TuneArguments, MergeArguments, PushArguments, TunerException
+from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 from utils.argument_utils import parse_arguments, parse_boolean_args
+from exception.exceptions import TunerException
 
 version = '1.0.1'
 
@@ -116,6 +117,7 @@ def main() -> None:
         print(f'Pushing {args.new_model} to Huggingface')
         push(push_arguments)
         print(f'Pushed {args.new_model} to Huggingface')
+
 
     print('')
     print('---------------------------------------------')
