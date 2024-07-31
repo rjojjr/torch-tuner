@@ -32,7 +32,7 @@ def main() -> None:
     model_dir = f'{args.output_directory}/{args.new_model}'
 
     merge_arguments = build_and_validate_merge_args(merge_model, args, use_4bit, use_8bit, use_bf_16, use_fp_16)
-    push_arguments = build_and_validate_push_args(push_model, args, model_dir, use_4bit, use_8bit, use_bf_16, use_fp_16)
+    push_arguments = build_and_validate_push_args(push_model, args, model_dir, use_4bit, use_8bit, use_bf_16, use_fp_16, public_push)
     tune_arguments = build_and_validate_tune_args(merge_only, args, do_eval, fp32_cpu_offload, no_checkpoint, save_embeddings,
                                                   use_4bit, use_8bit, use_bf_16, use_fp_16, use_tf_32)
 

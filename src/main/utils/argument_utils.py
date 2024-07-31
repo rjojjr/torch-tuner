@@ -4,7 +4,7 @@ from main.exception.exceptions import ArgumentValidationException
 from main.arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
 
-def build_and_validate_push_args(push_model: bool, prog_args, model_dir: str, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool):
+def build_and_validate_push_args(push_model: bool, prog_args, model_dir: str, use_4bit: bool, use_8bit: bool, use_bf_16: bool, use_fp_16: bool, public_push: bool):
     push_arguments = PushArguments(
         new_model=prog_args.new_model,
         model_dir=model_dir
@@ -17,7 +17,8 @@ def build_and_validate_push_args(push_model: bool, prog_args, model_dir: str, us
             use_4bit=use_4bit,
             use_8bit=use_8bit,
             is_bf16=use_bf_16,
-            is_fp16=use_fp_16
+            is_fp16=use_fp_16,
+            public_push=public_push
         )
         push_arguments.validate()
 
