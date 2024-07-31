@@ -1,3 +1,13 @@
+class TunerException(Exception):
+    def __init__(self, message: str):
+        super(ArgumentValidationException, self).__init__(message)
+
+class ArgumentValidationException(TunerException):
+    def __init__(self, message: str):
+        super(ArgumentValidationException, self).__init__(message)
+        self.type = 'ARGUMENT_VALIDATION'
+
+
 class TuneArguments:
     def __init__(self,
                  new_model: str,
@@ -74,6 +84,15 @@ class MergeArguments:
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
         self.output_dir = output_dir
+
+
+    def validate(self) -> None:
+        is_valid = self.new_model_name is not None and self.model_base is not None
+        is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
+        is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None
+        is_valid = is_valid and self.output_dir is not None
+        if not is_valid:
+            raise ArgumentValidationException("'Merge Arguments' are missing required properties")
 
 
 class PushArguments:

@@ -1,5 +1,5 @@
 from llama.functions import fine_tune, push, merge
-from arguments.arguments import TuneArguments, MergeArguments, PushArguments
+from arguments.arguments import TuneArguments, MergeArguments, PushArguments, TunerException
 
 from utils.argument_utils import parse_arguments, parse_boolean_args
 
@@ -120,6 +120,16 @@ def main() -> None:
     print('')
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
+    exit(0)
 
 
-main()
+try:
+    main()
+except TunerException as e:
+    print(f"A TunerException has happened: {str(e)}")
+    print(f"Tuner program is being terminated!")
+    exit(1)
+except Exception as e:
+    print(f"An unexpected Exception has been caught: {str(e)}")
+    print(f"Rethrowing exception")
+    raise e

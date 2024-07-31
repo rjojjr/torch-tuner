@@ -16,6 +16,7 @@ from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 
 def merge(arguments: MergeArguments) -> None:
+    arguments.validate()
     lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
