@@ -14,15 +14,23 @@ def main() -> None:
 
     merge_only, push_model, merge_model, use_fp_16, use_bf_16, do_eval, no_checkpoint, use_tf_32, use_8bit, use_4bit, fp32_cpu_offload, save_embeddings, public_push = parse_boolean_args(args)
 
-    lora_scale = round(args.lora_alpha / args.lora_r, 1)
-    model_dir = f'{args.output_directory}/{args.new_model}'
-
     print(title)
     print('---------------------------------------------')
     print(description)
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     print('')
+    if args.lora_r <= 0 or args.lora_alpha <= 0:
+        raise ArgumentValidationException("'lora-r' and 'lora-alpha' must both be greater than zero")
+
+    lora_scale = round(args.lora_alpha / args.lora_r, 1)
+    model_dir = f'{args.output_directory}/{args.new_model}'
+    if merge_only and not merge_model and not push_model:
+        raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
+
+    if not merge_only and args.epochs <= 0:
+        raise ArgumentValidationException("cannot tune when epochs is set to <= 0")
+
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')
@@ -53,8 +61,6 @@ def main() -> None:
     print(f'Using Save Steps: {args.save_steps}')
     print(f'Using Save Embeddings: {str(save_embeddings)}')
 
-    if merge_only and not merge_model and not push_model:
-        raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
 
     if not merge_only:
         tune_arguments = TuneArguments(
