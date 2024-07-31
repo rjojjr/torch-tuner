@@ -91,7 +91,7 @@ def main() -> None:
     if merge_model:
         merge_arguments = MergeArguments(
             new_model_name=args.new_model,
-            model_base=args.base_mode,
+            model_base=args.base_model,
             use_4bit=use_4bit,
             use_8bit=use_8bit,
             is_bf16=use_bf_16,
