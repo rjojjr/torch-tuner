@@ -4,6 +4,7 @@ from exception.exceptions import exception_handler
 from hf.hf_auth import authenticate_with_hf
 from arguments.arguments import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 
+# Bump with every PR
 version = '1.0.2'
 
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
