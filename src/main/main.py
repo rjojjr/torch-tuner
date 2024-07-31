@@ -4,7 +4,7 @@ from exception.exceptions import exception_handler
 from hf.hf_auth import authenticate_with_hf
 from arguments.arguments import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 
-version = '1.0.1'
+version = '1.0.2'
 
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
 description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
