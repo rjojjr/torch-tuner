@@ -21,8 +21,8 @@ class TuneArguments(TunerFunctionArguments):
                  alpha: int = 16,
                  epochs: int = 10,
                  batch_size: int = 4,
-                 use_fp_16: bool = False,
-                 use_bf_16: bool = False,
+                 is_fp16: bool = False,
+                 is_bf16: bool = False,
                  learning_rate_base: float = 2e-5,
                  lora_dropout: float = 0.05,
                  no_checkpoint: bool = False,
@@ -31,7 +31,7 @@ class TuneArguments(TunerFunctionArguments):
                  gradient_accumulation_steps: int = 4,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,
-                 use_tf_32: bool = False,
+                 is_tf32: bool = False,
                  save_strategy: str = "epoch",
                  save_steps: int = 50,
                  do_eval: bool = False,
@@ -41,7 +41,7 @@ class TuneArguments(TunerFunctionArguments):
                  save_embeddings: bool = False,
                  output_directory: str = "../../models",
                  fp32_cpu_offload: bool = True):
-        super(TuneArguments, self).__init__(new_model, use_fp_16, use_bf_16)
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -57,7 +57,7 @@ class TuneArguments(TunerFunctionArguments):
         self.gradient_accumulation_steps = gradient_accumulation_steps
         self.weight_decay = weight_decay
         self.max_gradient_norm = max_gradient_norm
-        self.is_tf32 = use_tf_32
+        self.is_tf32 = is_tf32
         self.save_strategy = save_strategy
         self.save_steps = save_steps
         self.do_eval = do_eval
