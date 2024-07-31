@@ -1,27 +1,53 @@
 # Torch Tuner README
 
-This project serves as a simple convenient wrapper for fine-tuning 
+This project currently serves as a simple convenient CLI wrapper for fine-tuning 
 Llama(and others in the future) based LLM models on Nvidia GPUs with simple text samples using LoRA and Torch.
 
-Ideally, in the future, this project will support more complex training data structures,
-non-llama LLM types and fine-tuning vision and speech models.
+Use this project's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists on Huggingface with simple text and CUDA.
 
-Use this project to fine-tune a suitable(Llama only ATM) base model that exists on Huggingface.
+Ideally, in the future, this project will support more complex training data structures,
+non-llama LLM types and fine-tuning vision and speech models. Also, I would like this project
+to be able to run as an API along with its current CLI implementation.
 
 ## Running the Tuner
 
-This tuner will fine-tune, merge and push your new model to Huggingface depending on the arguments
+The tuner CLI will fine-tune, merge and push your new model to Huggingface depending on the arguments
 you run it with.
+
+### Using the Tuner
+
+I typically wrap/configure my tuner CLI commands with bash scripts for convenience.
+
+It might be useful to create an alias for the tuner CLI. EX:
+
+```shell
+alias finetune=python <full-path-to-main.py>
+```
+
+I currently use this CLI across several different debian based OSes, but it should
+work on any OS. The tuner requires that you have the proper CUDA software/drivers
+installed on the host. I would like to add CPU based tuning in the future.
+
+#### Merging your LoRA Adapter
+
+The results of your fine-tune job will be saved as a LoRA adapter. That LoRA adapter can then 
+be merged with the base model to create a new model. Using the default arguments,
+the tuner will merge your adapter and push the new model to a private Huggingface repository.
+
+You can skip the fine-tune job by adding the `--merge-only true` argument to your command.
+You can also skip the push by adding the `--push false` argument to your command.
 
 ### Tuning Data
 
-The tuner will load data from a text(`.txt`) file. It expects each sample
-to consume exactly one line.
+The tuner will load data from a text-based file. It expects each training sample
+to consume exactly one line. Currently, this app requires both the path to the directory
+where the training data is stored and the training-data file name supplied as separate 
+arguments.
 
 ### Install Dependencies
 
 You should probably use a virtual environment
-when installing dependencies and running the app,
+when installing dependencies and running the CLI,
 but that is up to you.
 
 From the project root, run:
@@ -30,10 +56,10 @@ From the project root, run:
 pip install -r requirements.txt
 ```
 
-### Run the Tuner
+### Run the Tuner CLI
 
-The tuner requires that you have the `HUGGING_FACE_TOKEN` environment
-variable set to the Huggingface auth token that you would like to use.
+The tuner CLI currently requires that you have the `HUGGING_FACE_TOKEN` environment
+variable set to a valid Huggingface authentication token in whatever shell you run it in.
 
 From the project root(using the virtual environment(if any) that you used to install its dependencies), run:
 
