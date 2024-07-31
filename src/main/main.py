@@ -39,6 +39,7 @@ def main() -> None:
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')
+    print(f'Training File: {args.training_data_file}')
     print('')
     print(f'Epochs: {str(args.epochs)}')
     print(f'Using LoRA R: {str(args.lora_r)}')
@@ -54,8 +55,8 @@ def main() -> None:
     print(f'Using 4bit: {str(use_4bit)}')
     print(f'Using fp32 CPU Offload: {str(fp32_cpu_offload)}')
     print('')
-    print(f'Is Merging: {merge_model}')
-    print(f'Is Pushing: {push_model}')
+    print(f'Is Merging: {str(merge_model)}')
+    print(f'Is Pushing: {str(push_model)}')
     print(f'Is Merge/Push Only: {str(merge_only)}')
     print('')
     print(f'Using Checkpointing: {str(not no_checkpoint)}')
@@ -63,25 +64,31 @@ def main() -> None:
     print(f'Using Batch Size: {str(args.batch_size)}')
     print(f'Using Optimizer: {args.optimizer_type}')
     print(f'Using Save Strategy: {args.save_strategy}')
-    print(f'Using Save Steps: {args.save_steps}')
+    print(f'Using Save Steps: {str(args.save_steps)}')
     print(f'Using Save Embeddings: {str(save_embeddings)}')
 
     if not merge_only:
         print('')
         print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+        print('')
         fine_tune(tune_arguments)
+        print('')
         print(f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
     if merge_model:
         print('')
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
+        print('')
         merge(merge_arguments)
+        print('')
         print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
 
     if push_model:
         print('')
         print(f'Pushing {args.new_model} to Huggingface')
+        print('')
         push(push_arguments)
+        print('')
         print(f'Pushed {args.new_model} to Huggingface')
 
     print('')

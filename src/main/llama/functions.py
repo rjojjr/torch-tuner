@@ -27,6 +27,7 @@ def merge(arguments: MergeArguments) -> None:
     lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
+    print('')
 
     dtype = _get_dtype(arguments)
 
@@ -57,7 +58,9 @@ def merge(arguments: MergeArguments) -> None:
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
+    print('')
     print(f'Saving model to {model_dir}')
+    print('')
     if os.path.exists(model_dir):
         shutil.rmtree(model_dir)
     model.save_pretrained(model_dir)
@@ -66,6 +69,7 @@ def merge(arguments: MergeArguments) -> None:
 
 def push(arguments: PushArguments) -> None:
     print(f"pushing {arguments.new_model} to HF")
+    print('')
     dtype = _get_dtype(arguments)
 
     bnb_config = BitsAndBytesConfig()
@@ -201,6 +205,7 @@ def fine_tune(arguments: TuneArguments) -> None:
     else:
         train.train()
 
+    print('')
     print(f'Saving LoRA adapter to {lora_dir}')
     if os.path.exists(lora_dir):
         shutil.rmtree(lora_dir)
