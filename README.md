@@ -1,7 +1,7 @@
 # Torch Tuner README
 
 This project serves as a simple convenient wrapper for fine-tuning 
-Llama(and other model types in the future) based LLM models with simple text samples using LoRA and Torch.
+Llama(and others in the future) based LLM models on Nvidia GPUs with simple text samples using LoRA and Torch.
 
 Ideally, in the future, this project will support more complex training data structures,
 non-llama LLM types and fine-tuning vision and speech models.
@@ -56,3 +56,7 @@ this project.
 
 To request a feature or modification, please
 submit a Github Issue.
+
+## LICENSE
+
+This project is [licensed](LICENSE.txt) under MIT. 
