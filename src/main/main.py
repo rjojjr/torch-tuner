@@ -1,5 +1,5 @@
-from llama.functions import fine_tune, push, merge
 from utils.argument_utils import parse_arguments, parse_boolean_args, do_initial_arg_validation
+from utils.tuner_utils import get_tuner
 from exception.exceptions import exception_handler
 from hf.hf_auth import authenticate_with_hf
 from arguments.arguments import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
@@ -24,6 +24,9 @@ def main() -> None:
     print('')
 
     do_initial_arg_validation(args, merge_model, merge_only, push_model)
+
+    # TODO - For other LLM types in the future
+    tuner = get_tuner(args)
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'
@@ -71,7 +74,7 @@ def main() -> None:
         print('')
         print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
         print('')
-        fine_tune(tune_arguments)
+        tuner.fine_tune(tune_arguments)
         print('')
         print(f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
@@ -79,7 +82,7 @@ def main() -> None:
         print('')
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
         print('')
-        merge(merge_arguments)
+        tuner.merge(merge_arguments)
         print('')
         print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
 
@@ -87,7 +90,7 @@ def main() -> None:
         print('')
         print(f'Pushing {args.new_model} to Huggingface')
         print('')
-        push(push_arguments)
+        tuner.push(push_arguments)
         print('')
         print(f'Pushed {args.new_model} to Huggingface')
 
@@ -95,6 +98,8 @@ def main() -> None:
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
     exit(0)
+
+
 
 
 exception_handler(main, title)

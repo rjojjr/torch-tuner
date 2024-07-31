@@ -91,6 +91,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ../../models)", default="../../models")
 
+    parser.add_argument('-llm', '--llm-type', help="LLM Type(default: llama)", default="llama")
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
     parser.add_argument('-mo', '--merge-only', default="false", help="Only merge/push model(no tuning)(default: false)")
     parser.add_argument('-sel', '--save-embeddings-layer', default="false", help="Save embeddings(default: false)")
