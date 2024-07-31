@@ -1,15 +1,26 @@
 from llama.functions import fine_tune, push, merge
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
-from utils.argument_utils import parse_arguments, parse_boolean_args
-from exception.exceptions import TunerException, ArgumentValidationException
+from utils.argument_utils import parse_arguments, parse_boolean_args, do_initial_arg_validation
+from exception.exceptions import TunerException, HuggingfaceAuthException, exception_handler
+from huggingface_hub import login
+import os
 
 version = '1.0.1'
 
+title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
+description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
+
+
+def _authenticate_with_hf() -> None:
+    print('Authenticating with Huggingface')
+    try:
+        login(os.environ.get('HUGGING_FACE_TOKEN'))
+    except Exception as e:
+        raise HuggingfaceAuthException(f'error authenticating with huggingface: {str(e)}')
+
 
 def main() -> None:
-    title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
-    description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
     args = parse_arguments(title, description)
 
     merge_only, push_model, merge_model, use_fp_16, use_bf_16, do_eval, no_checkpoint, use_tf_32, use_8bit, use_4bit, fp32_cpu_offload, save_embeddings, public_push = parse_boolean_args(args)
@@ -20,17 +31,15 @@ def main() -> None:
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     print('')
-    if args.lora_r <= 0 or args.lora_alpha <= 0:
-        raise ArgumentValidationException("'lora-r' and 'lora-alpha' must both be greater than zero")
+
+    do_initial_arg_validation(args, merge_model, merge_only, push_model)
+
+    _authenticate_with_hf()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'
-    if merge_only and not merge_model and not push_model:
-        raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
 
-    if not merge_only and args.epochs <= 0:
-        raise ArgumentValidationException("cannot tune when epochs is set to <= 0")
-
+    print('')
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')
@@ -127,20 +136,10 @@ def main() -> None:
         push(push_arguments)
         print(f'Pushed {args.new_model} to Huggingface')
 
-
     print('')
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
     exit(0)
 
 
-try:
-    main()
-except TunerException as e:
-    print(f"A TunerException has happened: {str(e)}")
-    print(f"Tuner program is being terminated!")
-    exit(1)
-except Exception as e:
-    print(f"An unexpected Exception has been caught: {str(e)}")
-    print(f"Rethrowing exception")
-    raise e
+exception_handler(main, title)

@@ -1,5 +1,19 @@
-import sys
+import sys, os
 from argparse import ArgumentParser
+from exception.exceptions import ArgumentValidationException
+
+
+def do_initial_arg_validation(args, merge_model, merge_only, push_model):
+    if args.lora_r <= 0 or args.lora_alpha <= 0:
+        raise ArgumentValidationException("'lora-r' and 'lora-alpha' must both be greater than zero")
+
+    if merge_only and not merge_model and not push_model:
+        raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
+    if not merge_only and args.epochs <= 0:
+        raise ArgumentValidationException("cannot tune when epochs is set to <= 0")
+    if not merge_only and (not os.path.exists(args.training_data_dir) or not os.path.exists(
+            f'{args.training_data_dir}/{args.training_data_file}')):
+        raise ArgumentValidationException('training data directory or file not found')
 
 
 def parse_arguments(title: str, description: str):

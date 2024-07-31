@@ -10,7 +10,6 @@ from transformers import LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 
-from huggingface_hub import login
 from transformers.trainer_utils import get_last_checkpoint
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
@@ -20,8 +19,6 @@ def merge(arguments: MergeArguments) -> None:
     lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model_name}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model_name}'
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model_name}")
-
-    login(os.environ.get('HUGGING_FACE_TOKEN'))
 
     dtype = torch.float32
     if arguments.is_fp16:
@@ -98,9 +95,6 @@ def push(arguments: PushArguments) -> None:
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    # Huggingface auth token should be set in 'HUGGING_FACE_TOKEN' evv. var.
-    login(os.environ.get('HUGGING_FACE_TOKEN'))
-
     is_private = not arguments.public_push
     model.push_to_hub(arguments.new_model, private=is_private)
     tokenizer.push_to_hub(arguments.new_model, private=is_private)
@@ -112,8 +106,6 @@ def fine_tune(arguments: TuneArguments) -> None:
     lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
-
-    login(os.environ.get('HUGGING_FACE_TOKEN'))
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
 
