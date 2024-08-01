@@ -1,5 +1,5 @@
 from utils.argument_utils import parse_arguments, parse_boolean_args, do_initial_arg_validation
-from utils.tuner_utils import construct_tuner
+from utils.tuner_utils import llm_tuner_factory
 from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
@@ -13,6 +13,7 @@ description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
 
 def main() -> None:
     args = parse_arguments(title, description)
+    tuner_factory = llm_tuner_factory(args)
 
     merge_only, push_model, merge_model, use_fp_16, use_bf_16, do_eval, no_checkpoint, use_tf_32, use_8bit, use_4bit, fp32_cpu_offload, save_embeddings, public_push = parse_boolean_args(args)
 
@@ -23,9 +24,10 @@ def main() -> None:
     print('Run with --help flag for a list of available arguments.')
     print('')
 
+    # Do all validations before printing configuration values
     do_initial_arg_validation(args, merge_model, merge_only, push_model)
 
-    tuner = construct_tuner(args)
+    tuner = tuner_factory()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'

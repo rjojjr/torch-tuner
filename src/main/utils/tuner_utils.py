@@ -2,9 +2,15 @@
 import main.llama.functions as llama
 from main.tuner import Tuner, LLM_TYPES
 from main.exception.exceptions import ArgumentValidationException
+from typing import Callable
 
 
-def construct_tuner(prog_args) -> Tuner:
+# This will probably be useful for the future API impl.
+def llm_tuner_factory(prog_args) -> Callable[[], Tuner]:
+    return lambda: _construct_tuner(prog_args)
+
+
+def _construct_tuner(prog_args) -> Tuner:
     tuner = Tuner(llama.fine_tune, llama.merge, llama.push, LLM_TYPES['llama'])
     _evaluate_supported_llm_type(prog_args.llm_type)
 
