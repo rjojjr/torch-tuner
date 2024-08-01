@@ -2,10 +2,13 @@ from main.exception.exceptions import ArgumentValidationException
 
 
 class TunerFunctionArguments:
-    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False):
+    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False):
         self.new_model = new_model
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
+        self.use_8bit = use_8bit
+        self.use_4bit = use_4bit
+        self.fp32_cpu_offload = fp32_cpu_offload
 
     def validate(self) -> None:
         pass
@@ -41,7 +44,7 @@ class TuneArguments(TunerFunctionArguments):
                  save_embeddings: bool = False,
                  output_directory: str = "../../models",
                  fp32_cpu_offload: bool = True):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16)
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -62,11 +65,8 @@ class TuneArguments(TunerFunctionArguments):
         self.save_steps = save_steps
         self.do_eval = do_eval
         self.max_checkpoints = max_checkpoints
-        self.use_8bit = use_8bit
-        self.use_4bit = use_4bit
         self.save_embeddings = save_embeddings
         self.output_directory = output_directory
-        self.fp32_cpu_offload = fp32_cpu_offload
 
     def validate(self) -> None:
         is_valid = self.new_model is not None and self.base_model is not None
@@ -96,10 +96,8 @@ class MergeArguments(TunerFunctionArguments):
                  use_4bit: bool = False,
                  use_8bit: bool = False,
                  output_dir: str = '../../models'):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16)
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit)
         self.model_base = model_base
-        self.use_4bit = use_4bit
-        self.use_8bit = use_8bit
         self.output_dir = output_dir
 
     def validate(self) -> None:
@@ -120,10 +118,8 @@ class PushArguments(TunerFunctionArguments):
                  use_4bit: bool = False,
                  use_8bit: bool = False,
                  public_push: bool = False):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16)
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit)
         self.model_dir = model_dir
-        self.use_4bit = use_4bit
-        self.use_8bit = use_8bit
         self.public_push = public_push
 
     def validate(self) -> None:

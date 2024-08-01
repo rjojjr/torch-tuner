@@ -17,11 +17,13 @@ you run it with.
 ### Using the Tuner
 
 I typically wrap/configure my tuner CLI commands with bash scripts for convenience.
+You might want to install the tuner CLI somewhere on your path for 
+easy access. At some point I will get this project on a public pip repository.
 
 It might be useful to create an alias for the tuner CLI. EX:
 
 ```shell
-alias finetune=python <full-path-to-main.py>
+alias finetune=python </full/path/to/main.py>
 ```
 
 I currently use this CLI across several different debian based OSes, but it should
@@ -34,8 +36,9 @@ The results of your fine-tune job will be saved as a LoRA adapter. That LoRA ada
 be merged with the base model to create a new model. Using the default arguments,
 the tuner will merge your adapter and push the new model to a private Huggingface repository.
 
-You can skip the fine-tune job by adding the `--merge-only true` argument to your command.
-You can also skip the push by adding the `--push false` argument to your command.
+You can skip the fine-tune job by adding the `--fine-tune false` argument to your command.
+You can also skip the merge or push by adding the `--push false` or `--merge false` arguments
+to your command.
 
 ### Tuning Data
 
@@ -82,6 +85,12 @@ To List Available Arguments:
 ```shell
 python src/main/main.py --help
 ```
+
+### Useful Notes
+
+In theory, the base-model(`--base-model`) CLI argument will 
+accept a path to a locally saved model instead of a Huggingface repository
+name, but this is untested ATM.
 
 ## CONTRIBUTING
 

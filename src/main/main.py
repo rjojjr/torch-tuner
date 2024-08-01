@@ -1,20 +1,20 @@
-from utils.argument_utils import parse_arguments, parse_boolean_args, do_initial_arg_validation
-from utils.tuner_utils import get_tuner
-from exception.exceptions import exception_handler
+from utils.argument_utils import parse_arguments, do_initial_arg_validation
+from utils.tuner_utils import llm_tuner_factory
+from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 
 # Bump with every PR
-version = '1.0.2'
+version = '1.1.0'
 
+# TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
-description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
+description = 'Fine-Tune Llama LLM models with simple text on Nvidia GPUs using Torch and LoRA.'
 
 
 def main() -> None:
     args = parse_arguments(title, description)
-
-    merge_only, push_model, merge_model, use_fp_16, use_bf_16, do_eval, no_checkpoint, use_tf_32, use_8bit, use_4bit, fp32_cpu_offload, save_embeddings, public_push = parse_boolean_args(args)
+    tuner_factory = llm_tuner_factory(args)
 
     print(title)
     print('---------------------------------------------')
@@ -23,20 +23,22 @@ def main() -> None:
     print('Run with --help flag for a list of available arguments.')
     print('')
 
-    do_initial_arg_validation(args, merge_model, merge_only, push_model)
+    # Do all validations before printing configuration values
+    do_initial_arg_validation(args)
 
-    # TODO - For other LLM types in the future
-    tuner = get_tuner(args)
+    tuner = tuner_factory()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'
 
-    merge_arguments = build_and_validate_merge_args(merge_model, args, use_4bit, use_8bit, use_bf_16, use_fp_16)
-    push_arguments = build_and_validate_push_args(push_model, args, model_dir, use_4bit, use_8bit, use_bf_16, use_fp_16, public_push)
-    tune_arguments = build_and_validate_tune_args(merge_only, args, do_eval, fp32_cpu_offload, no_checkpoint, save_embeddings,
-                                                  use_4bit, use_8bit, use_bf_16, use_fp_16, use_tf_32)
+    tune_arguments = build_and_validate_tune_args(args)
+    merge_arguments = build_and_validate_merge_args(args)
+    push_arguments = build_and_validate_push_args(args, model_dir)
 
     authenticate_with_hf()
+
+    print('')
+    print(f'Using LLM Type: {tuner.llm_type}')
 
     print('')
     print(f'Output Directory: {args.output_directory}')
@@ -51,26 +53,26 @@ def main() -> None:
     print(f'Using Base Learning Rate: {str(args.learning_rate_base)}')
     print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
     print('')
-    print(f'Using tf32: {str(use_tf_32)}')
-    print(f'Using bf16: {str(use_bf_16)}')
-    print(f'Using fp16: {str(use_fp_16)}')
-    print(f'Using 8bit: {str(use_8bit)}')
-    print(f'Using 4bit: {str(use_4bit)}')
-    print(f'Using fp32 CPU Offload: {str(fp32_cpu_offload)}')
+    print(f'Using tf32: {str(args.use_tf_32)}')
+    print(f'Using bf16: {str(args.use_bf_16)}')
+    print(f'Using fp16: {str(args.use_fp_16)}')
+    print(f'Using 8bit: {str(args.use_8bit)}')
+    print(f'Using 4bit: {str(args.use_4bit)}')
+    print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
     print('')
-    print(f'Is Merging: {str(merge_model)}')
-    print(f'Is Pushing: {str(push_model)}')
-    print(f'Is Merge/Push Only: {str(merge_only)}')
+    print(f'Is Fine-Tuning: {str(args.fine_tune)}')
+    print(f'Is Merging: {str(args.merge)}')
+    print(f'Is Pushing: {str(args.push)}')
     print('')
-    print(f'Using Checkpointing: {str(not no_checkpoint)}')
+    print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
     print(f'Using Max Saves: {str(args.max_saved)}')
     print(f'Using Batch Size: {str(args.batch_size)}')
     print(f'Using Optimizer: {args.optimizer_type}')
     print(f'Using Save Strategy: {args.save_strategy}')
     print(f'Using Save Steps: {str(args.save_steps)}')
-    print(f'Using Save Embeddings: {str(save_embeddings)}')
+    print(f'Using Save Embeddings: {str(args.save_embeddings)}')
 
-    if not merge_only:
+    if args.fine_tune:
         print('')
         print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
         print('')
@@ -78,7 +80,7 @@ def main() -> None:
         print('')
         print(f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
-    if merge_model:
+    if args.merge:
         print('')
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
         print('')
@@ -86,7 +88,7 @@ def main() -> None:
         print('')
         print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
 
-    if push_model:
+    if args.push:
         print('')
         print(f'Pushing {args.new_model} to Huggingface')
         print('')
@@ -100,4 +102,4 @@ def main() -> None:
     exit(0)
 
 
-exception_handler(main, title)
+main_exception_handler(main, title, False)
