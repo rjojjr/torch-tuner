@@ -4,7 +4,7 @@ from main.tuner import Tuner, LLM_TYPES
 from main.exception.exceptions import ArgumentValidationException
 
 
-def get_tuner(prog_args) -> Tuner:
+def construct_tuner(prog_args) -> Tuner:
     tuner = Tuner(llama.fine_tune, llama.merge, llama.push, LLM_TYPES['llama'])
     _evaluate_supported_llm_type(prog_args.llm_type)
 

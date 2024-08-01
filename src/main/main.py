@@ -1,5 +1,5 @@
 from utils.argument_utils import parse_arguments, parse_boolean_args, do_initial_arg_validation
-from utils.tuner_utils import get_tuner
+from utils.tuner_utils import construct_tuner
 from exception.exceptions import exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
@@ -25,7 +25,7 @@ def main() -> None:
 
     do_initial_arg_validation(args, merge_model, merge_only, push_model)
 
-    tuner = get_tuner(args)
+    tuner = construct_tuner(args)
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = f'{args.output_directory}/{args.new_model}'
