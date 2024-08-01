@@ -25,7 +25,6 @@ def main() -> None:
 
     do_initial_arg_validation(args, merge_model, merge_only, push_model)
 
-    # TODO - For other LLM types in the future
     tuner = get_tuner(args)
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)

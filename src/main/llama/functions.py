@@ -13,7 +13,10 @@ from transformers.trainer_utils import get_last_checkpoint
 from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments, TunerFunctionArguments
 
 
+# I believe as this app is expanded to support more LLM types, there will be a lot of
+# common code for these "tuning" functions that will need to be extracted/abstracted.
 def merge(arguments: MergeArguments) -> None:
+    # TODO - Refactor how output dirs are constructed
     lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model}'
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
@@ -54,6 +57,7 @@ def push(arguments: PushArguments) -> None:
         return_dict=True,
         torch_dtype=dtype,
         quantization_config=bnb_config
+        # TODO - FIXME
         # device_map="auto"
     )
 
@@ -86,6 +90,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     model = LlamaForCausalLM.from_pretrained(arguments.base_model, quantization_config=bnb_config, device_map="auto")
 
+    # TODO - Tune/extract an embeddings only model
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
     if arguments.save_embeddings:
         target_modules.append("embed_tokens")
@@ -142,6 +147,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     model.config.use_cache = False
 
+    # TODO - FIXME - There is a warning from checkpointing I believe is do to underlying torch impl.
     if os.path.exists(output_dir) and not arguments.no_checkpoint:
         model.gradient_checkpointing_enable()
         last_checkpoint = get_last_checkpoint(output_dir)
