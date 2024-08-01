@@ -65,6 +65,9 @@ From the project root(using the virtual environment(if any) that you used to ins
 
 ```shell
 python src/main/main.py <your args>
+
+# A Real Example
+python src/main/main.py --base-model meta-llama/Meta-Llama-3-8B-Instruct --new-model llama-tuned --training-data-dir path/to/data --training-data-file samples.txt --epochs 10 --lora-r 16 --lora-alpha 32
 ```
 
 To List Available Arguments:
