@@ -39,6 +39,9 @@ def main() -> None:
     authenticate_with_hf()
 
     print('')
+    print(f'Using LLM Type: {tuner.llm_type}')
+
+    print('')
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')
