@@ -4,8 +4,13 @@ from typing import Callable
 class TunerException(Exception):
     def __init__(self, message: str, exception_type: str = "GENERIC", sub_type: str | None = None):
         super(TunerException, self).__init__(message)
+        self.message = message
         self.exception_type = exception_type
         self.sub_type = sub_type
+
+    def to_string(self) -> str:
+        sub_type = f" SUB TYPE: {self.sub_type}" if self.sub_type is not None else ""
+        return f'{self.message} TYPE: {self.exception_type}{sub_type}'
 
 
 class ValidationException(TunerException):
@@ -33,10 +38,13 @@ def main_exception_handler(work: Callable, title: str, is_debug: bool = False) -
         work()
     except TunerException as e:
         print('')
-        print(f"A TunerException has been caught: {str(e)}")
-        if e.exception_type == 'VALIDATION' and e.sub_type == 'ARGUMENT_VALIDATION':
+        print(f"A TunerException has been caught: {e.to_string()}")
+        if e.sub_type is not None and e.sub_type == 'ARGUMENT_VALIDATION':
             print('')
-            print("Please verify that your arguments are valid")
+            print("Please verify that the provided program arguments are valid")
+        if e.sub_type is not None and e.sub_type == 'HUGGINGFACE_AUTH':
+            print('')
+            print("Please verify that the `HUGGING_FACE_TOKEN` environment variable is set to a valid Huggingface auth token")
         print('')
         print(f"{title} is being terminated!")
         exit(100)
