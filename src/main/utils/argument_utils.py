@@ -116,10 +116,10 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser = ArgumentParser(
         prog=title,
         description=description)
+    parser.add_argument('-n', '--new-model', required=True, help="Name of the new fine-tuned model(REQUIRED)")
+    parser.add_argument('-tdd', '--training-data-dir', required=True, help="Training data directory(REQUIRED)")
+    parser.add_argument('-tf', '--training-data-file', required=True, help="Training dataset filename(REQUIRED)")
     parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
-    parser.add_argument('-n', '--new-model', help="Name of the new fine-tuned model(REQUIRED)")
-    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED)")
-    parser.add_argument('-tf', '--training-data-file', help="Training dataset filename(REQUIRED)")
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
