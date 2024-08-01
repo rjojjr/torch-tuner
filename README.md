@@ -34,8 +34,9 @@ The results of your fine-tune job will be saved as a LoRA adapter. That LoRA ada
 be merged with the base model to create a new model. Using the default arguments,
 the tuner will merge your adapter and push the new model to a private Huggingface repository.
 
-You can skip the fine-tune job by adding the `--merge-only true` argument to your command.
-You can also skip the push by adding the `--push false` argument to your command.
+You can skip the fine-tune job by adding the `--fine-tune false` argument to your command.
+You can also skip the merge or push by adding the `--push false` or `--merge false` arguments
+to your command.
 
 ### Tuning Data
 

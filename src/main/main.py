@@ -7,14 +7,14 @@ from utils.argument_utils import build_and_validate_push_args, build_and_validat
 # Bump with every PR
 version = '1.1.0'
 
+# TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
-description = 'Fine-Tune Llama LLM models with text using Torch and LoRA.'
+description = 'Fine-Tune Llama LLM models with simple text on Nvidia GPUs using Torch and LoRA.'
 
 
 def main() -> None:
     args = parse_arguments(title, description)
     tuner_factory = llm_tuner_factory(args)
-
 
     print(title)
     print('---------------------------------------------')
@@ -60,9 +60,9 @@ def main() -> None:
     print(f'Using 4bit: {str(args.use_4bit)}')
     print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
     print('')
+    print(f'Is Fine-Tuning: {str(args.fine_tune)}')
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')
-    print(f'Is Merge/Push Only: {str(args.merge_only)}')
     print('')
     print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
     print(f'Using Max Saves: {str(args.max_saved)}')
@@ -72,7 +72,7 @@ def main() -> None:
     print(f'Using Save Steps: {str(args.save_steps)}')
     print(f'Using Save Embeddings: {str(args.save_embeddings)}')
 
-    if not args.merge_only:
+    if args.fine_tune:
         print('')
         print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
         print('')
@@ -102,4 +102,4 @@ def main() -> None:
     exit(0)
 
 
-main_exception_handler(main, title, True)
+main_exception_handler(main, title, False)

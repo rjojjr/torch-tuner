@@ -48,7 +48,7 @@ def build_and_validate_tune_args(prog_args):
         training_data_dir=prog_args.training_data_dir,
         train_file=prog_args.training_data_file
     )
-    if not prog_args.merge_only:
+    if prog_args.fine_tune:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
@@ -88,11 +88,11 @@ def do_initial_arg_validation(args):
     if args.lora_r <= 0 or args.lora_alpha <= 0:
         raise ArgumentValidationException("'lora-r' and 'lora-alpha' must both be greater than zero")
 
-    if args.merge_only and not args.merge and not args.push:
+    if not args.fine_tune and not args.merge and not args.push:
         raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
-    if not args.merge_only and args.epochs <= 0:
+    if args.fine_tune and args.epochs <= 0:
         raise ArgumentValidationException("cannot tune when epochs is set to <= 0")
-    if not args.merge_only and (not os.path.exists(args.training_data_dir) or not os.path.exists(
+    if args.fine_tune and (not os.path.exists(args.training_data_dir) or not os.path.exists(
             f'{args.training_data_dir}/{args.training_data_file}')):
         raise ArgumentValidationException('training data directory or file not found')
 
@@ -123,7 +123,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-mo', '--merge-only', default="false", help="Only merge/push model(no tuning)(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bs', '--batch-size', help="Samples per iteration(default 4)", type=int, default=4)
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
