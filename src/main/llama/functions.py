@@ -2,15 +2,15 @@ import os.path
 import shutil
 
 from trl import SFTTrainer, SFTConfig
-from main.utils.torch_utils import get_dtype
+from main.utils.torch_utils import get_bnb_config
 
-from transformers import LlamaForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import LlamaForCausalLM, AutoTokenizer
 
 from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 
 from transformers.trainer_utils import get_last_checkpoint
-from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments
+from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments, TunerFunctionArguments
 
 
 def merge(arguments: MergeArguments) -> None:
@@ -19,21 +19,7 @@ def merge(arguments: MergeArguments) -> None:
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
     print('')
 
-    dtype = get_dtype(arguments)
-
-    bnb_config = BitsAndBytesConfig()
-    if arguments.use_8bit:
-        bnb_config = BitsAndBytesConfig(
-            load_in_8bit=True,
-            bnb_8bit_compute_dtype=dtype,
-        )
-    if arguments.use_4bit:
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=dtype,
-            bnb_4bit_use_double_quant=True,
-        )
+    bnb_config, dtype = get_bnb_config(arguments)
 
     base_model = LlamaForCausalLM.from_pretrained(
         arguments.model_base,
@@ -60,21 +46,7 @@ def merge(arguments: MergeArguments) -> None:
 def push(arguments: PushArguments) -> None:
     print(f"pushing {arguments.new_model} to HF")
     print('')
-    dtype = get_dtype(arguments)
-
-    bnb_config = BitsAndBytesConfig()
-    if arguments.use_8bit:
-        bnb_config = BitsAndBytesConfig(
-            load_in_8bit=True,
-            bnb_8bit_compute_dtype=dtype,
-        )
-    if arguments.use_4bit:
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=dtype,
-            bnb_4bit_use_double_quant=True,
-        )
+    bnb_config, dtype = get_bnb_config(arguments)
 
     model = LlamaForCausalLM.from_pretrained(
         arguments.model_dir,
@@ -110,25 +82,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
-    dtype = get_dtype(arguments)
-
-    bnb_config = BitsAndBytesConfig(
-        llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
-    )
-    if arguments.use_8bit:
-        bnb_config = BitsAndBytesConfig(
-            load_in_8bit=True,
-            bnb_8bit_compute_dtype=dtype,
-            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
-        )
-    if arguments.use_4bit:
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=dtype,
-            bnb_4bit_use_double_quant=True,
-            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
-        )
+    bnb_config, dtype = get_bnb_config(arguments)
 
     model = LlamaForCausalLM.from_pretrained(arguments.base_model, quantization_config=bnb_config, device_map="auto")
 
