@@ -17,7 +17,7 @@ def get_device_map() -> str:
     return 'cuda' if torch.cuda.is_available() else 'auto'
 
 
-def get_bnb_config(arguments: TunerFunctionArguments):
+def get_bnb_config(arguments: TunerFunctionArguments) -> tuple[BitsAndBytesConfig, torch.dtype]:
     dtype = get_dtype(arguments)
     bnb_config = BitsAndBytesConfig(
         llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
@@ -26,6 +26,7 @@ def get_bnb_config(arguments: TunerFunctionArguments):
         bnb_config = BitsAndBytesConfig(
             load_in_8bit=True,
             bnb_8bit_compute_dtype=dtype,
+            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
         )
     if arguments.use_4bit:
         bnb_config = BitsAndBytesConfig(
@@ -33,5 +34,6 @@ def get_bnb_config(arguments: TunerFunctionArguments):
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=dtype,
             bnb_4bit_use_double_quant=True,
+            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
         )
     return bnb_config, dtype
