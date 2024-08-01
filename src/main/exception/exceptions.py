@@ -9,7 +9,7 @@ class TunerException(Exception):
 
 
 class ValidationException(TunerException):
-    def __init__(self, message: str, sub_type: str):
+    def __init__(self, message: str, sub_type: str | None = None):
         super(ValidationException, self).__init__(message, 'VALIDATION', sub_type)
 
 
@@ -19,7 +19,7 @@ class ArgumentValidationException(ValidationException):
 
 
 class HuggingfaceException(TunerException):
-    def __init__(self, message: str, sub_type: str):
+    def __init__(self, message: str, sub_type: str | None = None):
         super(HuggingfaceException, self).__init__(message, 'HUGGINGFACE', sub_type)
 
 
@@ -28,7 +28,7 @@ class HuggingfaceAuthException(HuggingfaceException):
         super(HuggingfaceAuthException, self).__init__(message, 'HUGGINGFACE_AUTH')
 
 
-def exception_handler(work: Callable, title: str) -> None:
+def main_exception_handler(work: Callable, title: str, is_debug: bool = False) -> None:
     try:
         work()
     except TunerException as e:
@@ -39,12 +39,16 @@ def exception_handler(work: Callable, title: str) -> None:
             print("Please verify that your arguments are valid")
         print('')
         print(f"{title} is being terminated!")
-        exit(1)
+        exit(100)
     except Exception as e:
         print('')
         print(f"An unexpected Exception has been caught: {str(e)}")
         print('')
-        print(f"Rethrowing exception")
-        raise e
+        if is_debug:
+            print(f"Rethrowing exception")
+            raise e
+        else:
+            print(f"{title} is being terminated!")
+            exit(101)
 
 

@@ -1,6 +1,6 @@
 from utils.argument_utils import parse_arguments, parse_boolean_args, do_initial_arg_validation
 from utils.tuner_utils import construct_tuner
-from exception.exceptions import exception_handler
+from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 
@@ -102,4 +102,4 @@ def main() -> None:
     exit(0)
 
 
-exception_handler(main, title)
+main_exception_handler(main, title)
