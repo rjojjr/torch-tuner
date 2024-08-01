@@ -2,7 +2,7 @@ import os.path
 import shutil
 
 from trl import SFTTrainer, SFTConfig
-from main.utils.torch_utils import get_bnb_config
+from main.utils.torch_utils import get_bnb_config_and_dtype
 
 from transformers import LlamaForCausalLM, AutoTokenizer
 
@@ -22,7 +22,7 @@ def merge(arguments: MergeArguments) -> None:
     print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
     print('')
 
-    bnb_config, dtype = get_bnb_config(arguments)
+    bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     base_model = LlamaForCausalLM.from_pretrained(
         arguments.model_base,
@@ -49,7 +49,7 @@ def merge(arguments: MergeArguments) -> None:
 def push(arguments: PushArguments) -> None:
     print(f"pushing {arguments.new_model} to HF")
     print('')
-    bnb_config, dtype = get_bnb_config(arguments)
+    bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     model = LlamaForCausalLM.from_pretrained(
         arguments.model_dir,
@@ -86,7 +86,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
-    bnb_config, dtype = get_bnb_config(arguments)
+    bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     model = LlamaForCausalLM.from_pretrained(arguments.base_model, quantization_config=bnb_config, device_map="auto")
 
