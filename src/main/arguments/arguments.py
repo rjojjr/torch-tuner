@@ -69,6 +69,8 @@ class TuneArguments(TunerFunctionArguments):
         self.output_directory = output_directory
 
     def validate(self) -> None:
+        # I know it's bad, I will clean it up eventually
+        # TODO - validate some fields individually so that ArgumentExceptions are more useful
         is_valid = self.new_model is not None and self.base_model is not None
         is_valid = is_valid and self.r is not None and self.alpha is not None
         is_valid = is_valid and self.epochs is not None and self.training_data_dir is not None
@@ -83,6 +85,11 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
         is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None and self.is_tf32 is not None
         is_valid = is_valid and self.output_directory is not None and self.fp32_cpu_offload is not None
+        is_valid = is_valid and not self.base_model.strip() == '' and not self.new_model.strip() == ''
+        is_valid = is_valid and not self.training_data_dir.strip() == '' and not self.train_file.strip() == ''
+        is_valid = is_valid and not self.optimizer_type.strip() == '' and not self.bias.strip() == ''
+        is_valid = is_valid and not self.save_strategy.strip() == '' and not self.output_directory.strip() == ''
+
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
 
@@ -90,21 +97,23 @@ class TuneArguments(TunerFunctionArguments):
 class MergeArguments(TunerFunctionArguments):
     def __init__(self,
                  new_model: str,
-                 model_base: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
+                 base_model: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
                  is_fp16: bool = False,
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
                  output_dir: str = '../../models'):
         super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit)
-        self.model_base = model_base
+        self.base_model = base_model
         self.output_dir = output_dir
 
     def validate(self) -> None:
-        is_valid = self.new_model is not None and self.model_base is not None
+        is_valid = self.new_model is not None and self.base_model is not None
         is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
         is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None
-        is_valid = is_valid and self.output_dir is not None
+        is_valid = is_valid and self.output_dir is not None and not self.output_dir.strip() == ''
+        is_valid = is_valid and not self.base_model.strip() == '' and not self.new_model.strip() == ''
+
         if not is_valid:
             raise ArgumentValidationException("'Merge Arguments' are missing required properties")
 
@@ -127,5 +136,7 @@ class PushArguments(TunerFunctionArguments):
         is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
         is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None
         is_valid = is_valid and self.public_push is not None
+        is_valid = is_valid and not self.model_dir.strip() == '' and not self.new_model.strip() == ''
+
         if not is_valid:
             raise ArgumentValidationException("'Push Arguments' are missing required properties")

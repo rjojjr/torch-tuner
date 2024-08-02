@@ -5,7 +5,8 @@ from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 
 # Bump with every PR
-version = '1.1.0'
+# TODO - Automate this? Probably need to get this hosted in a repo first.
+version = '1.1.1'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'

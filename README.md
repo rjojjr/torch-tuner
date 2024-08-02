@@ -73,7 +73,7 @@ python src/main/main.py <your args>
 python src/main/main.py \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
-  --training-data-dir path/to/data \
+  --training-data-dir /path/to/data \
   --training-data-file samples.txt \
   --epochs 10 \
   --lora-r 16 \
