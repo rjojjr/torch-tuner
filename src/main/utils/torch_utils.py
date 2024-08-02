@@ -7,7 +7,7 @@ def get_dtype(arguments: TunerFunctionArguments) -> torch.dtype:
     dtype = torch.float32
     if arguments.is_fp16:
         dtype = torch.float16
-    if arguments.is_bf16:
+    elif arguments.is_bf16:
         dtype = torch.bfloat16
 
     return dtype
@@ -28,7 +28,7 @@ def get_bnb_config_and_dtype(arguments: TunerFunctionArguments) -> tuple[BitsAnd
             bnb_8bit_compute_dtype=dtype,
             llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
         )
-    if arguments.use_4bit:
+    elif arguments.use_4bit:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
