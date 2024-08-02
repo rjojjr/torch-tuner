@@ -30,7 +30,7 @@ def build_and_validate_merge_args(prog_args):
     if prog_args.merge:
         merge_arguments = MergeArguments(
             new_model=prog_args.new_model,
-            model_base=prog_args.base_model,
+            base_model=prog_args.base_model,
             use_4bit=prog_args.use_4bit,
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,

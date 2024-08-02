@@ -19,13 +19,13 @@ def merge(arguments: MergeArguments) -> None:
     # TODO - Refactor how output dirs are constructed
     lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model}'
-    print(f"merging {arguments.model_base} with LoRA into {arguments.new_model}")
+    print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
     print('')
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     base_model = LlamaForCausalLM.from_pretrained(
-        arguments.model_base,
+        arguments.base_model,
         low_cpu_mem_usage=False,
         return_dict=True,
         torch_dtype=dtype
@@ -33,7 +33,7 @@ def merge(arguments: MergeArguments) -> None:
     model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config)
     model = model.merge_and_unload(progressbar=True)
 
-    tokenizer = AutoTokenizer.from_pretrained(arguments.model_base)
+    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
