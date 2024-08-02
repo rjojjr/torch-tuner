@@ -70,6 +70,7 @@ class TuneArguments(TunerFunctionArguments):
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
+        # TODO - validate some fields individually so that ArgumentExceptions are more useful
         is_valid = self.new_model is not None and self.base_model is not None
         is_valid = is_valid and self.r is not None and self.alpha is not None
         is_valid = is_valid and self.epochs is not None and self.training_data_dir is not None
