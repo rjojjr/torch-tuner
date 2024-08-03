@@ -1,4 +1,4 @@
-from main.serve.server import LlmServer
+from main.serve.llm_executor import LlmExecutor
 from main.arguments.arguments import ServerArguments
 from flask import Flask, request, jsonify
 import uuid
@@ -8,7 +8,7 @@ import tiktoken
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 class OpenAiServer:
-    def __init__(self, llm: LlmServer):
+    def __init__(self, llm: LlmExecutor):
         self._llm_server = llm
 
 

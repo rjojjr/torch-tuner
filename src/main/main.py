@@ -3,9 +3,9 @@ from utils.tuner_utils import llm_tuner_factory
 from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
-from serve.server import llm_server_factory
+from serve.llm_executor import llm_executor_factory
 from serve.serve import OpenAiServer
-from arguments.arguments import ServerArguments, ServerFactoryArguments
+from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 
 # Bump with every PR
 # TODO - Automate this? Probably need to get this hosted in a repo first.
@@ -30,7 +30,7 @@ def main() -> None:
     if args.serve:
         print(f"Running in serve mode")
         print(f"Serving {args.serve_model} on port {args.serve_port}")
-        factory = llm_server_factory(ServerFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit))
+        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit))
         server = OpenAiServer(factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
         # TODO - cleaner exit

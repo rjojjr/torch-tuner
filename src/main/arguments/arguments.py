@@ -7,11 +7,15 @@ class ServerArguments:
         self.debug = debug
 
 
-class ServerFactoryArguments:
+class LlmExecutorFactoryArguments:
     def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False):
         self.model = model
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
+
+    def validate(self) -> None:
+        if self.use_4bit and self.use_8bit:
+            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
 
 
 class TunerFunctionArguments:

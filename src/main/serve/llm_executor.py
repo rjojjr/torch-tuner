@@ -1,9 +1,9 @@
 from typing import Callable
-from main.arguments.arguments import ServerFactoryArguments
+from main.arguments.arguments import LlmExecutorFactoryArguments
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-class LlmServer:
+class LlmExecutor:
     def __init__(self, model, tokenizer):
         self._model = model
         self._tokenizer = tokenizer
@@ -15,7 +15,7 @@ class LlmServer:
         return response
 
 
-def llm_server_factory(arguments: ServerFactoryArguments) -> Callable[[], LlmServer]:
+def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
     model = AutoModelForCausalLM.from_pretrained(
         arguments.model,
         device_map="auto",
@@ -24,6 +24,6 @@ def llm_server_factory(arguments: ServerFactoryArguments) -> Callable[[], LlmSer
     )
     tokenizer = AutoTokenizer.from_pretrained(arguments.model, padding_side="left")
 
-    return lambda: LlmServer(model, tokenizer)
+    return lambda: LlmExecutor(model, tokenizer)
 
 
