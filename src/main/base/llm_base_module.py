@@ -36,7 +36,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     model = prepare_model_for_kbit_training(base_model)
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
-    learning_rate = arguments.batch_size * arguments.learning_rate_base
+    learning_rate = arguments.batch_size * arguments.base_learning_rate
 
     train_params = SFTConfig(
         output_dir=output_dir,

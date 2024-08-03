@@ -60,7 +60,7 @@ def build_and_validate_tune_args(prog_args):
             batch_size=prog_args.batch_size,
             is_fp16=prog_args.use_fp_16,
             is_bf16=prog_args.use_bf_16,
-            learning_rate_base=prog_args.learning_rate_base,
+            base_learning_rate=prog_args.base_learning_rate,
             lora_dropout=prog_args.lora_dropout,
             no_checkpoint=prog_args.no_checkpoint,
             bias=prog_args.bias,
@@ -116,16 +116,16 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser = ArgumentParser(
         prog=title,
         description=description)
-    parser.add_argument('-n', '--new-model', required=True, help="Name of the new fine-tuned model(REQUIRED)")
-    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED)")
-    parser.add_argument('-tf', '--training-data-file', help="Training dataset filename(REQUIRED)")
-    parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
+    parser.add_argument('-nm', '--new-model', required=True, help="Name of the new fine-tuned model(REQUIRED)")
+    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune only])")
+    parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(REQUIRED[for fine-tune only])")
+    parser.add_argument('-bm', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
 
+    parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-pp', '--public-push', help="Push to public HF repo(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
     # TODO - FIXME - Handle situation when user selects multiple qaunt./precision options(Which options take highest priority?)
@@ -140,17 +140,17 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
-    parser.add_argument('-sel', '--save-embeddings', default="false", help="Save embeddings(default: false)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-lrb', '--learning-rate-base', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
-    parser.add_argument('-ld', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
-    parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpoint(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
+    parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
+    parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
     parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: paged_adamw_32bit)", default="paged_adamw_32bit")
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 4)", type=int, default=4)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")
-    parser.add_argument('-ssp', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
+    parser.add_argument('-ssteps', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
     parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(default: 5)", default=5, type=int)
     parser.add_argument('-de', '--do-eval', help="Do eval(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
 

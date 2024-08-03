@@ -51,7 +51,7 @@ def main() -> None:
     print(f'Using LoRA R: {str(args.lora_r)}')
     print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
     print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
-    print(f'Using Base Learning Rate: {str(args.learning_rate_base)}')
+    print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
     print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
     print('')
     print(f'Using tf32: {str(args.use_tf_32)}')
