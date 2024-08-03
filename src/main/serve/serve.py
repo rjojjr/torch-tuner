@@ -7,10 +7,10 @@ import tiktoken
 
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
+
 class OpenAiServer:
     def __init__(self, llm: LlmExecutor):
         self._llm_server = llm
-
 
     def start_server(self, arguments: ServerArguments):
         app = Flask(__name__)
