@@ -85,9 +85,9 @@ def build_and_validate_tune_args(prog_args):
 
 
 def do_initial_arg_validation(args):
+    # TODO - FIXME - Some of these validations are unaware of the mode being ran, but they should be
     if args.lora_r <= 0 or args.lora_alpha <= 0:
         raise ArgumentValidationException("'lora-r' and 'lora-alpha' must both be greater than zero")
-
     if not args.fine_tune and not args.merge and not args.push:
         raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
     if args.fine_tune and args.epochs <= 0:
@@ -117,8 +117,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
         prog=title,
         description=description)
     parser.add_argument('-n', '--new-model', required=True, help="Name of the new fine-tuned model(REQUIRED)")
-    parser.add_argument('-tdd', '--training-data-dir', required=True, help="Training data directory(REQUIRED)")
-    parser.add_argument('-tf', '--training-data-file', required=True, help="Training dataset filename(REQUIRED)")
+    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED)")
+    parser.add_argument('-tf', '--training-data-file', help="Training dataset filename(REQUIRED)")
     parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
