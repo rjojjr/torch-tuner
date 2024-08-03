@@ -8,6 +8,7 @@ class LlmExecutor:
         self._model = model
         self._tokenizer = tokenizer
 
+    # TODO - FIXME - multiple calls results in GPU memory overload
     def completion(self, input: str, max_tokens: int = 150):
         model_inputs = self._tokenizer([input], return_tensors="pt").to("cuda")
         generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens)
