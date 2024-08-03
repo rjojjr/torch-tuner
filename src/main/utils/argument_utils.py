@@ -120,26 +120,27 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED)")
     parser.add_argument('-tf', '--training-data-file', help="Training dataset filename(REQUIRED)")
     parser.add_argument('-b', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
-    parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-m', '--merge', default="true",
-                        help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-bs', '--batch-size', help="Samples per iteration(default 4)", type=int, default=4)
-    parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
-    parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
 
-    parser.add_argument('-llm', '--llm-type', help="LLM Type(default: llama)", default="llama")
-    parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
-    parser.add_argument('-sel', '--save-embeddings', default="false", help="Save embeddings(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-m', '--merge', default="true",
+                        help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-pp', '--public-push', help="Push to public HF repo(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
-    parser.add_argument('-pp', '--public-push', help="Push to public repo(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    # TODO - FIXME - Handle situation when user selects multiple qaunt./precision options(Which options take highest priority?)
     parser.add_argument('-4bit', '--use-4bit', help="Use 4bit quantization(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-8bit', '--use-8bit', help="Use 8bit quantization(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-fp16', '--use-fp-16', help="Use fp-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bf16', '--use-bf-16', help="Use bf-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
+
+    parser.add_argument('-bs', '--batch-size', help="Samples per iteration(default 4)", type=int, default=4)
+    parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
+    parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
+    parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
+    parser.add_argument('-sel', '--save-embeddings', default="false", help="Save embeddings(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lrb', '--learning-rate-base', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
     parser.add_argument('-ld', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpoint(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
@@ -152,5 +153,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ssp', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
     parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(default: 3)", default=3, type=int)
     parser.add_argument('-de', '--do-eval', help="Do eval(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
+
+    parser.add_argument('-llm', '--llm-type', help="LLM Type(default: llama)", default="llama")
 
     return parser
