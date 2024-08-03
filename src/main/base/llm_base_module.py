@@ -19,6 +19,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
+    # TODO - Need to figure out to best configure the tuner for non-plaintext training data
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
