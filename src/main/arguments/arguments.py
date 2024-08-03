@@ -1,6 +1,19 @@
 from main.exception.exceptions import ArgumentValidationException
 
 
+class ServerArguments:
+    def __init__(self, port: int = 8080, debug: bool = False):
+        self.port = port
+        self.debug = debug
+
+
+class ServerFactoryArguments:
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False):
+        self.model = model
+        self.use_4bit = use_4bit
+        self.use_8bit = use_8bit
+
+
 class TunerFunctionArguments:
     def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False):
         self.new_model = new_model

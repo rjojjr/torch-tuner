@@ -117,10 +117,16 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
         prog=title,
         description=description)
     parser.add_argument('-nm', '--new-model', required=True, help="Name of the new fine-tuned model(REQUIRED)")
+    parser.add_argument('-nm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
     parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune only])")
     parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(REQUIRED[for fine-tune only])")
     parser.add_argument('-bm', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
+    parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+
+    parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
+    parser.add_argument('-sm', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
