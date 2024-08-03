@@ -151,7 +151,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")
     parser.add_argument('-ssp', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
-    parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(default: 3)", default=3, type=int)
+    parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(default: 5)", default=5, type=int)
     parser.add_argument('-de', '--do-eval', help="Do eval(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-llm', '--llm-type', help="LLM Type(default: llama)", default="llama")
