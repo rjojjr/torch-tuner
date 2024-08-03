@@ -13,8 +13,8 @@ import shutil
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
-    output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
-    lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
+    output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
+    lora_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}/adapter"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
         print('')
