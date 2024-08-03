@@ -24,11 +24,14 @@ def _build_routes(app, llm):
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
         body = request.get_json(force=True)
+
+        # TODO - How does Open AI parse messages?
         prompt = ""
         for msg in body['messages']:
             if prompt == "":
                 prompt = f"{msg['role']}: {msg['content']}"
             else:
+                # TODO - Probably should replace `\n\n` with stop sequence(?)
                 prompt = f"\n\n{msg['role']}: {msg['content']}"
 
         completion = llm.completion(prompt, int(body['max_tokens']))
@@ -44,6 +47,7 @@ def _build_routes(app, llm):
                 "index": 0,
                 "message": {
                     "role": "assistant",
+                    # TODO - Probably should replace `\n\n` with stop sequence(?)
                     "content": f"\n\n{completion}",
                 },
                 "logprobs": None,
@@ -64,7 +68,7 @@ def _build_routes(app, llm):
         prompt_tokens = len(encoding.encode(body['prompt']))
         completion_tokens = len(encoding.encode(completion))
 
-        chat_response = {
+        completion_response = {
             "id": str(uuid.uuid4()),
             "object": "text_completion",
             "created": _current_milli_time(),
@@ -85,7 +89,7 @@ def _build_routes(app, llm):
             }
         }
 
-        return jsonify(chat_response)
+        return jsonify(completion_response)
 
 
 def _current_milli_time():
