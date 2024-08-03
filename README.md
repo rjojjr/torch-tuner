@@ -1,13 +1,30 @@
 # Torch Tuner README
 
-This project currently serves as a simple convenient CLI wrapper for fine-tuning 
+This project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
 Llama(and others in the future) based LLM models on Nvidia GPUs with simple text samples using LoRA and Torch.
 
 Use this project's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists on Huggingface with simple text and CUDA.
+You can also use this model to deploy your model(or any model you have access to on Huggingface)
+as an API that mimics commonly used Open AI endpoints.
 
 Ideally, in the future, this project will support more complex training data structures,
 non-llama LLM types and fine-tuning vision and speech models. Also, I would like this project
 to be able to run as an API along with its current CLI implementation.
+
+## Server Mode(EXPERIMENTAL)
+
+You can run the CLI in the new experimental serve mode to serve your model over an API that mimics the Open AI 
+completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
+
+```shell
+python src/main/main.py \
+  --serve true \
+  --serve-model llama-tuned \
+  --serve-port 8080
+```
+
+The endpoints will ignore the model provided in the request body, and will
+always evaluate all requests on the model that is provided by the --serve-model argument.
 
 ## Running the Tuner
 
