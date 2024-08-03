@@ -6,7 +6,7 @@ from utils.argument_utils import build_and_validate_push_args, build_and_validat
 
 # Bump with every PR
 # TODO - Automate this? Probably need to get this hosted in a repo first.
-version = '1.1.2'
+version = '1.2.0'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
@@ -51,7 +51,7 @@ def main() -> None:
     print(f'Using LoRA R: {str(args.lora_r)}')
     print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
     print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
-    print(f'Using Base Learning Rate: {str(args.learning_rate_base)}')
+    print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
     print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
     print('')
     print(f'Using tf32: {str(args.use_tf_32)}')

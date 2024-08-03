@@ -92,6 +92,10 @@ In theory, the base-model(`--base-model`) CLI argument will
 accept a path to a locally saved model instead of a Huggingface repository
 name, but this is untested ATM.
 
+You can find the supported arguments and their default values
+[here](src/main/utils/argument_utils.py)(in the `_build_program_argument_parser` function)
+if you don't want to run the CLI to find them.
+
 ## CONTRIBUTING
 
 Please feel free to submit a PR if you would to contribute to 

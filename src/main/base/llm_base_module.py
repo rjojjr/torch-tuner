@@ -13,12 +13,13 @@ import shutil
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
-    output_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}"
-    lora_dir = f"{arguments.output_directory}/in-progress/{arguments.new_model}/adapter"
+    output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
+    lora_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}/adapter"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
         print('')
 
+    # TODO - Need to figure out to best configure the tuner for non-plaintext training data
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
@@ -35,7 +36,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     model = prepare_model_for_kbit_training(base_model)
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
-    learning_rate = arguments.batch_size * arguments.learning_rate_base
+    learning_rate = arguments.batch_size * arguments.base_learning_rate
 
     train_params = SFTConfig(
         output_dir=output_dir,

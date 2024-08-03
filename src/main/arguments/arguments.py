@@ -26,7 +26,7 @@ class TuneArguments(TunerFunctionArguments):
                  batch_size: int = 4,
                  is_fp16: bool = False,
                  is_bf16: bool = False,
-                 learning_rate_base: float = 2e-5,
+                 base_learning_rate: float = 2e-5,
                  lora_dropout: float = 0.05,
                  no_checkpoint: bool = False,
                  bias: str = "none",
@@ -52,7 +52,7 @@ class TuneArguments(TunerFunctionArguments):
         self.training_data_dir = training_data_dir
         self.train_file = train_file
         self.batch_size = batch_size
-        self.learning_rate_base = learning_rate_base
+        self.base_learning_rate = base_learning_rate
         self.lora_dropout = lora_dropout
         self.no_checkpoint = no_checkpoint
         self.bias = bias
@@ -75,7 +75,7 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = is_valid and self.r is not None and self.alpha is not None
         is_valid = is_valid and self.epochs is not None and self.training_data_dir is not None
         is_valid = is_valid and self.train_file is not None and self.batch_size is not None
-        is_valid = is_valid and self.learning_rate_base is not None and self.lora_dropout is not None
+        is_valid = is_valid and self.base_learning_rate is not None and self.lora_dropout is not None
         is_valid = is_valid and self.no_checkpoint is not None and self.bias is not None
         is_valid = is_valid and self.optimizer_type is not None and self.gradient_accumulation_steps is not None
         is_valid = is_valid and self.weight_decay is not None and self.max_gradient_norm is not None
