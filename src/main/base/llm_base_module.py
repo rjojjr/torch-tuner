@@ -6,7 +6,8 @@ from transformers.trainer_utils import get_last_checkpoint
 import os
 import shutil
 
-# LLM independent functions
+# LLM independent base functions
+
 
 # TODO - Tune/extract an embeddings only model
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
