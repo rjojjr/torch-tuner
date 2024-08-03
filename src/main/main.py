@@ -6,7 +6,7 @@ from utils.argument_utils import build_and_validate_push_args, build_and_validat
 
 # Bump with every PR
 # TODO - Automate this? Probably need to get this hosted in a repo first.
-version = '1.1.1'
+version = '1.1.2'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
