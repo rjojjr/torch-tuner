@@ -97,7 +97,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     # TODO - Refactor how output dirs are constructed
-    lora_dir = f"{arguments.output_dir}/in-progress/{arguments.new_model}/adapter"
+    lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
     print('')
