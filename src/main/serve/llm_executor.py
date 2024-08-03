@@ -20,7 +20,7 @@ def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[],
         arguments.model,
         device_map="auto",
         load_in_4bit=arguments.use_4bit,
-        load_in8bit=arguments.use_8bit
+        load_in_8bit=arguments.use_8bit
     )
     tokenizer = AutoTokenizer.from_pretrained(arguments.model, padding_side="left")
 
