@@ -29,7 +29,7 @@ def main() -> None:
     if args.serve:
         print(f"Running in serve mode")
         print(f"Serving {args.serve_model} on port {args.serve_port}")
-        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit))
+        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16))
         server = OpenAiLlmServer(factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
         # TODO - cleaner exit
