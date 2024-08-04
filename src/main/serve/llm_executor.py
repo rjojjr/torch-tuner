@@ -17,6 +17,7 @@ retry_interval = 0.5
 class LlmExecutor:
     # TODO - Another instance of a constructor to that needs to be made "private"
     def __init__(self, model, tokenizer):
+        tokenizer.pad_token = tokenizer.eos_token
         model.generation_config.pad_token_id = tokenizer.pad_token_id
         self._model = model
         self._tokenizer = tokenizer
@@ -25,7 +26,7 @@ class LlmExecutor:
     # TODO - Stop sequences
     def completion(self, input: str, max_tokens: int = 150, attempt: int = 1):
         try:
-            model_inputs = self._tokenizer([input], return_tensors="pt").to("cuda")
+            model_inputs = self._tokenizer([input], padding=True, return_tensors="pt").to("cuda")
             input_length = model_inputs.input_ids.shape[1]
             generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True)
             response = self._tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
