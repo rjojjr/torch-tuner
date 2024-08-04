@@ -16,16 +16,6 @@ fi
 
 cd /usr/local || (mkdir -p /usr/local && (cd /usr/local || (echo 'failed to create install directory at /usr/local' && exit 1)))
 
-if [ -d /var/local/torch-tuner ]; then
-  echo 'Removing deprecated Torch Tuner CLI install'
-  {
-    rm -rf /var/local/torch-tuner
-  } || {
-    echo 'Failed to remove deprecated Torch Tuner CLI install' && \
-      exit 1
-  }
-fi
-
 if [ -d ./torch-tuner ]; then
   echo "Removing old Torch Tuner CLI install"
   {
@@ -66,7 +56,8 @@ fi
 
 {
     cp scripts/torch-tuner /bin/torch-tuner && \
-      chmod +x /bin/torch-tuner
+      chmod +x /bin/torch-tuner && \
+      chmod -R 755 /usr/local/torch-tuner
 } || {
   rm -rf /usr/local/torch-tuner && \
   echo 'Failed to install Torch Tuner CLI bash cmd in /bin'
