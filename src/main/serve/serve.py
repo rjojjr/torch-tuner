@@ -1,5 +1,5 @@
-from main.serve.llm_executor import LlmExecutor
-from main.arguments.arguments import ServerArguments
+from serve.llm_executor import LlmExecutor
+from arguments.arguments import ServerArguments
 from flask import Flask, request, jsonify
 import uuid
 import time

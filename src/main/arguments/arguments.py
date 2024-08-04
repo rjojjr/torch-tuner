@@ -1,4 +1,4 @@
-from main.exception.exceptions import ArgumentValidationException
+from exception.exceptions import ArgumentValidationException
 
 
 class ServerArguments:

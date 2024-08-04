@@ -1,7 +1,7 @@
 # This is how I imagine modules for different LLM types should be imported and used to construct a 'Tuner' instance.
-import main.llama.functions as llama
-from main.tuner import Tuner, LLM_TYPES
-from main.exception.exceptions import ArgumentValidationException
+import llama.functions as llama
+from base.tuner import Tuner, LLM_TYPES
+from exception.exceptions import ArgumentValidationException
 from typing import Callable
 
 
@@ -26,3 +26,4 @@ def _evaluate_supported_llm_type(llm_type):
 
     if not is_supported:
         raise ArgumentValidationException(f'LLM type "{llm_type}" not supported yet, ONLY "llama" is supported currently')
+
