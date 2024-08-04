@@ -47,6 +47,14 @@ I currently use this CLI across several different debian based OSes, but it shou
 work on any OS. The tuner requires that you have the proper CUDA software/drivers
 installed on the host. I would like to add CPU based tuning in the future.
 
+#### Install Torch-Tuner CLI
+
+You can install the torch tuner as a system-wide command on Debian OSes 
+with [this script](scripts/install-torch-tune.sh). After installation,
+you can run the CLI with the `fine-tune` command.
+
+**NOTE** - You must run the script with the `sudo` command.
+
 #### Merging your LoRA Adapter
 
 The results of your fine-tune job will be saved as a LoRA adapter. That LoRA adapter can then 

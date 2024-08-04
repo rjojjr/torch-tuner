@@ -9,7 +9,7 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 
 # Bump with every PR
 # TODO - Automate this? Probably need to get this hosted in a repo first.
-version = '1.3.0'
+version = '1.3.1'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
