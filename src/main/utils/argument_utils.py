@@ -1,7 +1,7 @@
 import sys, os
 from argparse import ArgumentParser
-from main.exception.exceptions import ArgumentValidationException
-from main.arguments.arguments import PushArguments, MergeArguments, TuneArguments
+from exception.exceptions import ArgumentValidationException
+from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
 
 def build_and_validate_push_args(prog_args, model_dir: str):

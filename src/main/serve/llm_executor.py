@@ -1,5 +1,5 @@
 from typing import Callable
-from main.arguments.arguments import LlmExecutorFactoryArguments
+from arguments.arguments import LlmExecutorFactoryArguments
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 

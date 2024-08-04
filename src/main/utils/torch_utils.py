@@ -1,4 +1,4 @@
-from main.arguments.arguments import TunerFunctionArguments
+from arguments.arguments import TunerFunctionArguments
 import torch
 from transformers import BitsAndBytesConfig
 

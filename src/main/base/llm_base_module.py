@@ -1,4 +1,4 @@
-from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments
+from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 from trl import SFTTrainer, SFTConfig

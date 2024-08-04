@@ -1,9 +1,9 @@
-from main.utils.torch_utils import get_bnb_config_and_dtype
+from utils.torch_utils import get_bnb_config_and_dtype
 
 from transformers import LlamaForCausalLM, AutoTokenizer
 
-from main.arguments.arguments import TuneArguments, MergeArguments, PushArguments
-import main.base.llm_base_module as base_module
+from arguments.arguments import TuneArguments, MergeArguments, PushArguments
+import base.llm_base_module as base_module
 
 
 def merge(arguments: MergeArguments) -> None:
