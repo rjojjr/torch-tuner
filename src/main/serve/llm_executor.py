@@ -23,6 +23,7 @@ class LlmExecutor:
 
 # Only use this function to construct LLM executors
 def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
+    arguments.validate()
     # TODO - Use bnb config
     return lambda: LlmExecutor(AutoModelForCausalLM.from_pretrained(
         arguments.model,

@@ -7,8 +7,7 @@ from serve.llm_executor import llm_executor_factory
 from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 
-# Bump with every PR
-# TODO - Automate this? Probably need to get this hosted in a repo first.
+# TODO - Automate this
 version = '1.3.2'
 
 # TODO - Change this once support for more LLMs is added
