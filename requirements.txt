@@ -1,3 +1,4 @@
+# TODO - Lock down dep. versions?
 torch
 torchvision
 torchaudio
@@ -19,6 +20,6 @@ trl
 huggingface_hub
 requests
 
-# Sever Dependencies
+# Serve Dependencies
 Flask
 tiktoken
