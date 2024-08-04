@@ -33,8 +33,10 @@ class LlmExecutor:
             return response
         except torch.OutOfMemoryError as e:
             if max_attempts is None or attempt <= max_attempts:
+                print("CUDA OOM: retrying")
                 time.sleep(retry_interval)
                 return self.completion(input, max_tokens, attempt + 1)
+            print("CUDA OOM: raising exception")
             raise TunerException(message="CUDA OOM, exceeded max_attempts")
 
 
@@ -44,7 +46,7 @@ def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[],
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
     return lambda: LlmExecutor(AutoModelForCausalLM.from_pretrained(
         arguments.model,
-        device_map="auto",
+        low_cpu_mem_usage=False,
         quantization_config=bnb_config
     ), AutoTokenizer.from_pretrained(arguments.model, padding_side="right"))
 
