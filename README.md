@@ -121,7 +121,7 @@ pip install -r requirements.txt
 
 The tuner CLI currently requires that you have the `HUGGING_FACE_TOKEN` environment
 variable set to a valid Huggingface authentication token in whatever shell you run it in.
-I might add this an argument in the future.
+I might add this as an argument in the future.
 
 From the project root(using the virtual environment(if any) that you used to install its dependencies), run:
 
