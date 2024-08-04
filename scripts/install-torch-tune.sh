@@ -16,7 +16,6 @@ if [ -d ./torch-tuner ]; then
 fi
 git clone https://github.com/rjojjr/torch-tuner.git
 cd torch-tuner || (echo 'failed to clone repo' && exit 101)
-git checkout installer-script
 python -m venv ./.venv
 source .venv/bin/activate
 echo 'Installing python dependencies'
