@@ -8,19 +8,27 @@ import tiktoken
 encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 
-class OpenAiServer:
+class LlmServer:
     def __init__(self, llm: LlmExecutor):
         self._llm = llm
 
     def start_server(self, arguments: ServerArguments):
+        pass
+
+
+class OpenAiServer(LlmServer):
+    def __init__(self, llm: LlmExecutor):
+        super(OpenAiServer, self).__init__(llm)
+
+    def start_server(self, arguments: ServerArguments):
         app = Flask(__name__)
 
-        _build_routes(app, self._llm)
+        _build_open_ai_routes(app, self._llm)
 
         app.run(host='0.0.0.0', port=arguments.port, debug=arguments.debug)
 
 
-def _build_routes(app, llm):
+def _build_open_ai_routes(app, llm):
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
         body = request.get_json(force=True)
