@@ -6,6 +6,7 @@ import torch
 import time
 
 max_attempts = 5
+retry_interval = 0.5
 
 
 # TODO - Set context size?
@@ -27,8 +28,8 @@ class LlmExecutor:
             response = self._tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
             return response
         except torch.OutOfMemoryError as e:
-            if attempt <= max_attempts:
-                time.sleep(0.100)
+            if max_attempts is None or attempt <= max_attempts:
+                time.sleep(retry_interval)
                 return self.completion(input, max_tokens, attempt + 1)
             raise e
 
