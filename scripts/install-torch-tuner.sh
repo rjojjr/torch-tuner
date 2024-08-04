@@ -6,7 +6,7 @@ if [[ "$1" == "--install-apt-deps" ]]; then
   echo 'Installing apt dependencies'
   {
     apt install python3-pip -y && \
-      apt install python3.10-venv -y
+      apt install python3-venv -y
   } || {
     echo 'Failed to install Torch Tuner CLI apt dependencies' && \
       exit 1
@@ -16,19 +16,7 @@ fi
 
 cd /usr/local || (mkdir -p /usr/local && (cd /usr/local || (echo 'failed to create install directory at /usr/local' && exit 1)))
 
-if [ -d /var/local/torch-tuner ]; then
-  echo 'Removing deprecated Torch Tuner CLI install'
-  {
-    rm -rf /var/local/torch-tuner
-  } || {
-    echo 'Failed to remove deprecated Torch Tuner CLI install' && \
-      exit 1
-  }
-fi
-
-export_path="true"
 if [ -d ./torch-tuner ]; then
-  export_path="false"
   echo "Removing old Torch Tuner CLI install"
   {
     rm -rf ./torch-tuner
@@ -58,7 +46,7 @@ fi
 {
   echo 'Installing python dependencies' && \
     pip install -r requirements.txt && \
-    chmod +x scripts/torch-tuner
+    deactivate
 } || {
   deactivate && \
     rm -rf /usr/local/torch-tuner && \
@@ -66,10 +54,14 @@ fi
     exit 1
 }
 
-if [[ "$export_path" == "true" ]]; then
-  echo "Adding torch-tuner to path variable"
-  echo 'PATH=$PATH:/usr/local/torch-tuner/scripts' >> /etc/environment
-fi
+{
+    cp scripts/torch-tuner /bin/torch-tuner && \
+      chmod +x /bin/torch-tuner && \
+      chmod -R 755 /usr/local/torch-tuner
+} || {
+  rm -rf /usr/local/torch-tuner && \
+  echo 'Failed to install Torch Tuner CLI bash cmd in /bin'
+}
 
 echo 'Torch Tuner CLI installed successfully!'
 echo "You can now access the Torch Tuner CLI with the 'torch-tuner' command."
