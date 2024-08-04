@@ -13,6 +13,7 @@ max_attempts = 5
 class LlmExecutor:
     # TODO - Another instance of a constructor to that needs to be made "private"
     def __init__(self, model, tokenizer):
+        model.generation_config.pad_token_id = tokenizer.pad_token_id
         self._model = model
         self._tokenizer = tokenizer
 
