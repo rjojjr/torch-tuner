@@ -34,14 +34,8 @@ you run it with.
 ### Using the Tuner
 
 I typically wrap/configure my tuner CLI commands with bash scripts for convenience.
-You might want to install the tuner CLI somewhere on your path for 
-easy access. At some point I will get this project on a public pip repository.
-
-It might be useful to create an alias for the tuner CLI. EX:
-
-```shell
-alias finetune=python </full/path/to/main.py>
-```
+You might want to install the tuner CLI(using the instructions from the "Install Torch-Tuner CLI" section below) for 
+easy access. 
 
 I currently use this CLI across several different debian based OSes, but it should
 work on any OS. The tuner requires that you have the proper CUDA software/drivers
@@ -49,21 +43,29 @@ installed on the host. I would like to add CPU based tuning in the future.
 
 #### Install Torch-Tuner CLI
 
-You can install the torch tuner as a system-wide command on Linux OS 
-with [this script](scripts/install-torch-tune.sh). After installation,
-you can run the CLI with the `fine-tune` command.
+You can install the torch tuner as a system-wide command on any Linux OS(Windows support coming soon) 
+with [this script](scripts/install-torch-tuner.sh). After installation,
+you can run the CLI with the `torch-tuner` command.
 
 **NOTE** - You must run the script with the `sudo` command.
 
-You can download the script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tune.sh)
-and run it with the following command:
+You can download the script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh)
+and execute it with the following single command:
 
 ```shell
-wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tune.sh | sudo bash
+wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 ```
 
-If the installer script fails with dependency errors, and you are using Debian Linux, 
-try running the script with the `--install-apt-deps` flag.
+**NOTE** - If the installer script fails with dependency errors, and you are using Debian Linux, 
+try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv) and run the installer again.
+
+##### Uninstall
+
+You can uninstall the torch-tuner CLI by running the uninstaller script:
+
+```shell
+sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
+```
 
 #### Merging your LoRA Adapter
 
@@ -83,6 +85,10 @@ where the training data is stored and the training-data file name supplied as se
 arguments.
 
 ### Install Dependencies
+
+If you choose to not install the CLI, and run it from
+the project root, you must install the torch-tuner's 
+python dependencies.
 
 You should probably use a virtual environment
 when installing dependencies and running the CLI,
@@ -106,6 +112,16 @@ python src/main/main.py <your args>
 
 # A Real Example
 python src/main/main.py \
+  --base-model meta-llama/Meta-Llama-3-8B-Instruct \
+  --new-model llama-tuned \
+  --training-data-dir /path/to/data \
+  --training-data-file samples.txt \
+  --epochs 10 \
+  --lora-r 16 \
+  --lora-alpha 32
+  
+# A Real Example with CLI Installed
+torch-tuner \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \

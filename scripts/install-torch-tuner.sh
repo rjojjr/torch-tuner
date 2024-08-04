@@ -6,7 +6,7 @@ if [[ "$1" == "--install-apt-deps" ]]; then
   echo 'Installing apt dependencies'
   {
     apt install python3-pip -y && \
-      apt install python3.10-venv -y
+      apt install python3-venv -y
   } || {
     echo 'Failed to install Torch Tuner CLI apt dependencies' && \
       exit 1
