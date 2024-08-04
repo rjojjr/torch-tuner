@@ -11,7 +11,7 @@ Ideally, in the future, this project will support more complex training data str
 non-llama LLM types and fine-tuning vision and speech models. Also, I would like this project
 to be able to run as an API along with its current CLI implementation.
 
-## Server Mode(EXPERIMENTAL)
+## Serve Mode(EXPERIMENTAL)
 
 You can run the CLI in the new experimental serve mode to serve your model over an API that mimics the Open AI 
 completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
@@ -21,14 +21,27 @@ python src/main/main.py \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080
+  
+# When the Torch Tuner CLI is installed
+torch-tuner \
+  --serve true \
+  --serve-model llama-tuned \
+  --serve-port 8080
+  
+# Use dynamic quantization
+python src/main/main.py \
+  --serve true \
+  --serve-model llama-tuned \
+  --serve-port 8080 \
+  --use-4bit true
 ```
 
-The endpoints will ignore the model provided in the request body, and will
-always evaluate all requests on the model that is provided by the --serve-model argument.
+The Open AI like endpoints will ignore the model provided in the request body, and will
+always evaluate all requests against the model that is provided by the `--serve-model` argument.
 
 ## Running the Tuner
 
-The tuner CLI will fine-tune, merge and push your new model to Huggingface depending on the arguments
+The tuner CLI will fine-tune, merge, push(to Huggingface) and/or serve your new model depending on the arguments
 you run it with.
 
 ### Using the Tuner
@@ -37,29 +50,33 @@ I typically wrap/configure my tuner CLI commands with bash scripts for convenien
 You might want to install the tuner CLI(using the instructions from the "Install Torch-Tuner CLI" section below) for 
 easy access. 
 
-I currently use this CLI across several different debian based OSes, but it should
-work on any OS. The tuner requires that you have the proper CUDA software/drivers
+I currently use this CLI across several different debian based OSes(across multiple machines), but it should
+work on any OS. The tuner requires that you have the proper CUDA software/drivers(as well as python 3)
 installed on the host. I would like to add CPU based tuning in the future.
 
 #### Install Torch-Tuner CLI
 
-You can install the torch tuner as a system-wide command on any Linux OS(Windows support coming soon) 
-with [this script](scripts/install-torch-tuner.sh). After installation,
+You can install the torch tuner as a system-wide command on any Linux OS(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyways]) 
+with [this script](scripts/install-torch-tuner.sh) if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
 **NOTE** - You must run the script with the `sudo` command.
 
-You can download the script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh)
+You can download the latest installer script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh)
 and execute it with the following single command:
 
 ```shell
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 ```
 
-**NOTE** - If the installer script fails with dependency errors, and you are using Debian Linux, 
+**NOTE** - If the installer script fails with OS level python dependency errors, and you are using Debian Linux, 
 try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv) and run the installer again.
 
-##### Uninstall
+##### Updating Torch Tuner CLI
+
+You can update the CLI at anytime by running the installer script again.
+
+##### Uninstall Torch Tuner CLI
 
 You can uninstall the torch-tuner CLI by running the uninstaller script:
 
@@ -104,6 +121,7 @@ pip install -r requirements.txt
 
 The tuner CLI currently requires that you have the `HUGGING_FACE_TOKEN` environment
 variable set to a valid Huggingface authentication token in whatever shell you run it in.
+I might add this an argument in the future.
 
 From the project root(using the virtual environment(if any) that you used to install its dependencies), run:
 
@@ -150,12 +168,14 @@ if you don't want to run the CLI to find them.
 ## CONTRIBUTING
 
 Please feel free to submit a PR if you would to contribute to 
-this project.
+this project. The body of the PR should consist of a paragraph
+or two summarizing what you did, and a changes('## Changes')
+section with a list of all actual code changes.
 
 ### Feature Requests
 
 To request a feature or modification, please
-submit a Github Issue.
+submit a Github Issue. I gladly welcome and encourage feedback.
 
 ## LICENSE
 
