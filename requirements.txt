@@ -18,3 +18,7 @@ tensorboardX
 trl
 huggingface_hub
 requests
+
+# Sever Dependencies
+Flask
+tiktoken

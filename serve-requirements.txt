@@ -1,0 +1,4 @@
+transformers
+bitsandbytes
+Flask
+tiktoken

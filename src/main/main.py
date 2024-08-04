@@ -3,10 +3,13 @@ from utils.tuner_utils import llm_tuner_factory
 from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
+from serve.llm_executor import llm_executor_factory
+from serve.serve import OpenAiServer
+from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 
 # Bump with every PR
 # TODO - Automate this? Probably need to get this hosted in a repo first.
-version = '1.2.1'
+version = '1.3.0'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
@@ -23,6 +26,15 @@ def main() -> None:
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     print('')
+
+    if args.serve:
+        print(f"Running in serve mode")
+        print(f"Serving {args.serve_model} on port {args.serve_port}")
+        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit))
+        server = OpenAiServer(factory())
+        server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
+        # TODO - cleaner exit
+        exit(0)
 
     # Do all validations before printing configuration values
     do_initial_arg_validation(args)

@@ -1,6 +1,23 @@
 from main.exception.exceptions import ArgumentValidationException
 
 
+class ServerArguments:
+    def __init__(self, port: int = 8080, debug: bool = False):
+        self.port = port
+        self.debug = debug
+
+
+class LlmExecutorFactoryArguments:
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False):
+        self.model = model
+        self.use_4bit = use_4bit
+        self.use_8bit = use_8bit
+
+    def validate(self) -> None:
+        if self.use_4bit and self.use_8bit:
+            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+
+
 class TunerFunctionArguments:
     def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False):
         self.new_model = new_model
