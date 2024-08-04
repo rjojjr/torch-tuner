@@ -2,6 +2,7 @@ from typing import Callable
 from arguments.arguments import LlmExecutorFactoryArguments
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from utils.torch_utils import get_bnb_config_and_dtype
+from exception.exceptions import TunerException
 import torch
 import time
 
@@ -9,6 +10,8 @@ max_attempts = 5
 retry_interval = 0.5
 
 
+# TODO - use base model & apply LoRA adapters
+# TODO - max concurrent requests
 # TODO - Set context size?
 # TODO - Set temperature?
 class LlmExecutor:
@@ -31,7 +34,7 @@ class LlmExecutor:
             if max_attempts is None or attempt <= max_attempts:
                 time.sleep(retry_interval)
                 return self.completion(input, max_tokens, attempt + 1)
-            raise e
+            raise TunerException(message="CUDA OOM, exceeded max_attempts")
 
 
 # Only use this function to construct LLM executors

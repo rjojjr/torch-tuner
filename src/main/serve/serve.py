@@ -55,8 +55,7 @@ def _build_open_ai_routes(app, llm) -> None:
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    # TODO - Probably should replace `\n\n` with stop sequence(?)
-                    "content": f"\n\n{completion}",
+                    "content": f"{completion}",
                 },
                 "logprobs": None,
                 "finish_reason": "stop"
