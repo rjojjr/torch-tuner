@@ -67,9 +67,8 @@ fi
 }
 
 if [[ "$export_path" == "true" ]]; then
-  echo "Adding torch-tuner to current user's path variable"
+  echo "Adding torch-tuner to path variable"
   echo 'PATH=$PATH:/usr/local/torch-tuner/scripts' >> /etc/environment
-  echo 'You will need to run `source ~/.bashrc` or start a new shell session'
 fi
 
 echo 'Torch Tuner CLI installed successfully!'
