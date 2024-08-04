@@ -73,4 +73,4 @@ if [[ "$export_path" == "true" ]]; then
 fi
 
 echo 'Torch Tuner CLI installed successfully!'
-echo 'You can now access the Torch Tuner CLI with the `torch-tuner` command.''
+echo 'You can now access the Torch Tuner CLI with the `torch-tuner` command.'

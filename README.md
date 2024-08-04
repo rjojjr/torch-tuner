@@ -49,11 +49,18 @@ installed on the host. I would like to add CPU based tuning in the future.
 
 #### Install Torch-Tuner CLI
 
-You can install the torch tuner as a system-wide command on Debian OSes 
+You can install the torch tuner as a system-wide command on Linux OS 
 with [this script](scripts/install-torch-tune.sh). After installation,
 you can run the CLI with the `fine-tune` command.
 
 **NOTE** - You must run the script with the `sudo` command.
+
+You can download the script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tune.sh)
+and run it with:
+
+```shell
+wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tune.sh | sudo bash
+```
 
 #### Merging your LoRA Adapter
 
