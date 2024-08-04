@@ -4,7 +4,7 @@ from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 from serve.llm_executor import llm_executor_factory
-from serve.serve import OpenAiServer
+from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 
 # Bump with every PR
@@ -31,7 +31,7 @@ def main() -> None:
         print(f"Running in serve mode")
         print(f"Serving {args.serve_model} on port {args.serve_port}")
         factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit))
-        server = OpenAiServer(factory())
+        server = OpenAiLlmServer(factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
         # TODO - cleaner exit
         exit(0)

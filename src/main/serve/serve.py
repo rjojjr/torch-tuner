@@ -12,15 +12,15 @@ class LlmServer:
     def __init__(self, llm: LlmExecutor):
         self._llm = llm
 
-    def start_server(self, arguments: ServerArguments):
+    def start_server(self, arguments: ServerArguments) -> None:
         pass
 
 
-class OpenAiServer(LlmServer):
+class OpenAiLlmServer(LlmServer):
     def __init__(self, llm: LlmExecutor):
-        super(OpenAiServer, self).__init__(llm)
+        super(OpenAiLlmServer, self).__init__(llm)
 
-    def start_server(self, arguments: ServerArguments):
+    def start_server(self, arguments: ServerArguments) -> None:
         app = Flask(__name__)
 
         _build_open_ai_routes(app, self._llm)
@@ -28,7 +28,7 @@ class OpenAiServer(LlmServer):
         app.run(host='0.0.0.0', port=arguments.port, debug=arguments.debug)
 
 
-def _build_open_ai_routes(app, llm):
+def _build_open_ai_routes(app, llm) -> None:
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
         body = request.get_json(force=True)
