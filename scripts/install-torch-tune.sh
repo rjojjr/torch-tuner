@@ -52,7 +52,7 @@ fi
 } || {
   rm -rf /usr/local/torch-tuner && \
     echo 'Failed to create Torch Tuner CLI venv' && \
-    exit 1
+      exit 1
 }
 
 {
@@ -62,7 +62,7 @@ fi
 } || {
   deactivate && \
     rm -rf /usr/local/torch-tuner && \
-    echo 'Failed to install python dependencies' && \
+    echo 'Failed to install Torch Tuner CLI python dependencies' && \
     exit 1
 }
 
@@ -73,4 +73,4 @@ if [[ "$export_path" == "true" ]]; then
 fi
 
 echo 'Torch Tuner CLI installed successfully!'
-echo 'You can now access the Torch Tuner CLI with the `torch-tuner` command.'
+echo "You can now access the Torch Tuner CLI with the 'torch-tuner' command."
