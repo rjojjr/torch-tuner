@@ -121,7 +121,7 @@ pip install -r requirements.txt
 
 The tuner CLI currently requires that you have the `HUGGING_FACE_TOKEN` environment
 variable set to a valid Huggingface authentication token in whatever shell you run it in.
-I might add this an argument in the future.
+I might add this as an argument in the future.
 
 From the project root(using the virtual environment(if any) that you used to install its dependencies), run:
 
@@ -165,17 +165,10 @@ You can find the supported arguments and their default values
 [here](src/main/utils/argument_utils.py)(in the `_build_program_argument_parser` function)
 if you don't want to run the CLI to find them.
 
-## CONTRIBUTING
+## Feature Requests
 
-Please feel free to submit a PR if you would to contribute to 
-this project. The body of the PR should consist of a paragraph
-or two summarizing what you did, and a changes('## Changes')
-section with a list of all actual code changes.
-
-### Feature Requests
-
-To request a feature or modification, please
-submit a Github Issue. I gladly welcome and encourage feedback.
+To request a feature or modification(or report a bug), please
+submit a Github Issue. I gladly welcome and encourage any and all feedback.
 
 ## LICENSE
 
