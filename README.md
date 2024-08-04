@@ -56,11 +56,14 @@ you can run the CLI with the `fine-tune` command.
 **NOTE** - You must run the script with the `sudo` command.
 
 You can download the script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tune.sh)
-and run it with:
+and run it with the following command:
 
 ```shell
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tune.sh | sudo bash
 ```
+
+If the installer script fails with dependency errors, and you are using Debian Linux, 
+try running the script with the `--install-apt-deps` flag.
 
 #### Merging your LoRA Adapter
 
