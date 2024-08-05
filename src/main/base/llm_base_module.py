@@ -19,9 +19,10 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
-    # TODO - Load dataset from HF
-    ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
-
+    if arguments.train_file is not None:
+        ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
+    else:
+        ds = load_dataset(arguments.training_data_dir)
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
     if arguments.save_embeddings:
         target_modules.append("embed_tokens")
@@ -67,7 +68,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         do_eval=arguments.do_eval,
         # TODO - add this as tuning arg
         max_seq_length=5120,
-        dataset_text_field="text" if not arguments.train_file.endswith('json') and not arguments.train_file.endswith('jsonl') else None
+        dataset_text_field="text" if (arguments.train_file is not None and not arguments.train_file.endswith('json') and not arguments.train_file.endswith('jsonl')) else None
         # TODO - investigate
         #neftune_noise_alpha
     )

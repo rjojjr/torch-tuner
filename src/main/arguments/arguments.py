@@ -60,7 +60,7 @@ class TuneArguments(TunerFunctionArguments):
     def __init__(self,
                  new_model: str,
                  training_data_dir: str,
-                 train_file: str,
+                 train_file: str | None,
                  base_model: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
                  r: int = 8,
                  alpha: int = 16,
@@ -118,7 +118,7 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = self.new_model is not None and self.base_model is not None
         is_valid = is_valid and self.r is not None and self.alpha is not None
         is_valid = is_valid and self.epochs is not None and self.training_data_dir is not None
-        is_valid = is_valid and self.train_file is not None and self.batch_size is not None
+        is_valid = is_valid and self.batch_size is not None
         is_valid = is_valid and self.base_learning_rate is not None and self.lora_dropout is not None
         is_valid = is_valid and self.no_checkpoint is not None and self.bias is not None
         is_valid = is_valid and self.optimizer_type is not None and self.gradient_accumulation_steps is not None

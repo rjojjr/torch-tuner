@@ -118,8 +118,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
         prog=title,
         description=description)
     parser.add_argument('-nm', '--new-model', help="Name of the new fine-tuned model(REQUIRED[for fine-tune, merge & push only])")
-    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune only])")
-    parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(REQUIRED[for fine-tune only])")
+    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory or HF dataset name(REQUIRED[for fine-tune only])")
+    parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(REQUIRED[for fine-tune from file only])")
     parser.add_argument('-bm', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
