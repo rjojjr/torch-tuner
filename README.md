@@ -1,19 +1,18 @@
 # Torch Tuner README
 
 This project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
-Llama(and others in the future) based LLM models on Nvidia GPUs with simple text samples using LoRA and Torch.
+Llama based LLM models(and others in the near future) on Nvidia GPUs with simple text samples using LoRA and Torch.
 
-Use this project's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists on Huggingface with simple text and CUDA.
-You can also use this model to deploy your model(or any model you have access to on Huggingface)
-as an API that mimics commonly used Open AI endpoints.
+Use this torch-tuner's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists locally or on Huggingface with simple text and CUDA.
+You can also use this model to deploy your model(or any model you have access to)
+as an REST API that mimics commonly used Open AI endpoints.
 
 Ideally, in the future, this project will support more complex training data structures,
-non-llama LLM types and fine-tuning vision and speech models. Also, I would like this project
-to be able to run as an API along with its current CLI implementation.
+non-llama LLM types, CPU based tuning and fine-tuning vision and speech models. 
 
 ## Serve Mode(EXPERIMENTAL)
 
-You can run the CLI in the new experimental serve mode to serve your model over an API that mimics the Open AI 
+You can run the torch-tuner CLI in the new experimental serve mode to serve your model as a REST API that mimics the Open AI 
 completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
 
 ```shell
@@ -36,27 +35,29 @@ python src/main/main.py \
   --use-4bit true
 ```
 
-The Open AI like endpoints will ignore the model provided in the request body, and will
+The Open AI like REST endpoints will ignore the model provided in the request body, and will
 always evaluate all requests against the model that is provided by the `--serve-model` argument.
 
-## Running the Tuner
+**WARNING** - Serve mode is currently in an experimental state and should NEVER be used in a production environment.
+
+## Running Torch Tuner
 
 The tuner CLI will fine-tune, merge, push(to Huggingface) and/or serve your new model depending on the arguments
 you run it with.
 
-### Using the Tuner
+### Using Torch Tuner
 
 I typically wrap/configure my tuner CLI commands with bash scripts for convenience.
 You might want to install the tuner CLI(using the instructions from the "Install Torch-Tuner CLI" section below) for 
 easy access. 
 
 I currently use this CLI across several different debian based OSes(across multiple machines), but it should
-work on any OS. The tuner requires that you have the proper CUDA software/drivers(as well as python 3)
-installed on the host. I would like to add CPU based tuning in the future.
+work on any OS. The torch-tuner CLI requires that you have the proper CUDA software/drivers(as well as python 3)
+installed on the host. I would like to add CPU based tuning in the near future.
 
 #### Install Torch-Tuner CLI
 
-You can install the torch tuner as a system-wide command on any Linux OS(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyways]) 
+You can install the torch tuner CLI as a system-wide application on any Linux OS(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyways]) 
 with [this script](scripts/install-torch-tuner.sh) if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
@@ -70,11 +71,12 @@ wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/in
 ```
 
 **NOTE** - If the installer script fails with OS level python dependency errors, and you are using Debian Linux, 
-try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv) and run the installer again.
+try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv)
+and run the torch-tuner CLI installer script again.
 
 ##### Updating Torch Tuner CLI
 
-You can update the CLI at anytime by running the installer script again.
+You can update the installed torch-tuner CLI instance at anytime by running the torch-tuner installer script again.
 
 ##### Uninstall Torch Tuner CLI
 
@@ -103,27 +105,27 @@ arguments.
 
 ### Install Dependencies
 
-If you choose to not install the CLI, and run it from
-the project root, you must install the torch-tuner's 
+If you choose to not install the torch-tuner CLI, and run it from
+the project root, you must install the CLI's 
 python dependencies.
 
 You should probably use a virtual environment
-when installing dependencies and running the CLI,
+when installing dependencies and running the torch-tuner CLI,
 but that is up to you.
 
-From the project root, run:
+From the torch-tuner project root, run:
 
 ```shell
 pip install -r requirements.txt
 ```
 
-### Run the Tuner CLI
+### Run the Torch Tuner CLI
 
-The tuner CLI currently requires that you have the `HUGGING_FACE_TOKEN` environment
+The torch-tuner CLI currently requires that you have the `HUGGING_FACE_TOKEN` environment
 variable set to a valid Huggingface authentication token in whatever shell you run it in.
 I might add this as an argument in the future.
 
-From the project root(using the virtual environment(if any) that you used to install its dependencies), run:
+From the torch-tuner CLI project root(using the virtual environment(if any) that you used to install its dependencies), run:
 
 ```shell
 python src/main/main.py <your args>
@@ -149,7 +151,7 @@ torch-tuner \
   --lora-alpha 32
 ```
 
-To List Available Arguments:
+To List Available Torch Tuner CLI Arguments:
 
 ```shell
 python src/main/main.py --help
@@ -157,7 +159,7 @@ python src/main/main.py --help
 
 ### Useful Notes
 
-In theory, the base-model(`--base-model`) CLI argument will 
+In theory, the base-model(`--base-model`) torch-tuner CLI argument will 
 accept a path to a locally saved model instead of a Huggingface repository
 name, but this is untested ATM.
 
