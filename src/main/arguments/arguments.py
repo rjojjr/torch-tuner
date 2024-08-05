@@ -7,7 +7,7 @@ class ServerArguments:
         self.debug = debug
 
 
-class LlmExecutorFactoryArguments:
+class LlmArguments:
     def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False):
         self.model = model
         self.use_4bit = use_4bit
@@ -15,6 +15,15 @@ class LlmExecutorFactoryArguments:
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
         self.fp32_cpu_offload = fp32_cpu_offload
+
+    def validate(self) -> None:
+        """Raise TunerException if arguments are invalid."""
+        pass
+
+
+class LlmExecutorFactoryArguments(LlmArguments):
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False):
+        super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload)
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
@@ -34,6 +43,7 @@ class TunerFunctionArguments:
         self.fp32_cpu_offload = fp32_cpu_offload
 
     def validate(self) -> None:
+        """Raise TunerException if arguments are invalid."""
         pass
 
 
