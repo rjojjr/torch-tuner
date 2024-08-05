@@ -85,7 +85,8 @@ class TuneArguments(TunerFunctionArguments):
                  use_4bit: bool = False,
                  save_embeddings: bool = False,
                  output_directory: str = "../../models",
-                 fp32_cpu_offload: bool = True):
+                 fp32_cpu_offload: bool = True,
+                 is_chat_model: bool = True):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload)
         self.r = r
         self.alpha = alpha
@@ -109,6 +110,7 @@ class TuneArguments(TunerFunctionArguments):
         self.max_checkpoints = max_checkpoints
         self.save_embeddings = save_embeddings
         self.output_directory = output_directory
+        self.is_chat_model = is_chat_model
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually

@@ -19,7 +19,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
-    # TODO - Need to figure out to best configure the tuner for non-plaintext training data
+    # TODO - Load dataset from HF
     ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
@@ -67,7 +67,9 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         do_eval=arguments.do_eval,
         # TODO - add this as tuning arg
         max_seq_length=5120,
-        dataset_text_field="text",
+        dataset_text_field="text" if not arguments.train_file.endswith('json') and not arguments.train_file.endswith('jsonl') else None
+        # TODO - investigate
+        #neftune_noise_alpha
     )
 
     train = SFTTrainer(
