@@ -14,11 +14,8 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
     def _construct_chat_prompt(body: dict) -> str:
         prompt = ""
         for msg in body['messages']:
-            if prompt == "":
-                prompt = f"{msg['role']}: {msg['content']}"
-            else:
-                # TODO - Probably should replace `\n\n` with stop sequence(?)
-                prompt = f"\n\n{msg['role']}: {msg['content']}"
+            # TODO - Probably should replace `\n` with stop sequence(?)
+            prompt = f"{prompt}{msg['role']}: {msg['content']}\n"
         return prompt
 
     @app.route("/v1/chat/completions", methods=['POST'])
