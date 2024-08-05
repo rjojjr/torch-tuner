@@ -8,14 +8,20 @@ class ServerArguments:
 
 
 class LlmExecutorFactoryArguments:
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False):
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False):
         self.model = model
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
+        self.is_fp16 = is_fp16
+        self.is_bf16 = is_bf16
+        self.fp32_cpu_offload = fp32_cpu_offload
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
             raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+        if self.is_bf16 and self.is_fp16:
+            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+
 
 
 class TunerFunctionArguments:

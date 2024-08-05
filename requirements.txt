@@ -23,3 +23,4 @@ requests
 # Serve Dependencies
 Flask
 tiktoken
+#flash_attn
