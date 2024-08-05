@@ -2,6 +2,10 @@
 
 echo 'Installing Torch Tuner CLI'
 
+# TODO - version argument
+# TODO - argument to install from local repo(no git clone)
+
+# TODO - install deps. for other OSes
 if [[ "$1" == "--install-apt-deps" ]]; then
   echo 'Installing apt dependencies'
   {
