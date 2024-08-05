@@ -10,11 +10,8 @@ encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 def build_routes(app: Flask, llm: LlmExecutor) -> None:
 
-    @app.route("/v1/chat/completions", methods=['POST'])
-    def chat_completions_endpoint():
-        body = request.get_json(force=True)
-
-        # TODO - How does Open AI parse messages?
+    # TODO - How does Open AI parse chat messages?
+    def _construct_chat_prompt(body: dict) -> str:
         prompt = ""
         for msg in body['messages']:
             if prompt == "":
@@ -22,6 +19,13 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
             else:
                 # TODO - Probably should replace `\n\n` with stop sequence(?)
                 prompt = f"\n\n{msg['role']}: {msg['content']}"
+        return prompt
+
+    @app.route("/v1/chat/completions", methods=['POST'])
+    def chat_completions_endpoint():
+        body = request.get_json(force=True)
+
+        prompt = _construct_chat_prompt(body)
 
         completion = llm.completion(prompt, int(body['max_tokens']), parse_temp(float(body['temperature'])))
         prompt_tokens = len(encoding.encode(prompt))
