@@ -1,18 +1,18 @@
 # Torch Tuner README
 
-This project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
-Llama based LLM models(and others in the near future) on Nvidia GPUs with simple text samples using LoRA and Torch.
+The torch-tuner project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
+Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs with simple text samples using [LoRA](https://github.com/microsoft/LoRA) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
 
-Use torch-tuner's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists locally or on Huggingface with simple text and CUDA.
-You can also use this model to deploy your model(or any model you have access to)
+Use torch-tuner's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists locally or on [Huggingface](https://huggingface.co) with simple text and CUDA.
+You can also use this CLI to deploy your model(or any model)
 as an REST API that mimics commonly used Open AI endpoints.
 
-Ideally, in the future, this project will support more complex training data structures,
+Ideally, in the future, the torch-tuner project will support more complex training data structures,
 non-llama LLM types, CPU based tuning and fine-tuning vision and speech models. 
 
 ## Serve Mode(EXPERIMENTAL)
 
-You can run the torch-tuner CLI in the new experimental serve mode to serve your model as a REST API that mimics the Open AI 
+You can run the torch-tuner CLI in the new experimental serve mode to serve your model as a REST API that mimics the [Open AI](https://openai.com/) 
 completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
 
 ```shell
@@ -123,9 +123,9 @@ pip install -r requirements.txt
 
 The torch-tuner CLI currently requires that you have the `HUGGING_FACE_TOKEN` environment
 variable set to a valid Huggingface authentication token in whatever shell you run it in.
-I might add this as an argument in the future.
+This should most likely be added as an argument in the future(it is only really required for pushing/pulling models to/from HF, so this requirement should be removed).
 
-From the torch-tuner CLI project root(using the virtual environment(if any) that you used to install its dependencies), run:
+From the torch-tuner CLI project root(using the virtual environment[if any] that you used to install torch-tuner's dependencies), run:
 
 ```shell
 python src/main/main.py <your args>
