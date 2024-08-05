@@ -3,7 +3,7 @@
 This project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
 Llama based LLM models(and others in the near future) on Nvidia GPUs with simple text samples using LoRA and Torch.
 
-Use this torch-tuner's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists locally or on Huggingface with simple text and CUDA.
+Use torch-tuner's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists locally or on Huggingface with simple text and CUDA.
 You can also use this model to deploy your model(or any model you have access to)
 as an REST API that mimics commonly used Open AI endpoints.
 
