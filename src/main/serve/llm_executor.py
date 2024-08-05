@@ -17,6 +17,8 @@ retry_interval = 0.5
 # TODO - Set context size?
 # TODO - Set temperature?
 class LlmExecutor:
+    """Manage served LLM instance."""
+
     # TODO - Another instance of a constructor to that needs to be made "private"
     def __init__(self, model, tokenizer):
         # TODO - fix this
