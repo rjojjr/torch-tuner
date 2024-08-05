@@ -65,7 +65,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         lr_scheduler_type="constant",
         report_to="tensorboard",
         do_eval=arguments.do_eval,
-        max_seq_length=10240,
+        # TODO - add this as tuning arg
+        max_seq_length=5120,
         dataset_text_field="text",
     )
 
