@@ -10,6 +10,14 @@ def llm_tuner_factory(prog_args) -> Callable[[], Tuner]:
     return lambda: _construct_tuner(prog_args)
 
 
+def parse_temp(temp: float) -> float:
+    if temp > 1:
+        return 1
+    if temp < 0:
+        return 0
+    return temp
+
+
 def _construct_tuner(prog_args) -> Tuner:
     tuner = Tuner(llama.fine_tune, llama.merge, llama.push, LLM_TYPES['llama'])
     _evaluate_supported_llm_type(prog_args.llm_type)
@@ -26,4 +34,3 @@ def _evaluate_supported_llm_type(llm_type):
 
     if not is_supported:
         raise ArgumentValidationException(f'LLM type "{llm_type}" not supported yet, ONLY "llama" is supported currently')
-
