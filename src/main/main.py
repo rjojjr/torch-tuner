@@ -8,7 +8,7 @@ from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 
 # TODO - Automate this
-version = '1.3.2'
+version = '1.3.3'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
