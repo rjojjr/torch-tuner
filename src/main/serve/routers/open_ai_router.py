@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import uuid
 from utils import time_utils
+from utils.tuner_utils import parse_temp
 import tiktoken
 from serve.llm_executor import LlmExecutor
 
@@ -9,20 +10,21 @@ encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 def build_routes(app: Flask, llm: LlmExecutor) -> None:
 
+    # TODO - How does Open AI parse chat messages?
+    def _construct_chat_prompt(body: dict) -> str:
+        prompt = ""
+        for msg in body['messages']:
+            # TODO - Probably should replace `\n` with stop sequence(?)
+            prompt = f"{prompt}{msg['role']}: {msg['content']}\n"
+        return prompt
+
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
         body = request.get_json(force=True)
 
-        # TODO - How does Open AI parse messages?
-        prompt = ""
-        for msg in body['messages']:
-            if prompt == "":
-                prompt = f"{msg['role']}: {msg['content']}"
-            else:
-                # TODO - Probably should replace `\n\n` with stop sequence(?)
-                prompt = f"\n\n{msg['role']}: {msg['content']}"
+        prompt = _construct_chat_prompt(body)
 
-        completion = llm.completion(prompt, int(body['max_tokens']))
+        completion = llm.completion(prompt, int(body['max_tokens']), parse_temp(float(body['temperature'])))
         prompt_tokens = len(encoding.encode(prompt))
         completion_tokens = len(encoding.encode(completion))
         chat_response = {
@@ -51,7 +53,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
     @app.route("/v1/completions", methods=['POST'])
     def completions_endpoint():
         body = request.get_json(force=True)
-        completion = llm.completion(body['prompt'], int(body['max_tokens']))
+        completion = llm.completion(body['prompt'], int(body['max_tokens']), parse_temp(float(body['temperature'])))
         prompt_tokens = len(encoding.encode(body['prompt']))
         completion_tokens = len(encoding.encode(completion))
 
