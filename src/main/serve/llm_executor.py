@@ -15,7 +15,6 @@ retry_interval = 0.5
 # TODO - use base model & apply LoRA adapters
 # TODO - max concurrent requests
 # TODO - Set context size?
-# TODO - Set temperature?
 class LlmExecutor:
     """Manage served LLM instance."""
 
@@ -31,11 +30,11 @@ class LlmExecutor:
 
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     # TODO - Stop sequences
-    def completion(self, input: str, max_tokens: int = 150, attempt: int = 1):
+    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1):
         try:
             model_inputs = self._tokenizer([input], padding=True, return_tensors="pt").to("cuda")
             input_length = model_inputs.input_ids.shape[1]
-            generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True)
+            generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature)
             response = self._tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
             # TODO - FIXME - big hack to stop OOM
             gc.collect()
