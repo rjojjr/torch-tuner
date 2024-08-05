@@ -22,7 +22,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     if arguments.train_file is not None:
         ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
     else:
-        ds = load_dataset(arguments.training_data_dir)
+        ds = load_dataset(arguments.training_data_dir, split='train')
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
     if arguments.save_embeddings:
         target_modules.append("embed_tokens")
@@ -69,13 +69,13 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         # TODO - add this as tuning arg
         max_seq_length=5120,
         dataset_text_field="text" if (arguments.train_file is not None and not arguments.train_file.endswith('jsonl')) else None
-        # TODO - investigate
+        # TODO - investigate for instruction training
         #neftune_noise_alpha
     )
 
     train = SFTTrainer(
         model=model,
-        train_dataset=ds['train'],
+        train_dataset=ds['train'] if arguments.train_file is not None else ds,
         tokenizer=tokenizer,
         args=train_params
     )
@@ -100,7 +100,6 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
-    # TODO - Refactor how output dirs are constructed
     lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
