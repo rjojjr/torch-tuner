@@ -1,7 +1,7 @@
 # Torch Tuner README
 
 The torch-tuner project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
-Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs with simple text samples(or JSON/JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
+Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs with simple text samples(or JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
 
 Use torch-tuner's CLI to fine-tune(with LoRA) a suitable(Llama only ATM) base model that exists locally or on [Huggingface](https://huggingface.co) with simple text and CUDA.
 You can also use this CLI to deploy your model(or any model)
@@ -101,14 +101,18 @@ to your command.
 You can use a dataset from Huggingface by setting the `--training-data-dir` argument
 to the desired HF repo name and excluding the `--training-data-file` argument.
 
-#### JSON
+#### JSONL
 
-Torch Tuner accepts JSON and JSONL(OpenAI format) training data as well in addition to plain text.
+Torch Tuner accepts JSONL training data in addition to plain text.
 
-Accepted JSON Format:
+Accepted JSONL Formats:
 
-```json
+```json lines
 {"messages": [{"role": "system", "content": "You are helpful"}]}
+
+OR
+
+{"prompt": "<prompt text>", "completion": "<ideal generated text>"}
 ```
 
 #### Simple Text
