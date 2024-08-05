@@ -2,6 +2,8 @@ from typing import Callable
 
 
 class TunerException(Exception):
+    """Application base exception."""
+
     def __init__(self, message: str, exception_type: str = "GENERIC", sub_type: str | None = None):
         super(TunerException, self).__init__(message)
         self.message = message
@@ -14,21 +16,29 @@ class TunerException(Exception):
 
 
 class ValidationException(TunerException):
+    """Application validation exception."""
+
     def __init__(self, message: str, sub_type: str | None = None):
         super(ValidationException, self).__init__(message, 'VALIDATION', sub_type)
 
 
 class ArgumentValidationException(ValidationException):
+    """Application argument validation exception."""
+
     def __init__(self, message: str):
         super(ArgumentValidationException, self).__init__(message, 'ARGUMENT_VALIDATION')
 
 
 class HuggingfaceException(TunerException):
+    """Application Huggingface exception."""
+
     def __init__(self, message: str, sub_type: str | None = None):
         super(HuggingfaceException, self).__init__(message, 'HUGGINGFACE', sub_type)
 
 
 class HuggingfaceAuthException(HuggingfaceException):
+    """Application Huggingface auth exception."""
+
     def __init__(self, message: str):
         super(HuggingfaceAuthException, self).__init__(message, 'HUGGINGFACE_AUTH')
 

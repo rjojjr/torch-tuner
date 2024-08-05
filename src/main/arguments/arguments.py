@@ -2,12 +2,16 @@ from exception.exceptions import ArgumentValidationException
 
 
 class ServerArguments:
+    """LLM REST API server arguments."""
+
     def __init__(self, port: int = 8080, debug: bool = False):
         self.port = port
         self.debug = debug
 
 
 class LlmArguments:
+    """LLM load parameters."""
+
     def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False):
         self.model = model
         self.use_4bit = use_4bit
@@ -22,6 +26,7 @@ class LlmArguments:
 
 
 class LlmExecutorFactoryArguments(LlmArguments):
+    """Init LLM Executor factory."""
     def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False):
         super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload)
 
@@ -34,6 +39,8 @@ class LlmExecutorFactoryArguments(LlmArguments):
 
 
 class TunerFunctionArguments:
+    """Tuning related function arguments."""
+
     def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False):
         self.new_model = new_model
         self.is_fp16 = is_fp16
@@ -48,6 +55,8 @@ class TunerFunctionArguments:
 
 
 class TuneArguments(TunerFunctionArguments):
+    """'fine-tune' function arguments."""
+
     def __init__(self,
                  new_model: str,
                  training_data_dir: str,
@@ -128,6 +137,8 @@ class TuneArguments(TunerFunctionArguments):
 
 
 class MergeArguments(TunerFunctionArguments):
+    """'merge' function arguments."""
+
     def __init__(self,
                  new_model: str,
                  base_model: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
@@ -152,6 +163,8 @@ class MergeArguments(TunerFunctionArguments):
 
 
 class PushArguments(TunerFunctionArguments):
+    """'push' function arguments."""
+
     def __init__(self,
                  new_model: str,
                  model_dir: str,
