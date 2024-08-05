@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import uuid
 from utils import time_utils
+from utils.tuner_utils import parse_temp
 import tiktoken
 from serve.llm_executor import LlmExecutor
 
@@ -22,7 +23,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
                 # TODO - Probably should replace `\n\n` with stop sequence(?)
                 prompt = f"\n\n{msg['role']}: {msg['content']}"
 
-        completion = llm.completion(prompt, int(body['max_tokens']), float(body['temperature']))
+        completion = llm.completion(prompt, int(body['max_tokens']), parse_temp(float(body['temperature'])))
         prompt_tokens = len(encoding.encode(prompt))
         completion_tokens = len(encoding.encode(completion))
         chat_response = {
@@ -51,7 +52,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
     @app.route("/v1/completions", methods=['POST'])
     def completions_endpoint():
         body = request.get_json(force=True)
-        completion = llm.completion(body['prompt'], int(body['max_tokens']), float(body['temperature']))
+        completion = llm.completion(body['prompt'], int(body['max_tokens']), parse_temp(float(body['temperature'])))
         prompt_tokens = len(encoding.encode(body['prompt']))
         completion_tokens = len(encoding.encode(completion))
 
