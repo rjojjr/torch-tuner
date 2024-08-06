@@ -60,6 +60,7 @@ def main() -> None:
     print(f'Using LLM Type: {tuner.llm_type}')
 
     print('')
+    print(f'Is Chat Model: {args.is_chat_model}')
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')
