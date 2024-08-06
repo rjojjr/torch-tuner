@@ -97,6 +97,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     train.model.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
+    del model
+    del tokenizer
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
@@ -115,6 +117,8 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         shutil.rmtree(model_dir)
     model.save_pretrained(model_dir)
     tokenizer.save_pretrained(model_dir)
+    del model
+    del tokenizer
 
 
 def push_base(arguments: PushArguments, tokenizer, model) -> None:
@@ -124,3 +128,5 @@ def push_base(arguments: PushArguments, tokenizer, model) -> None:
     is_private = not arguments.public_push
     model.push_to_hub(arguments.new_model, private=is_private)
     tokenizer.push_to_hub(arguments.new_model, private=is_private)
+    del model
+    del tokenizer
