@@ -41,13 +41,14 @@ class LlmExecutorFactoryArguments(LlmArguments):
 class TunerFunctionArguments:
     """Tuning related function arguments."""
 
-    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False):
+    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False, is_chat_model: bool = True):
         self.new_model = new_model
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
         self.use_8bit = use_8bit
         self.use_4bit = use_4bit
         self.fp32_cpu_offload = fp32_cpu_offload
+        self.is_chat_model = is_chat_model
 
     def validate(self) -> None:
         """Raise TunerException if arguments are invalid."""
@@ -60,7 +61,7 @@ class TuneArguments(TunerFunctionArguments):
     def __init__(self,
                  new_model: str,
                  training_data_dir: str,
-                 train_file: str,
+                 train_file: str | None,
                  base_model: str = 'meta-llama/Meta-Llama-3-8B-Instruct',
                  r: int = 8,
                  alpha: int = 16,
@@ -85,8 +86,9 @@ class TuneArguments(TunerFunctionArguments):
                  use_4bit: bool = False,
                  save_embeddings: bool = False,
                  output_directory: str = "../../models",
-                 fp32_cpu_offload: bool = True):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload)
+                 fp32_cpu_offload: bool = True,
+                 is_chat_model: bool = True):
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -108,6 +110,11 @@ class TuneArguments(TunerFunctionArguments):
         self.do_eval = do_eval
         self.max_checkpoints = max_checkpoints
         self.save_embeddings = save_embeddings
+        if is_chat_model and not save_embeddings:
+            print(f"WARNING - The `--save-embeddings` argument should be set to 'true' when the `--is-chat-model` argument is set to 'true'")
+            print(f"Setting the `--save-embeddings` argument to 'true'")
+            print('')
+            self.save_embeddings = True
         self.output_directory = output_directory
 
     def validate(self) -> None:
@@ -116,7 +123,7 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = self.new_model is not None and self.base_model is not None
         is_valid = is_valid and self.r is not None and self.alpha is not None
         is_valid = is_valid and self.epochs is not None and self.training_data_dir is not None
-        is_valid = is_valid and self.train_file is not None and self.batch_size is not None
+        is_valid = is_valid and self.batch_size is not None
         is_valid = is_valid and self.base_learning_rate is not None and self.lora_dropout is not None
         is_valid = is_valid and self.no_checkpoint is not None and self.bias is not None
         is_valid = is_valid and self.optimizer_type is not None and self.gradient_accumulation_steps is not None
@@ -146,8 +153,9 @@ class MergeArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
-                 output_dir: str = '../../models'):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit)
+                 output_dir: str = '../../models',
+                 is_chat_model: bool = True):
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model)
         self.base_model = base_model
         self.output_dir = output_dir
 
@@ -172,8 +180,9 @@ class PushArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
-                 public_push: bool = False):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit)
+                 public_push: bool = False,
+                 is_chat_model: bool = True):
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model)
         self.model_dir = model_dir
         self.public_push = public_push
 
