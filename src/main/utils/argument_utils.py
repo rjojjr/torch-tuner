@@ -5,11 +5,6 @@ from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
 
 def build_and_validate_push_args(prog_args, model_dir: str):
-    push_arguments = PushArguments(
-        new_model=prog_args.new_model,
-        model_dir=model_dir
-    )
-
     if prog_args.push:
         push_arguments = PushArguments(
             new_model=prog_args.new_model,
@@ -21,12 +16,15 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             public_push=prog_args.public_push
         )
         push_arguments.validate()
+        return push_arguments
 
-    return push_arguments
+    return PushArguments(
+        new_model=prog_args.new_model,
+        model_dir=model_dir
+    )
 
 
 def build_and_validate_merge_args(prog_args):
-    merge_arguments = MergeArguments(new_model=prog_args.new_model)
     if prog_args.merge:
         merge_arguments = MergeArguments(
             new_model=prog_args.new_model,
@@ -38,16 +36,12 @@ def build_and_validate_merge_args(prog_args):
             output_dir=prog_args.output_directory
         )
         merge_arguments.validate()
+        return merge_arguments
 
-    return merge_arguments
+    return MergeArguments(new_model=prog_args.new_model)
 
 
 def build_and_validate_tune_args(prog_args):
-    tune_arguments = TuneArguments(
-        new_model=prog_args.new_model,
-        training_data_dir=prog_args.training_data_dir,
-        train_file=prog_args.training_data_file
-    )
     if prog_args.fine_tune:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
@@ -81,8 +75,13 @@ def build_and_validate_tune_args(prog_args):
             is_chat_model=prog_args.is_chat_model
         )
         tune_arguments.validate()
+        return tune_arguments
 
-    return tune_arguments
+    return TuneArguments(
+        new_model=prog_args.new_model,
+        training_data_dir=prog_args.training_data_dir,
+        train_file=prog_args.training_data_file
+    )
 
 
 def do_initial_arg_validation(args):
