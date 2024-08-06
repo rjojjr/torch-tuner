@@ -41,13 +41,14 @@ class LlmExecutorFactoryArguments(LlmArguments):
 class TunerFunctionArguments:
     """Tuning related function arguments."""
 
-    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False):
+    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False, is_chat_model: bool = True):
         self.new_model = new_model
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
         self.use_8bit = use_8bit
         self.use_4bit = use_4bit
         self.fp32_cpu_offload = fp32_cpu_offload
+        self.is_chat_model = is_chat_model
 
     def validate(self) -> None:
         """Raise TunerException if arguments are invalid."""
@@ -87,7 +88,7 @@ class TuneArguments(TunerFunctionArguments):
                  output_directory: str = "../../models",
                  fp32_cpu_offload: bool = True,
                  is_chat_model: bool = True):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload)
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -110,7 +111,6 @@ class TuneArguments(TunerFunctionArguments):
         self.max_checkpoints = max_checkpoints
         self.save_embeddings = save_embeddings
         self.output_directory = output_directory
-        self.is_chat_model = is_chat_model
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
@@ -148,8 +148,9 @@ class MergeArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
-                 output_dir: str = '../../models'):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit)
+                 output_dir: str = '../../models',
+                 is_chat_model: bool = True):
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model)
         self.base_model = base_model
         self.output_dir = output_dir
 
@@ -174,8 +175,9 @@ class PushArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
-                 public_push: bool = False):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit)
+                 public_push: bool = False,
+                 is_chat_model: bool = True):
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model)
         self.model_dir = model_dir
         self.public_push = public_push
 

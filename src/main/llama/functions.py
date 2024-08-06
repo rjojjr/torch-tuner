@@ -4,7 +4,6 @@ from transformers import LlamaForCausalLM, AutoTokenizer
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 import base.llm_base_module as base_module
-from trl import setup_chat_format
 
 
 def merge(arguments: MergeArguments) -> None:
@@ -59,9 +58,6 @@ def fine_tune(arguments: TuneArguments) -> None:
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     model = LlamaForCausalLM.from_pretrained(arguments.base_model, quantization_config=bnb_config, device_map="auto")
-
-    if arguments.is_chat_model:
-        model, tokenizer = setup_chat_format(model, tokenizer)
 
     base_module.fine_tune_base(arguments, tokenizer, model)
 
