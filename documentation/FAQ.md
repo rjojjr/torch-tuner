@@ -16,6 +16,6 @@ Setting `save_embedding_layers` to `True` as the embedding layer has been resize
 
 #### Answer
 
-This warning occurs when tuning your model with the `--is-chat-model` argument is set to true(this is the default value) 
+This warning occurs when tuning your model with the `--is-chat-model` argument is set to true
 while the `--save-embeddings` argument is set to false. Setting the chat model specific tokens 
 requires that the embeddings layer is resized.
