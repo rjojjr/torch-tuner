@@ -100,6 +100,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     train.model.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
     del model
+    del base_model
     del tokenizer
 
 
@@ -122,6 +123,7 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     model.save_pretrained(model_dir)
     tokenizer.save_pretrained(model_dir)
     del model
+    del base_model
     del tokenizer
 
 
