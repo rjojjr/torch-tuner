@@ -147,7 +147,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
-    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)(NOTE: this setting is ignored and set to true when tuning chat model)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
     parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
