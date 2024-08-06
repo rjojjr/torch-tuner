@@ -5,11 +5,6 @@ from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
 
 def build_and_validate_push_args(prog_args, model_dir: str):
-    push_arguments = PushArguments(
-        new_model=prog_args.new_model,
-        model_dir=model_dir
-    )
-
     if prog_args.push:
         push_arguments = PushArguments(
             new_model=prog_args.new_model,
@@ -21,12 +16,15 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             public_push=prog_args.public_push
         )
         push_arguments.validate()
+        return push_arguments
 
-    return push_arguments
+    return PushArguments(
+        new_model=prog_args.new_model,
+        model_dir=model_dir
+    )
 
 
 def build_and_validate_merge_args(prog_args):
-    merge_arguments = MergeArguments(new_model=prog_args.new_model)
     if prog_args.merge:
         merge_arguments = MergeArguments(
             new_model=prog_args.new_model,
@@ -38,16 +36,12 @@ def build_and_validate_merge_args(prog_args):
             output_dir=prog_args.output_directory
         )
         merge_arguments.validate()
+        return merge_arguments
 
-    return merge_arguments
+    return MergeArguments(new_model=prog_args.new_model)
 
 
 def build_and_validate_tune_args(prog_args):
-    tune_arguments = TuneArguments(
-        new_model=prog_args.new_model,
-        training_data_dir=prog_args.training_data_dir,
-        train_file=prog_args.training_data_file
-    )
     if prog_args.fine_tune:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
@@ -77,11 +71,17 @@ def build_and_validate_tune_args(prog_args):
             use_4bit=prog_args.use_4bit,
             save_embeddings=prog_args.save_embeddings,
             output_directory=prog_args.output_directory,
-            fp32_cpu_offload=prog_args.fp32_cpu_offload
+            fp32_cpu_offload=prog_args.fp32_cpu_offload,
+            is_chat_model=prog_args.is_chat_model
         )
         tune_arguments.validate()
+        return tune_arguments
 
-    return tune_arguments
+    return TuneArguments(
+        new_model=prog_args.new_model,
+        training_data_dir=prog_args.training_data_dir,
+        train_file=prog_args.training_data_file
+    )
 
 
 def do_initial_arg_validation(args):
@@ -117,11 +117,12 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
         prog=title,
         description=description)
     parser.add_argument('-nm', '--new-model', help="Name of the new fine-tuned model(REQUIRED[for fine-tune, merge & push only])")
-    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune only])")
-    parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(REQUIRED[for fine-tune only])")
+    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory or HF dataset name(REQUIRED[for fine-tune only])")
+    parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(REQUIRED[for fine-tune from file only])")
     parser.add_argument('-bm', '--base-model', help="Base model(from HF) to tune(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
@@ -145,7 +146,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
-    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-se', '--save-embeddings', default="true", help="Save embeddings layers(default: true)(NOTE: this setting is ignored and set to true when tuning chat model)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
     parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(default: false)", default="false", type=lambda x: _parse_bool_arg(x))

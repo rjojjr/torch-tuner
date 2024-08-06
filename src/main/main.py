@@ -8,7 +8,7 @@ from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 
 # TODO - Automate this
-version = '1.3.5'
+version = '1.4.0'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
@@ -60,6 +60,7 @@ def main() -> None:
     print(f'Using LLM Type: {tuner.llm_type}')
 
     print('')
+    print(f'Is Chat Model: {args.is_chat_model}')
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')

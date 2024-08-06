@@ -1,7 +1,7 @@
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
-from trl import SFTTrainer, SFTConfig
+from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
 import os
 import shutil
@@ -11,6 +11,8 @@ import shutil
 
 # TODO - Tune/extract an embeddings only model
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
+    if arguments.is_chat_model:
+        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
@@ -19,9 +21,10 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
-    # TODO - Need to figure out to best configure the tuner for non-plaintext training data
-    ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
-
+    if arguments.train_file is not None:
+        ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
+    else:
+        ds = load_dataset(arguments.training_data_dir, split='train')
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
     if arguments.save_embeddings:
         target_modules.append("embed_tokens")
@@ -65,13 +68,16 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         lr_scheduler_type="constant",
         report_to="tensorboard",
         do_eval=arguments.do_eval,
-        max_seq_length=10240,
-        dataset_text_field="text",
+        # TODO - add this as tuning arg
+        max_seq_length=5120,
+        dataset_text_field="text" if (arguments.train_file is not None and not arguments.train_file.endswith('jsonl')) else None
+        # TODO - investigate for instruction training
+        #neftune_noise_alpha
     )
 
     train = SFTTrainer(
         model=model,
-        train_dataset=ds['train'],
+        train_dataset=ds['train'] if arguments.train_file is not None else ds,
         tokenizer=tokenizer,
         args=train_params
     )
@@ -93,10 +99,14 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     train.model.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
+    del model
+    del base_model
+    del tokenizer
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
-    # TODO - Refactor how output dirs are constructed
+    if arguments.is_chat_model:
+        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
@@ -112,12 +122,19 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         shutil.rmtree(model_dir)
     model.save_pretrained(model_dir)
     tokenizer.save_pretrained(model_dir)
+    del model
+    del base_model
+    del tokenizer
 
 
 def push_base(arguments: PushArguments, tokenizer, model) -> None:
+    if arguments.is_chat_model:
+        model, tokenizer = setup_chat_format(model, tokenizer)
     print(f"pushing {arguments.new_model} to HF")
     print('')
 
     is_private = not arguments.public_push
     model.push_to_hub(arguments.new_model, private=is_private)
     tokenizer.push_to_hub(arguments.new_model, private=is_private)
+    del model
+    del tokenizer

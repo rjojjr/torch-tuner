@@ -27,15 +27,21 @@ def push(arguments: PushArguments) -> None:
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-    model = LlamaForCausalLM.from_pretrained(
-        arguments.model_dir,
-        low_cpu_mem_usage=False,
-        return_dict=True,
-        torch_dtype=dtype,
-        quantization_config=bnb_config
-        # TODO - FIXME
-        # device_map="auto"
-    )
+    if not arguments.use_8bit and not arguments.use_4bit:
+        model = LlamaForCausalLM.from_pretrained(
+            arguments.model_dir,
+            low_cpu_mem_usage=False,
+            return_dict=True,
+            torch_dtype=dtype
+        )
+    else:
+        model = LlamaForCausalLM.from_pretrained(
+            arguments.model_dir,
+            low_cpu_mem_usage=True,
+            return_dict=True,
+            quantization_config=bnb_config,
+            device_map="auto"
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
     tokenizer.pad_token = tokenizer.eos_token
