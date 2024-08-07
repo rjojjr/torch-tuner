@@ -46,6 +46,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         include_tokens_per_second=False,
         include_num_input_tokens_seen=False,
         num_train_epochs=arguments.epochs,
+        torch_empty_cache_steps=1,
         per_device_train_batch_size=arguments.batch_size,
         per_device_eval_batch_size=arguments.batch_size,
         gradient_accumulation_steps=arguments.gradient_accumulation_steps,
@@ -71,7 +72,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         report_to="tensorboard",
         do_eval=arguments.do_eval,
         # TODO - add this as tuning arg
-        max_seq_length=5120,
+        max_seq_length=4096,
         dataset_text_field="text" if (arguments.train_file is not None and not arguments.train_file.endswith('jsonl')) else None
         # TODO - investigate for instruction training
         #neftune_noise_alpha

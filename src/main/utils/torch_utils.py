@@ -20,18 +20,20 @@ def get_device_map() -> str:
 def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -> tuple[BitsAndBytesConfig, torch.dtype]:
     dtype = get_dtype(arguments)
     bnb_config = BitsAndBytesConfig(
-        llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
+        llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload,
+        bnb_4bit_compute_dtype=dtype
     )
     if arguments.use_8bit:
         bnb_config = BitsAndBytesConfig(
             load_in_8bit=True,
-            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload
+            llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload,
+            bnb_4bit_compute_dtype=dtype
         )
     elif arguments.use_4bit and isinstance(arguments, TunerFunctionArguments):
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True
+            bnb_4bit_use_double_quant=True,
         )
     elif arguments.use_4bit:
         bnb_config = BitsAndBytesConfig(

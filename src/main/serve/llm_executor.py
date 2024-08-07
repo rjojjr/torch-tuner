@@ -63,6 +63,7 @@ def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[],
         device_map={"":0},
         low_cpu_mem_usage=True,
         quantization_config=bnb_config,
+        torch_dtype="auto"
         # TODO - investigate if this is effective
         # attn_implementation="flash_attention_2"
     ), AutoTokenizer.from_pretrained(arguments.model, padding_side="left"))

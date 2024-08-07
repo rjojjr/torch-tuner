@@ -110,11 +110,6 @@ class TuneArguments(TunerFunctionArguments):
         self.do_eval = do_eval
         self.max_checkpoints = max_checkpoints
         self.save_embeddings = save_embeddings
-        if is_chat_model and not save_embeddings:
-            print(f"WARNING - The `--save-embeddings` argument should be set to 'true' when the `--is-chat-model` argument is set to 'true'")
-            print(f"Setting the `--save-embeddings` argument to 'true'")
-            print('')
-            self.save_embeddings = True
         self.output_directory = output_directory
 
     def validate(self) -> None:
