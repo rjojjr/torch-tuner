@@ -6,7 +6,6 @@ from exception.exceptions import TunerException
 import torch
 import time
 import gc
-import os
 
 max_attempts = 5
 retry_interval = 0.5
@@ -56,7 +55,7 @@ class LlmExecutor:
 # Only use this function to construct LLM executors
 def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
     arguments.validate()
-    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
+
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     return lambda: LlmExecutor(LlamaForCausalLM.from_pretrained(

@@ -6,6 +6,7 @@ from utils.argument_utils import build_and_validate_push_args, build_and_validat
 from serve.llm_executor import llm_executor_factory
 from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
+import os
 
 # TODO - Automate this
 version = '1.4.0'
@@ -14,6 +15,7 @@ version = '1.4.0'
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
 description = 'Fine-Tune Llama LLM models with simple text on Nvidia GPUs using Torch and LoRA.'
 
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
 def main() -> None:
     args = parse_arguments(title, description)

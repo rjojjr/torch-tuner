@@ -26,12 +26,12 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     else:
         ds = load_dataset(arguments.training_data_dir, split='train')
     target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
-    if arguments.save_embeddings:
-        target_modules.append("embed_tokens")
+
     lora_config = LoraConfig(
         r=arguments.r,
         lora_alpha=arguments.alpha,
         target_modules=target_modules,
+        modules_to_save=["embed_tokens"] if arguments.save_embeddings else [],
         lora_dropout=arguments.lora_dropout,
         bias=arguments.bias,
         task_type=TaskType.CAUSAL_LM
@@ -58,6 +58,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         save_total_limit=arguments.max_checkpoints,
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
+        # TODO - CPU Tuning
+        use_cpu=False,
         fp16=arguments.is_fp16,
         tf32=arguments.is_tf32,
         bf16=arguments.is_bf16,
