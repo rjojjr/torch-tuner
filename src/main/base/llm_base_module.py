@@ -36,7 +36,10 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
     else:
         ds = load_dataset(arguments.training_data_dir, split='train')
-    target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
+    if arguments.target_modules is None or len(arguments.target_modules) == 0:
+        target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
+    else:
+        target_modules = arguments.target_modules
 
     lora_config = LoraConfig(
         r=arguments.r,

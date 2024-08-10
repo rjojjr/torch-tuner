@@ -84,6 +84,7 @@ def main() -> None:
     print(f'Using 4bit: {str(args.use_4bit)}')
     print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
     print('')
+
     print(f'Is Fine-Tuning: {str(args.fine_tune)}')
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')

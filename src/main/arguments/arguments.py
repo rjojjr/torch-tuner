@@ -97,7 +97,8 @@ class TuneArguments(TunerFunctionArguments):
                  target_all_modules: bool = False,
                  padding_side: str | None = 'right',
                  use_agent_tokens: bool = False,
-                 lr_scheduler_type: str = 'linear'):
+                 lr_scheduler_type: str = 'linear',
+                 target_modules: list | None = None):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens)
         self.r = r
         self.alpha = alpha
@@ -123,6 +124,7 @@ class TuneArguments(TunerFunctionArguments):
         self.output_directory = output_directory
         self.target_all_modules = target_all_modules
         self.lr_scheduler_type = lr_scheduler_type
+        self.target_modules = target_modules
 
 
     def validate(self) -> None:
