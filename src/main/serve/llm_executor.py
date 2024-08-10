@@ -53,7 +53,6 @@ class LlmExecutor:
             raise TunerException(message="CUDA OOM, exceeded max_attempts")
 
 
-# TODO - add padding_side arg
 # Only use this function to construct LLM executors
 def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
     arguments.validate()
