@@ -1,4 +1,5 @@
 from exception.exceptions import ArgumentValidationException
+from pandas.core.nanops import bottleneck_switch
 
 
 class ServerArguments:
@@ -42,8 +43,9 @@ class LlmExecutorFactoryArguments(LlmArguments):
 class TunerFunctionArguments:
     """Tuning related function arguments."""
 
-    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False, fp32_cpu_offload: bool = False, is_chat_model: bool = True,
-                 padding_side: str | None = 'right'):
+    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False,
+                 fp32_cpu_offload: bool = False, is_chat_model: bool = True,
+                 padding_side: str | None = 'right', use_agent_tokens: bool = False):
         self.new_model = new_model
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
@@ -52,6 +54,7 @@ class TunerFunctionArguments:
         self.fp32_cpu_offload = fp32_cpu_offload
         self.is_chat_model = is_chat_model
         self.padding_side = padding_side
+        self.use_agent_tokens = use_agent_tokens
 
     def validate(self) -> None:
         """Raise TunerException if arguments are invalid."""
@@ -92,8 +95,9 @@ class TuneArguments(TunerFunctionArguments):
                  fp32_cpu_offload: bool = True,
                  is_chat_model: bool = True,
                  target_all_modules: bool = False,
-                 padding_side: str | None = 'right'):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side)
+                 padding_side: str | None = 'right',
+                 use_agent_tokens: bool = False):
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -157,8 +161,9 @@ class MergeArguments(TunerFunctionArguments):
                  use_8bit: bool = False,
                  output_dir: str = '../../models',
                  is_chat_model: bool = True,
-                 padding_side: str | None = 'right'):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model, padding_side)
+                 padding_side: str | None = 'right',
+                 use_agent_tokens: bool = False):
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens)
         self.base_model = base_model
         self.output_dir = output_dir
 
@@ -185,8 +190,9 @@ class PushArguments(TunerFunctionArguments):
                  use_8bit: bool = False,
                  public_push: bool = False,
                  is_chat_model: bool = True,
-                 padding_side: str | None = 'right'):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model, padding_side=padding_side)
+                 padding_side: str | None = 'right',
+                 use_agent_tokens: bool = False):
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens)
         self.model_dir = model_dir
         self.public_push = public_push
 

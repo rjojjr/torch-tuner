@@ -14,7 +14,8 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
             public_push=prog_args.public_push,
-            padding_side=prog_args.padding_side
+            padding_side=prog_args.padding_side,
+            use_agent_tokens=prog_args.use_agent_tokens
         )
         push_arguments.validate()
         return push_arguments
@@ -35,7 +36,8 @@ def build_and_validate_merge_args(prog_args):
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
             output_dir=prog_args.output_directory,
-            padding_side=prog_args.padding_side
+            padding_side=prog_args.padding_side,
+            use_agent_tokens=prog_args.use_agent_tokens
         )
         merge_arguments.validate()
         return merge_arguments
@@ -75,7 +77,8 @@ def build_and_validate_tune_args(prog_args):
             output_directory=prog_args.output_directory,
             fp32_cpu_offload=prog_args.fp32_cpu_offload,
             is_chat_model=prog_args.is_chat_model,
-            padding_side=prog_args.padding_side
+            padding_side=prog_args.padding_side,
+            use_agent_tokens=prog_args.use_agent_tokens
         )
         tune_arguments.validate()
         return tune_arguments
@@ -150,6 +153,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-bf16', '--use-bf-16', help="Use bf-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Use langchain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-bs', '--batch-size', help="Iteration batch size(default 4)", type=int, default=4)
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)

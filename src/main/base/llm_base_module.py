@@ -13,10 +13,19 @@ from main.utils.model_utils import get_all_linear_layers
 # LLM independent base functions
 
 
+def _add_agent_tokens(tokenizer, model):
+    agent_tokens = ["Thought", "Action", "Action Input", "Observation", "Final Answer"]
+    agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
+    tokenizer.add_tokens(list(agent_tokens))
+    model.resize_token_embeddings(len(tokenizer))
+
+
 # TODO - Tune/extract an embeddings only model
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
+    if arguments.use_agent_tokens:
+        _add_agent_tokens(tokenizer, base_model)
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
@@ -114,6 +123,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
+    if arguments.use_agent_tokens:
+        _add_agent_tokens(tokenizer, base_model)
     lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
@@ -135,8 +146,6 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
 
 
 def push_base(arguments: PushArguments, tokenizer, model) -> None:
-    if arguments.is_chat_model:
-        model, tokenizer = setup_chat_format(model, tokenizer)
     print(f"pushing {arguments.new_model} to HF")
     print('')
 
