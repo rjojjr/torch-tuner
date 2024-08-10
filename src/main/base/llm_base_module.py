@@ -36,6 +36,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
     else:
         ds = load_dataset(arguments.training_data_dir, split='train')
+
     if arguments.target_modules is None or len(arguments.target_modules) == 0:
         target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
     else:
@@ -82,7 +83,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         max_steps=-1,
         warmup_ratio=0.03,
         group_by_length=True,
-        lr_scheduler_type="linear",
+        lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
         # TODO - add this as tuning arg
