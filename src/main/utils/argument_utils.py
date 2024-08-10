@@ -13,7 +13,9 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
-            public_push=prog_args.public_push
+            public_push=prog_args.public_push,
+            padding_side=prog_args.padding_side,
+            use_agent_tokens=prog_args.use_agent_tokens
         )
         push_arguments.validate()
         return push_arguments
@@ -33,7 +35,9 @@ def build_and_validate_merge_args(prog_args):
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
-            output_dir=prog_args.output_directory
+            output_dir=prog_args.output_directory,
+            padding_side=prog_args.padding_side,
+            use_agent_tokens=prog_args.use_agent_tokens
         )
         merge_arguments.validate()
         return merge_arguments
@@ -72,7 +76,12 @@ def build_and_validate_tune_args(prog_args):
             save_embeddings=prog_args.save_embeddings,
             output_directory=prog_args.output_directory,
             fp32_cpu_offload=prog_args.fp32_cpu_offload,
-            is_chat_model=prog_args.is_chat_model
+            is_chat_model=prog_args.is_chat_model,
+            padding_side=prog_args.padding_side,
+            use_agent_tokens=prog_args.use_agent_tokens,
+            lr_scheduler_type=prog_args.lr_scheduler_type,
+            target_modules=prog_args.target_modules,
+            torch_empty_cache_steps=prog_args.torch_empty_cache_steps
         )
         tune_arguments.validate()
         return tune_arguments
@@ -112,6 +121,24 @@ def _parse_bool_arg(arg: str | None) -> bool:
     return arg is not None and arg.lower().strip() == 'true'
 
 
+def _parse_nullable_arg(arg: str | None) -> str | None:
+    if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
+        return None
+    return arg
+
+def _parse_nullable_int_arg(arg: str | None) -> int | None:
+    if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
+        return None
+    return int(arg)
+
+def _parse_nullable_list_arg(arg: str | None) -> list | None:
+    if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
+        return None
+    raw = arg.split()
+    output = []
+    for a in raw:
+        output.append(a.strip())
+
 def _build_program_argument_parser(title: str, description: str) -> ArgumentParser:
     parser = ArgumentParser(
         prog=title,
@@ -123,6 +150,11 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
+    parser.add_argument('-tecs', '--torch-empty-cache-steps', help="Empty torch cache after x steps(NEVER empties cache when set to None)(USEFUL to prevent OOM issues)(default: 1)", type=lambda x: _parse_nullable_int_arg(x), default="1")
+
+    parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
@@ -141,17 +173,19 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-bf16', '--use-bf-16', help="Use bf-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Use langchain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
 
-    parser.add_argument('-bs', '--batch-size', help="Samples per iteration(default 4)", type=int, default=4)
+    parser.add_argument('-bs', '--batch-size', help="Iteration batch size(default 4)", type=int, default=4)
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
-    parser.add_argument('-se', '--save-embeddings', default="true", help="Save embeddings layers(default: true)(NOTE: this setting is ignored and set to true when tuning chat model)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
+    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(ONLY applies to AdamW optimizers)(default: 2e-5)", type=float, default=2e-5)
+    parser.add_argument('-lrst', '--lr-scheduler-type', default="linear", help="Learning rate scheduler type(determines the learning rate decrease as training progresses)(ONLY applies to AdamW optimizers)(default: linear)")
     parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
-    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: paged_adamw_32bit)", default="paged_adamw_32bit")
+    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_8bit)", default="adamw_8bit")
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 4)", type=int, default=4)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)

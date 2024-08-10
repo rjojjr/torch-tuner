@@ -3,16 +3,27 @@ from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
+from utils.model_utils import get_all_layers, get_all_linear_layers
 import os
 import shutil
 
+
 # LLM independent base functions
+
+
+def _add_agent_tokens(tokenizer, model):
+    agent_tokens = ["Thought", "Action", "Action Input", "Observation", "Final Answer"]
+    agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
+    tokenizer.add_tokens(list(agent_tokens))
+    model.resize_token_embeddings(len(tokenizer))
 
 
 # TODO - Tune/extract an embeddings only model
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
+    if arguments.use_agent_tokens:
+        _add_agent_tokens(tokenizer, base_model)
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
@@ -25,13 +36,17 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
     else:
         ds = load_dataset(arguments.training_data_dir, split='train')
-    target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
-    if arguments.save_embeddings:
-        target_modules.append("embed_tokens")
+
+    if arguments.target_modules is None or len(arguments.target_modules) == 0:
+        target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
+    else:
+        target_modules = arguments.target_modules
+
     lora_config = LoraConfig(
         r=arguments.r,
         lora_alpha=arguments.alpha,
         target_modules=target_modules,
+        modules_to_save=["embed_tokens"] if arguments.save_embeddings else [],
         lora_dropout=arguments.lora_dropout,
         bias=arguments.bias,
         task_type=TaskType.CAUSAL_LM
@@ -46,6 +61,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         include_tokens_per_second=False,
         include_num_input_tokens_seen=False,
         num_train_epochs=arguments.epochs,
+        torch_empty_cache_steps=arguments.torch_empty_cache_steps,
         per_device_train_batch_size=arguments.batch_size,
         per_device_eval_batch_size=arguments.batch_size,
         gradient_accumulation_steps=arguments.gradient_accumulation_steps,
@@ -58,6 +74,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         save_total_limit=arguments.max_checkpoints,
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
+        # TODO - CPU Tuning
+        use_cpu=False,
         fp16=arguments.is_fp16,
         tf32=arguments.is_tf32,
         bf16=arguments.is_bf16,
@@ -65,11 +83,11 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         max_steps=-1,
         warmup_ratio=0.03,
         group_by_length=True,
-        lr_scheduler_type="constant",
+        lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
         # TODO - add this as tuning arg
-        max_seq_length=5120,
+        max_seq_length=4096,
         dataset_text_field="text" if (arguments.train_file is not None and not arguments.train_file.endswith('jsonl')) else None
         # TODO - investigate for instruction training
         #neftune_noise_alpha
@@ -107,6 +125,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
+    if arguments.use_agent_tokens:
+        _add_agent_tokens(tokenizer, base_model)
     lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
     model_dir = f'{arguments.output_dir}/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
@@ -128,8 +148,6 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
 
 
 def push_base(arguments: PushArguments, tokenizer, model) -> None:
-    if arguments.is_chat_model:
-        model, tokenizer = setup_chat_format(model, tokenizer)
     print(f"pushing {arguments.new_model} to HF")
     print('')
 

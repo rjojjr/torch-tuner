@@ -6,7 +6,6 @@ from exception.exceptions import TunerException
 import torch
 import time
 import gc
-import os
 
 max_attempts = 5
 retry_interval = 0.5
@@ -19,12 +18,14 @@ class LlmExecutor:
     """Manage served LLM instance."""
 
     # TODO - Another instance of a constructor to that needs to be made "private"
-    def __init__(self, model, tokenizer):
+    def __init__(self, model, tokenizer, padding_side: str | None):
         # TODO - fix this
         # model.generation_config.cache_implementation = "static"
         # model.forward = torch.compile(model.forward, mode="reduce-overhead", fullgraph=True)
-        tokenizer.pad_token = tokenizer.eos_token
-        model.generation_config.pad_token_id = tokenizer.pad_token_id
+        self._padding_side = padding_side
+        if padding_side is not None:
+            tokenizer.pad_token = tokenizer.eos_token
+            model.generation_config.pad_token_id = tokenizer.pad_token_id
         self._model = model
         self._tokenizer = tokenizer
 
@@ -32,7 +33,7 @@ class LlmExecutor:
     # TODO - Stop sequences
     def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1):
         try:
-            model_inputs = self._tokenizer([input], padding=True, return_tensors="pt").to("cuda")
+            model_inputs = self._tokenizer([input], padding=True if self._padding_side is not None else False, return_tensors="pt").to("cuda")
             input_length = model_inputs.input_ids.shape[1]
             generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature)
             response = self._tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
@@ -52,11 +53,10 @@ class LlmExecutor:
             raise TunerException(message="CUDA OOM, exceeded max_attempts")
 
 
-# TODO - add padding_side arg
 # Only use this function to construct LLM executors
 def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
     arguments.validate()
-    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
+
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     return lambda: LlmExecutor(LlamaForCausalLM.from_pretrained(
@@ -64,8 +64,9 @@ def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[],
         device_map={"":0},
         low_cpu_mem_usage=True,
         quantization_config=bnb_config,
+        torch_dtype="auto"
         # TODO - investigate if this is effective
         # attn_implementation="flash_attention_2"
-    ), AutoTokenizer.from_pretrained(arguments.model, padding_side="left"))
+    ), AutoTokenizer.from_pretrained(arguments.model, padding_side=arguments.padding_side))
 
 

@@ -49,7 +49,7 @@ fi
 
 {
   echo 'Installing python dependencies' && \
-    pip install -r requirements.txt && \
+    pip install -I -r requirements.txt && \
     deactivate
 } || {
   deactivate && \

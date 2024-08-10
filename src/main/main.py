@@ -6,14 +6,16 @@ from utils.argument_utils import build_and_validate_push_args, build_and_validat
 from serve.llm_executor import llm_executor_factory
 from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
+import os
 
 # TODO - Automate this
-version = '1.4.0'
+version = '1.4.1'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
 description = 'Fine-Tune Llama LLM models with simple text on Nvidia GPUs using Torch and LoRA.'
 
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
 def main() -> None:
     args = parse_arguments(title, description)
@@ -60,18 +62,11 @@ def main() -> None:
     print(f'Using LLM Type: {tuner.llm_type}')
 
     print('')
-    print(f'Is Chat Model: {args.is_chat_model}')
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')
     print(f'Training File: {args.training_data_file}')
-    print('')
-    print(f'Epochs: {str(args.epochs)}')
-    print(f'Using LoRA R: {str(args.lora_r)}')
-    print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
-    print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
-    print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
-    print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
+
     print('')
     print(f'Using tf32: {str(args.use_tf_32)}')
     print(f'Using bf16: {str(args.use_bf_16)}')
@@ -79,18 +74,35 @@ def main() -> None:
     print(f'Using 8bit: {str(args.use_8bit)}')
     print(f'Using 4bit: {str(args.use_4bit)}')
     print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
+
     print('')
     print(f'Is Fine-Tuning: {str(args.fine_tune)}')
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')
-    print('')
-    print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
-    print(f'Using Max Saves: {str(args.max_saved)}')
-    print(f'Using Batch Size: {str(args.batch_size)}')
-    print(f'Using Optimizer: {args.optimizer_type}')
-    print(f'Using Save Strategy: {args.save_strategy}')
-    print(f'Using Save Steps: {str(args.save_steps)}')
-    print(f'Using Save Embeddings: {str(args.save_embeddings)}')
+
+    if args.fine_tune:
+        print('')
+        if args.torch_empty_cache_steps is not None:
+            print(f'Empty Torch Cache After {args.torch_empty_cache_steps} Steps')
+
+        print(f'Is Chat Model: {args.is_chat_model}')
+        print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
+        print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
+        print(f'Using Max Saves: {str(args.max_saved)}')
+        print(f'Using Batch Size: {str(args.batch_size)}')
+        print(f'Using Optimizer: {args.optimizer_type}')
+        print(f'Using Save Strategy: {args.save_strategy}')
+        print(f'Using Save Steps: {str(args.save_steps)}')
+        print(f'Using Save Embeddings: {str(args.save_embeddings)}')
+
+        print('')
+        print(f'Epochs: {str(args.epochs)}')
+        print(f'Using LoRA R: {str(args.lora_r)}')
+        print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
+        print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
+        print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
+        print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
+        print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
 
     if args.fine_tune:
         print('')
