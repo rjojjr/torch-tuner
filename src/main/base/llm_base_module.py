@@ -61,7 +61,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         include_tokens_per_second=False,
         include_num_input_tokens_seen=False,
         num_train_epochs=arguments.epochs,
-        torch_empty_cache_steps=1,
+        torch_empty_cache_steps=arguments.torch_empty_cache_steps,
         per_device_train_batch_size=arguments.batch_size,
         per_device_eval_batch_size=arguments.batch_size,
         gradient_accumulation_steps=arguments.gradient_accumulation_steps,

@@ -1,5 +1,4 @@
 from exception.exceptions import ArgumentValidationException
-from pandas.core.nanops import bottleneck_switch
 
 
 class ServerArguments:
@@ -98,7 +97,8 @@ class TuneArguments(TunerFunctionArguments):
                  padding_side: str | None = 'right',
                  use_agent_tokens: bool = False,
                  lr_scheduler_type: str = 'linear',
-                 target_modules: list | None = None):
+                 target_modules: list | None = None,
+                 torch_empty_cache_steps: int | None = 1):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens)
         self.r = r
         self.alpha = alpha
@@ -125,6 +125,7 @@ class TuneArguments(TunerFunctionArguments):
         self.target_all_modules = target_all_modules
         self.lr_scheduler_type = lr_scheduler_type
         self.target_modules = target_modules
+        self.torch_empty_cache_steps = torch_empty_cache_steps
 
 
     def validate(self) -> None:

@@ -80,7 +80,8 @@ def build_and_validate_tune_args(prog_args):
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             lr_scheduler_type=prog_args.lr_scheduler_type,
-            target_modules=prog_args.target_modules
+            target_modules=prog_args.target_modules,
+            torch_empty_cache_steps=prog_args.torch_empty_cache_steps
         )
         tune_arguments.validate()
         return tune_arguments
@@ -125,6 +126,11 @@ def _parse_nullable_arg(arg: str | None) -> str | None:
         return None
     return arg
 
+def _parse_nullable_int_arg(arg: str | None) -> int | None:
+    if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
+        return None
+    return int(arg)
+
 def _parse_nullable_list_arg(arg: str | None) -> list | None:
     if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
         return None
@@ -146,6 +152,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
+    parser.add_argument('-tecs', '--torch-empty-cache-steps', help="Empty torch cache after x steps(NEVER empties cache when set to None)(USEFUL to prevent OOM issues)(default: 1)", type=lambda x: _parse_nullable_int_arg(x), default="1")
+
     parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
