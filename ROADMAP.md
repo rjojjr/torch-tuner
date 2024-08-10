@@ -9,6 +9,9 @@ with LoRA.
 - Fine-Tune any LLM model with a single simple CLI command
 - Serve LLM models over REST APIs in an efficient, predictable and production-ready way
 - REST API for automated SFT
+- Add support for audio models
+- Add support for image generation models
+- Add support for vision models
 - Javascript UI for APIs(this is a BIG STRETCH goal)
 
 ### TODOs
@@ -18,6 +21,7 @@ but in the meantime I will track work/needs/bugs/requests here.
 
 - Add production wrapper to LLM REST server
 - Add ability to provide special tokens
+- Add Windows OS support
 - Add support for non-llama models
   - Mistral
   - Falcon
