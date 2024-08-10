@@ -63,6 +63,7 @@ def main() -> None:
 
     print('')
     print(f'Is Chat Model: {args.is_chat_model}')
+    print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
     print(f'Output Directory: {args.output_directory}')
     print(f'Base Model: {args.base_model}')
     print(f'Model Save Directory: {model_dir}')
@@ -73,6 +74,7 @@ def main() -> None:
     print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
     print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
     print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
+    print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
     print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
     print('')
     print(f'Using tf32: {str(args.use_tf_32)}')

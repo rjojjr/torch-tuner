@@ -79,7 +79,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         max_steps=-1,
         warmup_ratio=0.03,
         group_by_length=True,
-        lr_scheduler_type="constant",
+        lr_scheduler_type="linear",
         report_to="tensorboard",
         do_eval=arguments.do_eval,
         # TODO - add this as tuning arg

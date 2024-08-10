@@ -78,7 +78,8 @@ def build_and_validate_tune_args(prog_args):
             fp32_cpu_offload=prog_args.fp32_cpu_offload,
             is_chat_model=prog_args.is_chat_model,
             padding_side=prog_args.padding_side,
-            use_agent_tokens=prog_args.use_agent_tokens
+            use_agent_tokens=prog_args.use_agent_tokens,
+            lr_scheduler_type=prog_args.lr_scheduler_type
         )
         tune_arguments.validate()
         return tune_arguments
@@ -162,11 +163,12 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
     parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
+    parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(ONLY applies to AdamW optimizers)(default: 2e-5)", type=float, default=2e-5)
+    parser.add_argument('-lrst', '--lr-scheduler-type', default="linear", help="Learning rate scheduler type(determines the learning rate decrease as training progresses)(ONLY applies to AdamW optimizers)(default: linear)")
     parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
-    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: paged_adamw_32bit)", default="paged_adamw_32bit")
+    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_8bit)", default="adamw_8bit")
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 4)", type=int, default=4)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
