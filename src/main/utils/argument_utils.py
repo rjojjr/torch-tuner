@@ -13,7 +13,8 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
-            public_push=prog_args.public_push
+            public_push=prog_args.public_push,
+            padding_side=prog_args.padding_side
         )
         push_arguments.validate()
         return push_arguments
@@ -33,7 +34,8 @@ def build_and_validate_merge_args(prog_args):
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
-            output_dir=prog_args.output_directory
+            output_dir=prog_args.output_directory,
+            padding_side=prog_args.padding_side
         )
         merge_arguments.validate()
         return merge_arguments
@@ -72,7 +74,8 @@ def build_and_validate_tune_args(prog_args):
             save_embeddings=prog_args.save_embeddings,
             output_directory=prog_args.output_directory,
             fp32_cpu_offload=prog_args.fp32_cpu_offload,
-            is_chat_model=prog_args.is_chat_model
+            is_chat_model=prog_args.is_chat_model,
+            padding_side=prog_args.padding_side
         )
         tune_arguments.validate()
         return tune_arguments
@@ -112,6 +115,10 @@ def _parse_bool_arg(arg: str | None) -> bool:
     return arg is not None and arg.lower().strip() == 'true'
 
 
+def _parse_nullable(arg: str | None):
+    return arg is None or arg.strip() == '' or arg.lower().strip() == 'none'
+
+
 def _build_program_argument_parser(title: str, description: str) -> ArgumentParser:
     parser = ArgumentParser(
         prog=title,
@@ -123,6 +130,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable(x), default="right")
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
@@ -142,11 +151,11 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
 
-    parser.add_argument('-bs', '--batch-size', help="Samples per iteration(default 4)", type=int, default=4)
+    parser.add_argument('-bs', '--batch-size', help="Iteration batch size(default 4)", type=int, default=4)
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
-    parser.add_argument('-se', '--save-embeddings', default="true", help="Save embeddings layers(default: true)(NOTE: this setting is ignored and set to true when tuning chat model)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(default: 2e-5)", type=float, default=2e-5)
     parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(default: 0.05)", type=float, default=0.05)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(default: false)", default="false", type=lambda x: _parse_bool_arg(x))

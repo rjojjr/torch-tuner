@@ -3,8 +3,12 @@ from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
+from utils.model_utils import get_all_layers, get_linear_layers
 import os
 import shutil
+
+from main.utils.model_utils import get_all_linear_layers
+
 
 # LLM independent base functions
 
@@ -25,7 +29,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
     else:
         ds = load_dataset(arguments.training_data_dir, split='train')
-    target_modules = ["gate_proj", "down_proj", "up_proj", "q_proj", "v_proj", "k_proj", "o_proj", "lm-head"]
+    target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
 
     lora_config = LoraConfig(
         r=arguments.r,

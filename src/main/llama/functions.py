@@ -17,8 +17,9 @@ def merge(arguments: MergeArguments) -> None:
     )
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.padding_side = "right"
+    if arguments.padding_side is not None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = arguments.padding_side
 
     base_module.merge_base(arguments, tokenizer, base_model, bnb_config)
 
@@ -44,16 +45,18 @@ def push(arguments: PushArguments) -> None:
         )
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.padding_side = "right"
+    if arguments.padding_side is not None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = arguments.padding_side
 
     base_module.push_base(arguments, tokenizer, model)
 
 
 def fine_tune(arguments: TuneArguments) -> None:
     tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
-    tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.padding_side = "right"
+    if arguments.padding_side is not None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = arguments.padding_side
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
