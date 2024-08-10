@@ -7,8 +7,6 @@ from utils.model_utils import get_all_layers, get_all_linear_layers
 import os
 import shutil
 
-from main.utils.model_utils import get_all_linear_layers
-
 
 # LLM independent base functions
 
