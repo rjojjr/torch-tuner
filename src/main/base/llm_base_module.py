@@ -3,7 +3,7 @@ from datasets import load_dataset
 from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
 from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
-from utils.model_utils import get_all_layers, get_linear_layers
+from utils.model_utils import get_all_layers, get_all_linear_layers
 import os
 import shutil
 
