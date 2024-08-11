@@ -1,6 +1,6 @@
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 from datasets import load_dataset
-from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
+from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType, PeftConfig
 from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers
@@ -12,7 +12,8 @@ import shutil
 
 
 def _add_agent_tokens(tokenizer, model):
-    agent_tokens = ["Thought", "Action", "Action Input", "Observation", "Final Answer"]
+    agent_tokens = ["Thought:", "Action:", "Input:", "Observation:", "Answer:", "Action\sInput:", "Final\sAnswer:"]
+
     agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
     tokenizer.add_tokens(list(agent_tokens))
     model.resize_token_embeddings(len(tokenizer))
@@ -42,11 +43,14 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     else:
         target_modules = arguments.target_modules
 
+    modules_to_save=["embed_tokens"] if arguments.save_embeddings else []
+
+
     lora_config = LoraConfig(
         r=arguments.r,
         lora_alpha=arguments.alpha,
         target_modules=target_modules,
-        modules_to_save=["embed_tokens"] if arguments.save_embeddings else [],
+        modules_to_save=modules_to_save,
         lora_dropout=arguments.lora_dropout,
         bias=arguments.bias,
         task_type=TaskType.CAUSAL_LM
@@ -116,6 +120,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         shutil.rmtree(lora_dir)
 
     train.model.save_pretrained(lora_dir)
+    train.model.config.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
     del model
     del base_model
@@ -132,7 +137,8 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
     print('')
 
-    model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config)
+    config = PeftConfig.from_pretrained(lora_dir)
+    model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config, config=config)
     model = model.merge_and_unload(progressbar=True)
     print('')
 
