@@ -16,7 +16,9 @@ def merge(arguments: MergeArguments) -> None:
         torch_dtype=dtype
     )
 
-    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
+    lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
+
+    tokenizer = AutoTokenizer.from_pretrained(lora_dir)
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
@@ -53,7 +55,7 @@ def push(arguments: PushArguments) -> None:
 
 
 def fine_tune(arguments: TuneArguments) -> None:
-    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model, add_eos_token=True, add_bos_token=True)
+    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
