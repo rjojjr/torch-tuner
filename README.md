@@ -1,7 +1,7 @@
 # Torch Tuner CLI README
 
 The torch-tuner project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
-Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs with simple text samples(or JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA), [Transformers](https://huggingface.co/docs/transformers/en/index) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
+Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs(CPU support coming soon) with simple text samples(or JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA), [Transformers](https://huggingface.co/docs/transformers/en/index) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
 
 Use torch-tuner's CLI to perform Supervised Fine-Tuning(SFT)(with LoRA) of
 a suitable(Llama only ATM) base model that exists locally or on [Huggingface](https://huggingface.co) with simple text/JSONL and CUDA.
@@ -48,7 +48,8 @@ you run it with.
 
 ### Using Torch Tuner
 
-I typically wrap/configure my tuner CLI commands with bash scripts for convenience.
+I typically wrap/configure my tuner CLI commands with bash scripts for convenience. You could also
+use aliases to help keep your most commonly used CLI commands handy and easily accessible.
 You might want to install the tuner CLI(using the instructions from the "Install Torch-Tuner CLI" section below) for 
 easy access. 
 
@@ -58,7 +59,7 @@ installed on the host. I would like to add CPU based tuning in the near future.
 
 #### Install Torch-Tuner CLI
 
-You can install the torch tuner CLI as a system-wide application on any Linux OS(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
+You can install the torch tuner CLI as a system-wide application on any Linux OS(and Mac OS)(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
 with [this script](scripts/install-torch-tuner.sh) if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
