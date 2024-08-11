@@ -12,7 +12,7 @@ import shutil
 
 
 def _add_agent_tokens(tokenizer, model):
-    agent_tokens = ["Thought:", "Action:", "Action Input:", "Observation:", "Final Answer:"]
+    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:"]
     agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
     tokenizer.add_tokens(list(agent_tokens))
     if model is not None:

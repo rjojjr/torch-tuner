@@ -1,6 +1,6 @@
 from typing import Callable
 from arguments.arguments import LlmExecutorFactoryArguments
-from transformers import AutoTokenizer, LlamaForCausalLM
+from transformers import AutoTokenizer, LlamaForCausalLM, StopStringCriteria, StoppingCriteriaList
 from utils.torch_utils import get_bnb_config_and_dtype
 from exception.exceptions import TunerException
 import torch
@@ -33,11 +33,14 @@ class LlmExecutor:
 
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     # TODO - Stop sequences
-    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1):
+    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None):
+        if stops is None:
+            stops = []
         try:
+            stopping_criteria = StoppingCriteriaList([StopStringCriteria(stop_strings=stops, tokenizer=self._tokenizer)])
             model_inputs = self._tokenizer([input], padding=True if self._padding_side is not None else False, return_tensors="pt").to("cuda")
             input_length = model_inputs.input_ids.shape[1]
-            generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature)
+            generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature, stopping_criteria=stopping_criteria)
             response = self._tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
             # TODO - FIXME - big hack to stop OOM
             gc.collect()

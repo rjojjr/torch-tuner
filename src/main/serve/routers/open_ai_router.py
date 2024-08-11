@@ -21,10 +21,11 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
         body = request.get_json(force=True)
+        # print(f'{str(body)}')
 
         prompt = _construct_chat_prompt(body)
 
-        completion = llm.completion(prompt, int(body['max_tokens']), parse_temp(float(body['temperature'])))
+        completion = llm.completion(prompt, int(body['max_tokens']), parse_temp(float(body['temperature'])), stops=body['stop'])
         prompt_tokens = len(encoding.encode(prompt))
         completion_tokens = len(encoding.encode(completion))
         chat_response = {
@@ -53,7 +54,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
     @app.route("/v1/completions", methods=['POST'])
     def completions_endpoint():
         body = request.get_json(force=True)
-        completion = llm.completion(body['prompt'], int(body['max_tokens']), parse_temp(float(body['temperature'])))
+        completion = llm.completion(body['prompt'], int(body['max_tokens']), parse_temp(float(body['temperature'])), stops=body['stop'])
         prompt_tokens = len(encoding.encode(body['prompt']))
         completion_tokens = len(encoding.encode(completion))
 
