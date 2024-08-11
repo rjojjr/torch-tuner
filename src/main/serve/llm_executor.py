@@ -26,6 +26,8 @@ class LlmExecutor:
         if padding_side is not None:
             tokenizer.pad_token = tokenizer.eos_token
             model.generation_config.pad_token_id = tokenizer.pad_token_id
+            tokenizer.padding_side = padding_side
+
         self._model = model
         self._tokenizer = tokenizer
 
@@ -67,6 +69,6 @@ def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[],
         torch_dtype="auto"
         # TODO - investigate if this is effective
         # attn_implementation="flash_attention_2"
-    ), AutoTokenizer.from_pretrained(arguments.model, padding_side=arguments.padding_side))
+    ), AutoTokenizer.from_pretrained(arguments.model), padding_side=arguments.padding_side)
 
 

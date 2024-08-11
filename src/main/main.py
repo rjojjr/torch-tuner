@@ -38,7 +38,7 @@ def main() -> None:
         print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
         print()
         print(f"Serving {args.serve_model} on port {args.serve_port}")
-        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16))
+        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side))
         server = OpenAiLlmServer(factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
         # TODO - cleaner exit
