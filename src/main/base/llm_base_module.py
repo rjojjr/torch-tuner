@@ -92,7 +92,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         do_eval=arguments.do_eval,
         # TODO - add this as tuning arg
         max_seq_length=4096,
-        dataset_text_field="text" if (arguments.train_file is not None and not arguments.train_file.endswith('jsonl')) else None
+        dataset_text_field="text"
         # TODO - investigate for instruction training
         #neftune_noise_alpha
     )
