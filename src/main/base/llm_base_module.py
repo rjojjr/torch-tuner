@@ -104,7 +104,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     train = SFTTrainer(
         model=model,
-        train_dataset=ds['train'] if arguments.train_file is not None else ds,
+        train_dataset=ds['train'],
         tokenizer=tokenizer,
         args=train_params
     )
