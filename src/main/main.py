@@ -50,7 +50,7 @@ def main() -> None:
     tuner = tuner_factory()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
-    model_dir = f'{args.output_dir}/merged-models/{args.new_model}'
+    model_dir = f'{args.output_directory}/merged-models/{args.new_model}'
 
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
