@@ -12,7 +12,7 @@ import shutil
 
 
 def _add_agent_tokens(tokenizer, model):
-    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:"]
+    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:", "\nFinal Answer:"]
     agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
     tokenizer.add_tokens(list(agent_tokens))
     if model is not None:
@@ -42,6 +42,11 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
     else:
         target_modules = arguments.target_modules
+
+    if arguments.use_agent_tokens or arguments.is_chat_model:
+        target_modules.append("embed_tokens")
+        target_modules.append("lm_head")
+        target_modules = list(set(target_modules))
 
     modules_to_save=["embed_tokens"] if arguments.save_embeddings else []
 
@@ -85,7 +90,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         bf16=arguments.is_bf16,
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
-        warmup_ratio=0.03,
+        warmup_ratio=arguments.warmup_ratio,
         group_by_length=True,
         lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",

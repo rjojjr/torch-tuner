@@ -81,7 +81,8 @@ def build_and_validate_tune_args(prog_args):
             use_agent_tokens=prog_args.use_agent_tokens,
             lr_scheduler_type=prog_args.lr_scheduler_type,
             target_modules=prog_args.target_modules,
-            torch_empty_cache_steps=prog_args.torch_empty_cache_steps
+            torch_empty_cache_steps=prog_args.torch_empty_cache_steps,
+            warmup_ratio=prog_args.warmup_ratio
         )
         tune_arguments.validate()
         return tune_arguments
@@ -176,6 +177,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Use langchain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-bs', '--batch-size', help="Iteration batch size(default 4)", type=int, default=4)
+    parser.add_argument('-wur', '--warmup-ratio', help="Linear warmup over warmup_ratio fraction of total steps(default 0.03)", type=float, default=0.03)
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA R value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(default: 32)", default=32)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations of the entire dataset(default: 10)", default=10)
