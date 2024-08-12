@@ -12,7 +12,7 @@ import shutil
 
 
 def _add_agent_tokens(tokenizer, model):
-    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:"]
+    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:", "\nFinal Answer:"]
     agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
     tokenizer.add_tokens(list(agent_tokens))
     if model is not None:
@@ -28,7 +28,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
-    lora_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}/adapter"
+    lora_dir = f"{arguments.output_directory}/adapters/{arguments.new_model}"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
         print('')
@@ -42,6 +42,11 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
     else:
         target_modules = arguments.target_modules
+
+    if arguments.use_agent_tokens or arguments.is_chat_model:
+        target_modules.append("embed_tokens")
+        target_modules.append("lm_head")
+        target_modules = list(set(target_modules))
 
     modules_to_save=["embed_tokens"] if arguments.save_embeddings else []
 
@@ -85,12 +90,12 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         bf16=arguments.is_bf16,
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
-        warmup_ratio=0.03,
+        warmup_ratio=arguments.warmup_ratio,
         group_by_length=True,
         lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
-        # TODO - add this as tuning arg
+        # TODO - is this ignored bt SFTTrainer?
         max_seq_length=4096,
         dataset_text_field="text"
         # TODO - investigate for instruction training
@@ -99,7 +104,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     train = SFTTrainer(
         model=model,
-        train_dataset=ds['train'] if arguments.train_file is not None else ds,
+        train_dataset=ds['train'],
         tokenizer=tokenizer,
         args=train_params
     )
@@ -132,8 +137,8 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     if arguments.use_agent_tokens:
         _add_agent_tokens(tokenizer, base_model)
-    lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
-    model_dir = f'{arguments.output_dir}/{arguments.new_model}'
+    lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
+    model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
     if arguments.use_agent_tokens:
