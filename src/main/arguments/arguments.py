@@ -1,16 +1,28 @@
 from exception.exceptions import ArgumentValidationException
 
 
-class ServerArguments:
+class CliArguments:
+    """Base CLI arguments class"""
+
+    def validate(self) -> None:
+        """Raise TunerException if arguments are invalid."""
+        pass
+
+
+class ServerArguments(CliArguments):
     """LLM REST API server arguments."""
 
     def __init__(self, port: int = 8080, debug: bool = False):
         self.port = port
         self.debug = debug
 
+    def validate(self) -> None:
+        if self.port <= 0:
+            raise ArgumentValidationException("`port` must be positive non-zero integer value")
 
-class LlmArguments:
-    """LLM load parameters."""
+
+class LlmArguments(CliArguments):
+    """Base LLM load parameters."""
 
     def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right'):
         self.model = model
@@ -22,25 +34,18 @@ class LlmArguments:
         self.padding_side = padding_side
 
     def validate(self) -> None:
-        """Raise TunerException if arguments are invalid."""
-        pass
-
-
-class LlmExecutorFactoryArguments(LlmArguments):
-    """Init LLM Executor factory."""
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right'):
-        super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload, padding_side)
-
-    def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
             raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+
         if self.is_bf16 and self.is_fp16:
             raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
 
+        if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
+            raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
 
 
-class TunerFunctionArguments:
-    """Tuning related function arguments."""
+class TunerFunctionArguments(CliArguments):
+    """Base tuning related function arguments."""
 
     def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False,
                  fp32_cpu_offload: bool = False, is_chat_model: bool = True,
@@ -56,8 +61,30 @@ class TunerFunctionArguments:
         self.use_agent_tokens = use_agent_tokens
 
     def validate(self) -> None:
-        """Raise TunerException if arguments are invalid."""
-        pass
+        if self.use_4bit and self.use_8bit:
+            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+
+        if self.is_bf16 and self.is_fp16:
+            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+
+        if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
+            raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
+
+
+class LlmExecutorFactoryArguments(LlmArguments):
+    """Init LLM Executor factory."""
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right'):
+        super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload, padding_side)
+
+    def validate(self) -> None:
+        if self.use_4bit and self.use_8bit:
+            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+
+        if self.is_bf16 and self.is_fp16:
+            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+
+        if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
+            raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
 
 
 class TuneArguments(TunerFunctionArguments):
@@ -78,7 +105,7 @@ class TuneArguments(TunerFunctionArguments):
                  lora_dropout: float = 0.05,
                  no_checkpoint: bool = False,
                  bias: str = "none",
-                 optimizer_type: str = 'paged_adamw_32bit',
+                 optimizer_type: str = 'adamw_8bit',
                  gradient_accumulation_steps: int = 4,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,
@@ -90,7 +117,7 @@ class TuneArguments(TunerFunctionArguments):
                  use_8bit: bool = False,
                  use_4bit: bool = False,
                  save_embeddings: bool = False,
-                 output_directory: str = "../../models",
+                 output_directory: str = "./models",
                  fp32_cpu_offload: bool = True,
                  is_chat_model: bool = True,
                  target_all_modules: bool = False,
@@ -155,6 +182,8 @@ class TuneArguments(TunerFunctionArguments):
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
 
+        super(TuneArguments, self).validate()
+
 
 class MergeArguments(TunerFunctionArguments):
     """'merge' function arguments."""
@@ -184,6 +213,8 @@ class MergeArguments(TunerFunctionArguments):
         if not is_valid:
             raise ArgumentValidationException("'Merge Arguments' are missing required properties")
 
+        super(MergeArguments, self).validate()
+
 
 class PushArguments(TunerFunctionArguments):
     """'push' function arguments."""
@@ -212,3 +243,5 @@ class PushArguments(TunerFunctionArguments):
 
         if not is_valid:
             raise ArgumentValidationException("'Push Arguments' are missing required properties")
+
+        super(PushArguments, self).validate()
