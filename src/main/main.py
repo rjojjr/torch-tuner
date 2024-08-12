@@ -79,13 +79,15 @@ def main() -> None:
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')
 
+    print('')
+    print(f'Is Chat Model: {args.is_chat_model}')
+    print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
+
     if args.fine_tune:
         print('')
         if args.torch_empty_cache_steps is not None:
             print(f'Empty Torch Cache After {args.torch_empty_cache_steps} Steps')
 
-        print(f'Is Chat Model: {args.is_chat_model}')
-        print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
         print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
         print(f'Using Max Saves: {str(args.max_saved)}')
         print(f'Using Batch Size: {str(args.batch_size)}')
@@ -102,6 +104,8 @@ def main() -> None:
         print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
         print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
         print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
+        print(f'Using Warmup Ratio: {args.warmup_ratio}')
+
 
     if args.fine_tune:
         print('')
