@@ -1,7 +1,8 @@
 # Torch Tuner CLI README
 
-The torch-tuner project currently serves as a simple convenient CLI wrapper for fine-tuning(and serving) 
-Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs(CPU support coming soon) with simple text samples(or JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA), [Transformers](https://huggingface.co/docs/transformers/en/index) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
+The torch-tuner project currently serves as a simple convenient CLI wrapper for supervised fine-tuning(and serving) 
+Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs(CPU support coming soon) 
+with simple text samples(or JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA), [Transformers](https://huggingface.co/docs/transformers/en/index) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
 
 Use torch-tuner's CLI to perform Supervised Fine-Tuning(SFT)(with LoRA) of
 a suitable(Llama only ATM) base model that exists locally or on [Huggingface](https://huggingface.co) with simple text/JSONL and CUDA.
@@ -9,45 +10,16 @@ You can also use this CLI to deploy your model(or any model)
 as an REST API that mimics commonly used Open AI endpoints.
 
 Ideally, in the future, the torch-tuner project will support more complex training data structures,
-non-llama LLM types, CPU based tuning and fine-tuning vision and speech models. 
+non-llama LLM types, CPU based tuning and fine-tuning vision and speech models.
 
-## Serve Mode(EXPERIMENTAL)
+## Running the Torch Tuner CLI
 
-You can run the torch-tuner CLI in the new experimental serve mode to serve your model as a REST API that mimics the [Open AI](https://openai.com/) 
-completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
+The torch-tuner CLI will fine-tune, merge, push(to Huggingface) and/or serve your new fine-tuned model depending 
+on the arguments you run it with.
 
-```shell
-python src/main/main.py \
-  --serve true \
-  --serve-model llama-tuned \
-  --serve-port 8080
-  
-# When the Torch Tuner CLI is installed
-torch-tuner \
-  --serve true \
-  --serve-model llama-tuned \
-  --serve-port 8080
-  
-# Use dynamic quantization
-python src/main/main.py \
-  --serve true \
-  --serve-model llama-tuned \
-  --serve-port 8080 \
-  --use-4bit true
-```
+### Using the Torch Tuner CLI
 
-The Open AI like REST endpoints will ignore the model provided in the request body, and will
-always evaluate all requests against the model that is provided by the `--serve-model` argument.
-
-**WARNING** - Serve mode is currently in an experimental state and should NEVER be used in a production environment.
-
-## Running Torch Tuner
-
-The tuner CLI will fine-tune, merge, push(to Huggingface) and/or serve your new model depending on the arguments
-you run it with.
-
-### Using Torch Tuner
-
+The torch-tuner CLI can be installed as a system-wide application, or run from source with python.
 I typically wrap/configure my tuner CLI commands with bash scripts for convenience. You could also
 use aliases to help keep your most commonly used CLI commands handy and easily accessible.
 You might want to install the tuner CLI(using the instructions from the "Install Torch-Tuner CLI" section below) for 
@@ -57,7 +29,7 @@ I currently use this CLI across several different debian based OSes(across multi
 work on any OS. The torch-tuner CLI requires that you have the proper CUDA software/drivers(as well as python 3)
 installed on the host. I would like to add CPU based tuning in the near future.
 
-#### Install Torch-Tuner CLI
+#### Install the Torch Tuner CLI
 
 You can install the torch tuner CLI as a system-wide application on any Linux OS(and Mac OS)(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
 with [this script](scripts/install-torch-tuner.sh) if you don't want to have to mess with python or the repository in general. After installation,
@@ -103,26 +75,25 @@ to your command.
 You can use a dataset from Huggingface by setting the `--training-data-dir` argument
 to the desired HF repo name and excluding the `--training-data-file` argument.
 
-#### JSONL
+#### Simple Text
 
-Torch Tuner accepts JSONL training data in addition to plain text.
+The tuner will load plain-text data from a text-based file. It expects each training sample
+to consume exactly one line. This might be useful for older models as well tuning a model with 
+large amounts of plain/unstructured text.
+
+#### JSON Lines(JSONL)
+
+Torch Tuner accepts [JSONL](https://jsonlines.org/) training data in addition to plain text.
 
 Accepted JSONL Formats:
 
 ```json lines
-{"messages": [{"role": "system", "content": "You are helpful"}]}
+{"messages": [{"role": "system", "content": "You are helpful"}, {"role":  "user", "content":  "Hi!"}]}
 
 OR
 
-{"prompt": "<prompt text>", "completion": "<ideal generated text>"}
+{"prompt": "<context & prompt>", "completion": "<ideal AI response>"}
 ```
-
-#### Simple Text
-
-The tuner will load plain-text data from a text-based file. It expects each training sample
-to consume exactly one line. Currently, this app requires both the path to the directory
-where the training data is stored and the training-data file name supplied as separate 
-arguments.
 
 ### Install Dependencies
 
@@ -178,9 +149,39 @@ To List Available Torch Tuner CLI Arguments:
 python src/main/main.py --help
 ```
 
+### Serve Mode(EXPERIMENTAL)
+
+You can run the torch-tuner CLI in the new experimental serve mode to serve your model as a REST API that mimics the [Open AI](https://openai.com/)
+completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
+
+```shell
+python src/main/main.py \
+  --serve true \
+  --serve-model llama-tuned \
+  --serve-port 8080
+  
+# When the Torch Tuner CLI is installed
+torch-tuner \
+  --serve true \
+  --serve-model llama-tuned \
+  --serve-port 8080
+  
+# Use dynamic quantization
+python src/main/main.py \
+  --serve true \
+  --serve-model llama-tuned \
+  --serve-port 8080 \
+  --use-4bit true
+```
+
+The Open AI like REST endpoints will ignore the model provided in the request body, and will
+always evaluate all requests against the model that is provided by the `--serve-model` argument.
+
+**WARNING** - Serve mode is currently in an experimental state and should NEVER be used in a production environment.
+
 ### Useful Notes
 
-Most of the default CLI arguments are configured to use the least amount of VRAM possible.
+Most of the default CLI arguments are configured to consume the least amount of VRAM possible.
 
 In theory, the base-model(`--base-model`) torch-tuner CLI argument will 
 accept a path to a locally saved model instead of a Huggingface repository
@@ -194,6 +195,11 @@ if you don't want to run the CLI(`torch-tuner --help`) to find them.
 
 To request a feature or modification(or report a bug), please
 submit a Github Issue. I gladly welcome and encourage any and all feedback.
+
+### Roadmap
+
+To view current plans for future work and futures, please take a look at
+the [roadmap](ROADMAP.md)
 
 ## LICENSE
 
