@@ -7,6 +7,7 @@ import base.llm_base_module as base_module
 
 
 def merge(arguments: MergeArguments) -> None:
+    lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     base_model = LlamaForCausalLM.from_pretrained(
@@ -15,8 +16,6 @@ def merge(arguments: MergeArguments) -> None:
         return_dict=True,
         torch_dtype=dtype
     )
-
-    lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
 
     tokenizer = AutoTokenizer.from_pretrained(lora_dir)
     if arguments.padding_side is not None:

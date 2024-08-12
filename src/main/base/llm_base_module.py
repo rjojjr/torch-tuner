@@ -28,7 +28,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
-    lora_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}/adapter"
+    lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
         print('')
@@ -137,8 +137,8 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     if arguments.use_agent_tokens:
         _add_agent_tokens(tokenizer, base_model)
-    lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
-    model_dir = f'{arguments.output_dir}/{arguments.new_model}'
+    lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
+    model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
     if arguments.use_agent_tokens:
