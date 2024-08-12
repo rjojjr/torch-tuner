@@ -12,8 +12,8 @@ import os
 version = '1.5.0'
 
 # TODO - Change this once support for more LLMs is added
-title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
-description = 'Fine-Tune Llama LLM models with simple text on Nvidia GPUs using Torch and LoRA.'
+title = f'Llama AI LLM LoRA Torch Fine-Tuner v{version}'
+description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs using Torch, Transformers and LoRA.'
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
