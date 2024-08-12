@@ -95,7 +95,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
-        # TODO - add this as tuning arg
+        # TODO - is this ignored bt SFTTrainer?
         max_seq_length=4096,
         dataset_text_field="text"
         # TODO - investigate for instruction training
