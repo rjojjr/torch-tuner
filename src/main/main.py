@@ -41,8 +41,7 @@ def main() -> None:
         factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side))
         server = OpenAiLlmServer(factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
-        # TODO - cleaner exit
-        exit(0)
+        return
 
     # Do all validations before printing configuration values
     do_initial_arg_validation(args)
@@ -131,7 +130,6 @@ def main() -> None:
     print('')
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
-    exit(0)
 
 
 main_exception_handler(main, title, False)
