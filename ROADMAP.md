@@ -20,7 +20,7 @@ I plan to add a public [Trello](https://trello.com/) board for this project at s
 but in the meantime I will track work/needs/bugs/requests here.
 
 - Add production wrapper to LLM REST server
-- Add ability to provide special tokens
+- Add ability to provide special/regular tokens to model vocabulary
 - Add Windows OS support
 - Add support for non-llama models
   - Mistral
@@ -35,5 +35,10 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Add ability to request specific adapters from completions endpoints
   - Probably leveraging the model argument that is currently ignored
 - Add CPU based SFT
-- Add ability to configure training evaluations
+- Add ability to configure/add advanced tuning evaluations
 - Add ability to prepare/configure/load more advanced datasets
+- Add ability to set max concurrent request for LLM serve mode
+  - Add queue for waiting requests
+- Add multi-gpu support
+- Add support for ignored OpenAI request properties
+- Add embeddings endpoint to serve mode
