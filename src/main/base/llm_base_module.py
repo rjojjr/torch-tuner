@@ -1,6 +1,6 @@
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 from datasets import load_dataset
-from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training, TaskType
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, TaskType, AutoPeftModelForCausalLM, PeftModel
 from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers
@@ -12,10 +12,11 @@ import shutil
 
 
 def _add_agent_tokens(tokenizer, model):
-    agent_tokens = ["Thought", "Action", "Action Input", "Observation", "Final Answer"]
+    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:", "\nFinal Answer:"]
     agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
     tokenizer.add_tokens(list(agent_tokens))
-    model.resize_token_embeddings(len(tokenizer))
+    if model is not None:
+        model.resize_token_embeddings(len(tokenizer))
 
 
 # TODO - Tune/extract an embeddings only model
@@ -27,7 +28,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
-    lora_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}/adapter"
+    lora_dir = f"{arguments.output_directory}/adapters/{arguments.new_model}"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
         print('')
@@ -42,11 +43,19 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     else:
         target_modules = arguments.target_modules
 
+    if arguments.use_agent_tokens or arguments.is_chat_model:
+        target_modules.append("embed_tokens")
+        target_modules.append("lm_head")
+        target_modules = list(set(target_modules))
+
+    modules_to_save=["embed_tokens"] if arguments.save_embeddings else []
+
+
     lora_config = LoraConfig(
         r=arguments.r,
         lora_alpha=arguments.alpha,
         target_modules=target_modules,
-        modules_to_save=["embed_tokens"] if arguments.save_embeddings else [],
+        modules_to_save=modules_to_save,
         lora_dropout=arguments.lora_dropout,
         bias=arguments.bias,
         task_type=TaskType.CAUSAL_LM
@@ -81,21 +90,21 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         bf16=arguments.is_bf16,
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
-        warmup_ratio=0.03,
+        warmup_ratio=arguments.warmup_ratio,
         group_by_length=True,
         lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
-        # TODO - add this as tuning arg
+        # TODO - is this ignored bt SFTTrainer?
         max_seq_length=4096,
-        dataset_text_field="text" if (arguments.train_file is not None and not arguments.train_file.endswith('jsonl')) else None
+        dataset_text_field="text"
         # TODO - investigate for instruction training
         #neftune_noise_alpha
     )
 
     train = SFTTrainer(
         model=model,
-        train_dataset=ds['train'] if arguments.train_file is not None else ds,
+        train_dataset=ds['train'],
         tokenizer=tokenizer,
         args=train_params
     )
@@ -116,6 +125,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         shutil.rmtree(lora_dir)
 
     train.model.save_pretrained(lora_dir)
+    train.model.config.save_pretrained(lora_dir)
     tokenizer.save_pretrained(lora_dir)
     del model
     del base_model
@@ -127,12 +137,15 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     if arguments.use_agent_tokens:
         _add_agent_tokens(tokenizer, base_model)
-    lora_dir = f"{arguments.output_dir}/checkpoints/{arguments.new_model}/adapter"
-    model_dir = f'{arguments.output_dir}/{arguments.new_model}'
+    lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
+    model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
-    print('')
 
-    model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config)
+    if arguments.use_agent_tokens:
+        model = AutoPeftModelForCausalLM.from_pretrained(lora_dir)
+    else:
+        model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config)
+
     model = model.merge_and_unload(progressbar=True)
     print('')
 

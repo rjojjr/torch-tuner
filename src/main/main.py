@@ -9,11 +9,11 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '1.4.1'
+version = '1.5.0'
 
 # TODO - Change this once support for more LLMs is added
-title = f'Llama AI LLM LoRA Torch Text Fine-Tuner v{version}'
-description = 'Fine-Tune Llama LLM models with simple text on Nvidia GPUs using Torch and LoRA.'
+title = f'Llama AI LLM LoRA Torch Fine-Tuner v{version}'
+description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs using Torch, Transformers and LoRA.'
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
@@ -38,11 +38,10 @@ def main() -> None:
         print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
         print()
         print(f"Serving {args.serve_model} on port {args.serve_port}")
-        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16))
+        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side))
         server = OpenAiLlmServer(factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
-        # TODO - cleaner exit
-        exit(0)
+        return
 
     # Do all validations before printing configuration values
     do_initial_arg_validation(args)
@@ -50,7 +49,7 @@ def main() -> None:
     tuner = tuner_factory()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
-    model_dir = f'{args.output_directory}/{args.new_model}'
+    model_dir = f'{args.output_directory}/merged-models/{args.new_model}'
 
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
@@ -131,7 +130,6 @@ def main() -> None:
     print('')
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
-    exit(0)
 
 
 main_exception_handler(main, title, False)
