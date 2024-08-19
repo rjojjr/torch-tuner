@@ -30,4 +30,4 @@ An unexpected Exception has been caught: loaded state dict contains a parameter 
 #### Answer
 
 This error usually occurs when you resume a tuning job with different value 
-for the `--save-embeddings` argument than tuning job was initially run with.
+for the `--save-embeddings` argument or different target modules than that tuning job was initially started with.
