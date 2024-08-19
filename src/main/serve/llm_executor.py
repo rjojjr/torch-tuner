@@ -28,6 +28,8 @@ class LlmExecutor:
             model.generation_config.pad_token_id = tokenizer.pad_token_id
             tokenizer.padding_side = padding_side
 
+        model.resize_token_embeddings(len(tokenizer))
+
         self._model = model
         self._tokenizer = tokenizer
 
