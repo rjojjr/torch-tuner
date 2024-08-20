@@ -7,10 +7,12 @@ from typing import Callable
 
 # This will probably be useful for the future API impl.
 def llm_tuner_factory(prog_args) -> Callable[[], Tuner]:
+    """Returns configured LLM factory function."""
     return lambda: _construct_tuner(prog_args)
 
 
 def parse_temp(temp: float) -> float:
+    """Handle invalid temperature values."""
     if temp > 1:
         return 1
     if temp < 0:

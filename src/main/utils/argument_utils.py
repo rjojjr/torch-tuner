@@ -5,6 +5,7 @@ from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
 
 def build_and_validate_push_args(prog_args, model_dir: str):
+    """Construct/validate push arguments."""
     if prog_args.push:
         push_arguments = PushArguments(
             new_model=prog_args.new_model,
@@ -27,7 +28,8 @@ def build_and_validate_push_args(prog_args, model_dir: str):
     )
 
 
-def build_and_validate_merge_args(prog_args):
+def build_and_validate_merge_args(prog_args) -> MergeArguments:
+    """Construct/validate merge arguments."""
     if prog_args.merge:
         merge_arguments = MergeArguments(
             new_model=prog_args.new_model,
@@ -47,7 +49,8 @@ def build_and_validate_merge_args(prog_args):
     return MergeArguments(new_model=prog_args.new_model)
 
 
-def build_and_validate_tune_args(prog_args):
+def build_and_validate_tune_args(prog_args) -> TuneArguments:
+    """Construct/validate tune arguments."""
     if prog_args.fine_tune:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
@@ -98,6 +101,7 @@ def build_and_validate_tune_args(prog_args):
 
 
 def do_initial_arg_validation(args):
+    """Do initial argument validations."""
     # TODO - FIXME - Some of these validations are unaware of the mode being ran, but they should be
     if args.lora_r <= 0 or args.lora_alpha <= 0:
         raise ArgumentValidationException("'lora-r' and 'lora-alpha' must both be greater than zero")
@@ -111,6 +115,7 @@ def do_initial_arg_validation(args):
 
 
 def parse_arguments(title: str, description: str):
+    """Parse CLI arguments."""
     parser = _build_program_argument_parser(title, description)
     return _parse_arguments(parser)
 

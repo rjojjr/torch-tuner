@@ -1,4 +1,5 @@
 def add_agent_tokens(tokenizer, model):
+    """Add LangChain ReAct Agent specific tokens to model vocabulary."""
     agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:", "\nFinal Answer:", "New Input:"]
 
     agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
@@ -8,6 +9,7 @@ def add_agent_tokens(tokenizer, model):
 
 
 def add_additional_tokens(tokenizer, model, tokens):
+    """Add specified tokens to model vocabulary."""
     vocab_tokens = set(tokens) - set(tokenizer.vocab.keys())
     tokenizer.add_tokens(list(vocab_tokens))
     if model is not None:
