@@ -15,10 +15,12 @@ version = '1.5.0'
 title = f'Llama AI LLM LoRA Torch Fine-Tuner v{version}'
 description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs using Torch, Transformers and LoRA.'
 
+args = parse_arguments(title, description)
+
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
+
 def main() -> None:
-    args = parse_arguments(title, description)
     tuner_factory = llm_tuner_factory(args)
 
     print(title)
@@ -136,4 +138,4 @@ def main() -> None:
     print(f'{title} COMPLETED')
 
 
-main_exception_handler(main, title, False)
+main_exception_handler(main, title, args.debug)
