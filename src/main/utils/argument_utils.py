@@ -15,7 +15,8 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             is_fp16=prog_args.use_fp_16,
             public_push=prog_args.public_push,
             padding_side=prog_args.padding_side,
-            use_agent_tokens=prog_args.use_agent_tokens
+            use_agent_tokens=prog_args.use_agent_tokens,
+            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens
         )
         push_arguments.validate()
         return push_arguments
@@ -37,7 +38,8 @@ def build_and_validate_merge_args(prog_args):
             is_fp16=prog_args.use_fp_16,
             output_dir=prog_args.output_directory,
             padding_side=prog_args.padding_side,
-            use_agent_tokens=prog_args.use_agent_tokens
+            use_agent_tokens=prog_args.use_agent_tokens,
+            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens
         )
         merge_arguments.validate()
         return merge_arguments
@@ -82,7 +84,8 @@ def build_and_validate_tune_args(prog_args):
             lr_scheduler_type=prog_args.lr_scheduler_type,
             target_modules=prog_args.target_modules,
             torch_empty_cache_steps=prog_args.torch_empty_cache_steps,
-            warmup_ratio=prog_args.warmup_ratio
+            warmup_ratio=prog_args.warmup_ratio,
+            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens
         )
         tune_arguments.validate()
         return tune_arguments
@@ -135,10 +138,7 @@ def _parse_nullable_int_arg(arg: str | None) -> int | None:
 def _parse_nullable_list_arg(arg: str | None) -> list | None:
     if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
         return None
-    raw = arg.split()
-    output = []
-    for a in raw:
-        output.append(a.strip())
+    return arg.split(',')
 
 def _build_program_argument_parser(title: str, description: str) -> ArgumentParser:
     parser = ArgumentParser(
@@ -154,6 +154,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-tecs', '--torch-empty-cache-steps', help="Empty torch cache after x steps(NEVER empties cache when set to None)(USEFUL to prevent OOM issues)(default: 1)", type=lambda x: _parse_nullable_int_arg(x), default="1")
+    parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="Nonew")
 
     parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
 

@@ -49,7 +49,7 @@ class TunerFunctionArguments(CliArguments):
 
     def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False,
                  fp32_cpu_offload: bool = False, is_chat_model: bool = True,
-                 padding_side: str | None = 'right', use_agent_tokens: bool = False):
+                 padding_side: str | None = 'right', use_agent_tokens: bool = False, additional_vocabulary_tokens: list | None = None):
         self.new_model = new_model
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
@@ -59,6 +59,7 @@ class TunerFunctionArguments(CliArguments):
         self.is_chat_model = is_chat_model
         self.padding_side = padding_side
         self.use_agent_tokens = use_agent_tokens
+        self.additional_vocabulary_tokens = additional_vocabulary_tokens
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
@@ -126,8 +127,9 @@ class TuneArguments(TunerFunctionArguments):
                  lr_scheduler_type: str = 'linear',
                  target_modules: list | None = None,
                  torch_empty_cache_steps: int | None = 1,
-                 warmup_ratio: float = 0.03):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens)
+                 warmup_ratio: float = 0.03,
+                 additional_vocabulary_tokens: list | None = None):
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -198,8 +200,9 @@ class MergeArguments(TunerFunctionArguments):
                  output_dir: str = '../../models',
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
-                 use_agent_tokens: bool = False):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens)
+                 use_agent_tokens: bool = False,
+                 additional_vocabulary_tokens: list | None = None):
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens)
         self.base_model = base_model
         self.output_dir = output_dir
 
@@ -229,8 +232,9 @@ class PushArguments(TunerFunctionArguments):
                  public_push: bool = False,
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
-                 use_agent_tokens: bool = False):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens)
+                 use_agent_tokens: bool = False,
+                 additional_vocabulary_tokens: list | None = None):
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens)
         self.model_dir = model_dir
         self.public_push = public_push
 
