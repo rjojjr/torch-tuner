@@ -35,7 +35,8 @@ class LlmExecutor:
 
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     # TODO - Stop sequences
-    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None):
+    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None) -> str:
+        """Predict what text should follow the given prompt."""
         if stops is None:
             stops = []
         try:
@@ -62,6 +63,7 @@ class LlmExecutor:
 
 # Only use this function to construct LLM executors
 def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
+    """Construct configured LLM executor factory function."""
     arguments.validate()
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
