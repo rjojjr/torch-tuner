@@ -71,6 +71,9 @@ class TunerFunctionArguments(CliArguments):
         if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
             raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
 
+        if self.additional_vocabulary_tokens is not None and len(self.additional_vocabulary_tokens) == 0:
+            raise ArgumentValidationException("`additional-vocabulary-tokens` must be one of either 'None' or a CSV list, it must never be empty")
+
 
 class LlmExecutorFactoryArguments(LlmArguments):
     """Init LLM Executor factory."""
