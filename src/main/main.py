@@ -29,7 +29,9 @@ def main() -> None:
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     print('')
-
+    if args.debug:
+        print("Is Debug Mode: True")
+        print('')
     if args.serve:
         print(f"Running in serve mode")
         print()

@@ -1,5 +1,5 @@
 # This is how I imagine modules for different LLM types should be imported and used to construct a 'Tuner' instance.
-import llama.functions as llama
+import modules.llama as llama
 from base.tuner import Tuner, LLM_TYPES
 from exception.exceptions import ArgumentValidationException
 from typing import Callable
@@ -21,8 +21,11 @@ def parse_temp(temp: float) -> float:
 
 
 def _construct_tuner(prog_args) -> Tuner:
-    tuner = Tuner(llama.fine_tune, llama.merge, llama.push, LLM_TYPES['llama'])
     _evaluate_supported_llm_type(prog_args.llm_type)
+    match prog_args.llm_type:
+        # Since Llama is the only type currently
+        case _:
+            tuner = Tuner(llama.fine_tune, llama.merge, llama.push, LLM_TYPES['llama'])
 
     return tuner
 
