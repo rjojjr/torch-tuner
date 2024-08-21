@@ -74,6 +74,7 @@ def main() -> None:
     print(f'Training File: {args.training_data_file}')
 
     print('')
+    print(f'Using CPU Only Tuning: {str(args.cpu_only_tuning)}')
     print(f'Using tf32: {str(args.use_tf_32)}')
     print(f'Using bf16: {str(args.use_bf_16)}')
     print(f'Using fp16: {str(args.use_fp_16)}')
