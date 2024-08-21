@@ -17,6 +17,7 @@ description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvid
 
 args = parse_arguments(title, description)
 
+# For better performance with less GPU memory
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
 

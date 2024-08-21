@@ -19,6 +19,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
 
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
+        # TODO - implement other body properties that configure how response is generated
         body = request.get_json(force=True)
 
         prompt = _construct_chat_prompt(body)
@@ -39,6 +40,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
                     "content": f"{completion}",
                 },
                 "logprobs": None,
+                # TODO - return real finish reason
                 "finish_reason": "stop"
             }],
             "usage": {
