@@ -74,7 +74,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
         # TODO - CPU Tuning
-        use_cpu=False,
+        use_cpu=arguments.cpu_only_tuning,
         fp16=arguments.is_fp16,
         tf32=arguments.is_tf32,
         bf16=arguments.is_bf16,
