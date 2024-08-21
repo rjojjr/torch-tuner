@@ -42,3 +42,4 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Add multi-gpu support
 - Add support for ignored OpenAI request properties
 - Add embeddings endpoint to serve mode
+- Add ability to serve models on CPU
