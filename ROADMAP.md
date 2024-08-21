@@ -34,7 +34,7 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Reduce LLM server memory usage
 - Add ability to request specific adapters from completions endpoints
   - Probably leveraging the model argument that is currently ignored
-- Add CPU based SFT
+- ~~Add CPU based SFT~~
 - Add ability to configure/add advanced tuning evaluations
 - Add ability to prepare/configure/load more advanced datasets
 - Add ability to set max concurrent request for LLM serve mode
