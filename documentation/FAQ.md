@@ -8,6 +8,18 @@ This document is a work in progress, so please be patient.
 
 ### Question
 
+How do I extend the torch-tuner CLI to support another LLM type?
+
+#### Answer
+
+You can follow the pattern found in the [modules package](../src/main/modules).
+
+- Create a python file in the modules package with the name of the LLM type
+- Create the required functions, and implement the functions in the [LLM Base Module](../src/main/base/llm_base_module.py)
+- Finally, wireup the new LLM module in the [tuner_utils python file](../src/main/utils/tuner_utils.py)
+
+### Question
+
 Why do I receive the following warning when tuning my model?
 
 ```
@@ -30,4 +42,4 @@ An unexpected Exception has been caught: loaded state dict contains a parameter 
 #### Answer
 
 This error usually occurs when you resume a tuning job with different value 
-for the `--save-embeddings` argument than tuning job was initially run with.
+for the `--save-embeddings` argument or different target modules than that tuning job was initially started with.

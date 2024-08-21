@@ -1,3 +1,5 @@
+from utils.tokenizer_utils import add_agent_tokens, add_additional_tokens
+
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 from datasets import load_dataset
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, TaskType, AutoPeftModelForCausalLM, PeftModel
@@ -11,20 +13,13 @@ import shutil
 # LLM independent base functions
 
 
-def _add_agent_tokens(tokenizer, model):
-    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:", "\nFinal Answer:"]
-    agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
-    tokenizer.add_tokens(list(agent_tokens))
-    if model is not None:
-        model.resize_token_embeddings(len(tokenizer))
-
-
-# TODO - Tune/extract an embeddings only model
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     if arguments.use_agent_tokens:
-        _add_agent_tokens(tokenizer, base_model)
+        add_agent_tokens(tokenizer, base_model)
+    if arguments.additional_vocabulary_tokens is not None:
+        add_additional_tokens(tokenizer, base_model, arguments.additional_vocabulary_tokens)
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
@@ -42,11 +37,6 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
     else:
         target_modules = arguments.target_modules
-
-    if arguments.use_agent_tokens or arguments.is_chat_model:
-        target_modules.append("embed_tokens")
-        target_modules.append("lm_head")
-        target_modules = list(set(target_modules))
 
     modules_to_save=["embed_tokens"] if arguments.save_embeddings else []
 
@@ -136,7 +126,9 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     if arguments.use_agent_tokens:
-        _add_agent_tokens(tokenizer, base_model)
+        add_agent_tokens(tokenizer, base_model)
+    if arguments.additional_vocabulary_tokens is not None:
+        add_additional_tokens(tokenizer, base_model, arguments.additional_vocabulary_tokens)
     lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
     model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")

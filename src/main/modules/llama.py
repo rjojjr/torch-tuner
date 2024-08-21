@@ -7,6 +7,7 @@ import base.llm_base_module as base_module
 
 
 def merge(arguments: MergeArguments) -> None:
+    """Llama specific merge function."""
     lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
@@ -26,6 +27,7 @@ def merge(arguments: MergeArguments) -> None:
 
 
 def push(arguments: PushArguments) -> None:
+    """Llama specific push function."""
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
@@ -54,6 +56,7 @@ def push(arguments: PushArguments) -> None:
 
 
 def fine_tune(arguments: TuneArguments) -> None:
+    """Llama specific fine-tune function."""
     tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token

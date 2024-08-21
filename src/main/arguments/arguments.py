@@ -1,16 +1,28 @@
 from exception.exceptions import ArgumentValidationException
 
 
-class ServerArguments:
+class CliArguments:
+    """Base CLI arguments class"""
+
+    def validate(self) -> None:
+        """Raise TunerException if arguments are invalid."""
+        pass
+
+
+class ServerArguments(CliArguments):
     """LLM REST API server arguments."""
 
     def __init__(self, port: int = 8080, debug: bool = False):
         self.port = port
         self.debug = debug
 
+    def validate(self) -> None:
+        if self.port <= 0:
+            raise ArgumentValidationException("`port` must be positive non-zero integer value")
 
-class LlmArguments:
-    """LLM load parameters."""
+
+class LlmArguments(CliArguments):
+    """Base LLM load parameters."""
 
     def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right'):
         self.model = model
@@ -22,8 +34,45 @@ class LlmArguments:
         self.padding_side = padding_side
 
     def validate(self) -> None:
-        """Raise TunerException if arguments are invalid."""
-        pass
+        if self.use_4bit and self.use_8bit:
+            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+
+        if self.is_bf16 and self.is_fp16:
+            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+
+        if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
+            raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
+
+
+class TunerFunctionArguments(CliArguments):
+    """Base tuning related function arguments."""
+
+    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False,
+                 fp32_cpu_offload: bool = False, is_chat_model: bool = True,
+                 padding_side: str | None = 'right', use_agent_tokens: bool = False, additional_vocabulary_tokens: list | None = None):
+        self.new_model = new_model
+        self.is_fp16 = is_fp16
+        self.is_bf16 = is_bf16
+        self.use_8bit = use_8bit
+        self.use_4bit = use_4bit
+        self.fp32_cpu_offload = fp32_cpu_offload
+        self.is_chat_model = is_chat_model
+        self.padding_side = padding_side
+        self.use_agent_tokens = use_agent_tokens
+        self.additional_vocabulary_tokens = additional_vocabulary_tokens
+
+    def validate(self) -> None:
+        if self.use_4bit and self.use_8bit:
+            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+
+        if self.is_bf16 and self.is_fp16:
+            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+
+        if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
+            raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
+
+        if self.additional_vocabulary_tokens is not None and len(self.additional_vocabulary_tokens) == 0:
+            raise ArgumentValidationException("`additional-vocabulary-tokens` must be one of either 'None' or a CSV list, it must never be empty")
 
 
 class LlmExecutorFactoryArguments(LlmArguments):
@@ -34,30 +83,12 @@ class LlmExecutorFactoryArguments(LlmArguments):
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
             raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
+
         if self.is_bf16 and self.is_fp16:
             raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
 
-
-
-class TunerFunctionArguments:
-    """Tuning related function arguments."""
-
-    def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False,
-                 fp32_cpu_offload: bool = False, is_chat_model: bool = True,
-                 padding_side: str | None = 'right', use_agent_tokens: bool = False):
-        self.new_model = new_model
-        self.is_fp16 = is_fp16
-        self.is_bf16 = is_bf16
-        self.use_8bit = use_8bit
-        self.use_4bit = use_4bit
-        self.fp32_cpu_offload = fp32_cpu_offload
-        self.is_chat_model = is_chat_model
-        self.padding_side = padding_side
-        self.use_agent_tokens = use_agent_tokens
-
-    def validate(self) -> None:
-        """Raise TunerException if arguments are invalid."""
-        pass
+        if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
+            raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
 
 
 class TuneArguments(TunerFunctionArguments):
@@ -78,7 +109,7 @@ class TuneArguments(TunerFunctionArguments):
                  lora_dropout: float = 0.05,
                  no_checkpoint: bool = False,
                  bias: str = "none",
-                 optimizer_type: str = 'paged_adamw_32bit',
+                 optimizer_type: str = 'adamw_8bit',
                  gradient_accumulation_steps: int = 4,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,
@@ -90,7 +121,7 @@ class TuneArguments(TunerFunctionArguments):
                  use_8bit: bool = False,
                  use_4bit: bool = False,
                  save_embeddings: bool = False,
-                 output_directory: str = "../../models",
+                 output_directory: str = "./models",
                  fp32_cpu_offload: bool = True,
                  is_chat_model: bool = True,
                  target_all_modules: bool = False,
@@ -99,8 +130,9 @@ class TuneArguments(TunerFunctionArguments):
                  lr_scheduler_type: str = 'linear',
                  target_modules: list | None = None,
                  torch_empty_cache_steps: int | None = 1,
-                 warmup_ratio: float = 0.03):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens)
+                 warmup_ratio: float = 0.03,
+                 additional_vocabulary_tokens: list | None = None):
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -155,6 +187,8 @@ class TuneArguments(TunerFunctionArguments):
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
 
+        super(TuneArguments, self).validate()
+
 
 class MergeArguments(TunerFunctionArguments):
     """'merge' function arguments."""
@@ -169,8 +203,9 @@ class MergeArguments(TunerFunctionArguments):
                  output_dir: str = '../../models',
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
-                 use_agent_tokens: bool = False):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens)
+                 use_agent_tokens: bool = False,
+                 additional_vocabulary_tokens: list | None = None):
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens)
         self.base_model = base_model
         self.output_dir = output_dir
 
@@ -183,6 +218,8 @@ class MergeArguments(TunerFunctionArguments):
 
         if not is_valid:
             raise ArgumentValidationException("'Merge Arguments' are missing required properties")
+
+        super(MergeArguments, self).validate()
 
 
 class PushArguments(TunerFunctionArguments):
@@ -198,8 +235,9 @@ class PushArguments(TunerFunctionArguments):
                  public_push: bool = False,
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
-                 use_agent_tokens: bool = False):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens)
+                 use_agent_tokens: bool = False,
+                 additional_vocabulary_tokens: list | None = None):
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens)
         self.model_dir = model_dir
         self.public_push = public_push
 
@@ -212,3 +250,5 @@ class PushArguments(TunerFunctionArguments):
 
         if not is_valid:
             raise ArgumentValidationException("'Push Arguments' are missing required properties")
+
+        super(PushArguments, self).validate()

@@ -28,12 +28,16 @@ class LlmExecutor:
             model.generation_config.pad_token_id = tokenizer.pad_token_id
             tokenizer.padding_side = padding_side
 
+        model.resize_token_embeddings(len(tokenizer))
+
         self._model = model
         self._tokenizer = tokenizer
 
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     # TODO - Stop sequences
-    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None):
+    # TODO - Don't always return all `max_tokens` && return stop reason
+    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None) -> str:
+        """Predict what text should follow the given prompt."""
         if stops is None:
             stops = []
         try:
@@ -60,6 +64,7 @@ class LlmExecutor:
 
 # Only use this function to construct LLM executors
 def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
+    """Construct configured LLM executor factory function."""
     arguments.validate()
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
