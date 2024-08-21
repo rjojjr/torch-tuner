@@ -88,6 +88,7 @@ def main() -> None:
 
     print('')
     print(f'Is Chat Model: {args.is_chat_model}')
+    print(f'Using Additional Vocab Tokens: {args.additional_vocabulary_tokens}')
     print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
 
     if args.fine_tune:

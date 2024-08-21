@@ -133,7 +133,7 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
-    if arguments.use_agent_tokens:
+    if arguments.use_agent_tokens or arguments.additional_vocabulary_tokens is not None:
         model = AutoPeftModelForCausalLM.from_pretrained(lora_dir)
     else:
         model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config)
