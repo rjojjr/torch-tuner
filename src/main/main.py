@@ -9,16 +9,19 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '1.5.0'
+version = '1.5.1'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Fine-Tuner v{version}'
 description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs using Torch, Transformers and LoRA.'
 
+args = parse_arguments(title, description)
+
+# For better performance with less GPU memory
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
+
 def main() -> None:
-    args = parse_arguments(title, description)
     tuner_factory = llm_tuner_factory(args)
 
     print(title)
@@ -27,9 +30,13 @@ def main() -> None:
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     print('')
-
+    if args.debug:
+        print("Is Debug Mode: True")
+        print('')
     if args.serve:
         print(f"Running in serve mode")
+        print()
+        print(f"WARNING - Serve mode is currently EXPERIMENTAL and should NEVER be used in a production environment!")
         print()
         print(f'Using bf16: {str(args.use_bf_16)}')
         print(f'Using fp16: {str(args.use_fp_16)}')
@@ -79,13 +86,15 @@ def main() -> None:
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')
 
+    print('')
+    print(f'Is Chat Model: {args.is_chat_model}')
+    print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
+
     if args.fine_tune:
         print('')
         if args.torch_empty_cache_steps is not None:
             print(f'Empty Torch Cache After {args.torch_empty_cache_steps} Steps')
 
-        print(f'Is Chat Model: {args.is_chat_model}')
-        print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
         print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
         print(f'Using Max Saves: {str(args.max_saved)}')
         print(f'Using Batch Size: {str(args.batch_size)}')
@@ -102,6 +111,8 @@ def main() -> None:
         print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
         print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
         print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
+        print(f'Using Warmup Ratio: {args.warmup_ratio}')
+
 
     if args.fine_tune:
         print('')
@@ -132,4 +143,4 @@ def main() -> None:
     print(f'{title} COMPLETED')
 
 
-main_exception_handler(main, title, False)
+main_exception_handler(main, title, args.debug)

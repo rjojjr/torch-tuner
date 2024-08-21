@@ -11,6 +11,7 @@ class TunerException(Exception):
         self.sub_type = sub_type
 
     def to_string(self) -> str:
+        """Return exception as a formatted string."""
         sub_type = f" SUB TYPE: {self.sub_type}" if self.sub_type is not None else ""
         return f'{self.message} TYPE: {self.exception_type}{sub_type}'
 
@@ -43,9 +44,10 @@ class HuggingfaceAuthException(HuggingfaceException):
         super(HuggingfaceAuthException, self).__init__(message, 'HUGGINGFACE_AUTH')
 
 
-def main_exception_handler(work: Callable, title: str, is_debug: bool = False) -> None:
+def main_exception_handler(main: Callable, title: str, is_debug: bool = False) -> None:
+    """Handle exceptions raised in the main function."""
     try:
-        work()
+        main()
     except TunerException as e:
         print('')
         print(f"A TunerException has been caught: {e.to_string()}")
