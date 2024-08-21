@@ -169,7 +169,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-sp', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-ft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
