@@ -181,15 +181,14 @@ always evaluate all requests against the model that is provided by the `--serve-
 
 ### Useful Notes
 
-Most of the default CLI arguments are configured to consume the least amount of VRAM possible.
-
-In theory, the base-model(`--base-model`) torch-tuner CLI argument will 
-accept a path to a locally saved model instead of a Huggingface repository
-name, but this is untested ATM.
+Most of the default CLI arguments are configured to consume the least amount of memory possible.
 
 You can find the supported arguments and their default values
 [here](src/main/utils/argument_utils.py)(in the `_build_program_argument_parser` function)
 if you don't want to run the CLI(`torch-tuner --help`) to find them.
+
+You can easily extend this CLI to support more LLM types by following the pattern 
+pointed out in the [Torch Tuner FAQ document](documentation/FAQ.md).
 
 ## Feature Requests
 
