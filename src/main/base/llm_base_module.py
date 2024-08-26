@@ -28,10 +28,10 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
-    if arguments.train_file is not None:
-        ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
+    if arguments.hf_training_dataset_id is not None:
+        ds = load_dataset(arguments.hf_training_dataset_id, split='train')
     else:
-        ds = load_dataset(arguments.training_data_dir, split='train')
+        ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
     if arguments.target_modules is None or len(arguments.target_modules) == 0:
         target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)

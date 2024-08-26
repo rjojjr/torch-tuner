@@ -1,5 +1,8 @@
 import sys, os
 from argparse import ArgumentParser
+
+from libfuturize.fixer_util import parse_args
+
 from exception.exceptions import ArgumentValidationException
 from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
@@ -55,7 +58,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
-            training_data_dir=prog_args.training_data_dir,
+            training_data_dir=prog_args.prog_args.training_data_dir,
             train_file=prog_args.training_data_file,
             r=prog_args.lora_r,
             alpha=prog_args.lora_alpha,
@@ -91,7 +94,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
             cpu_only_tuning=prog_args.cpu_only_tuning,
             is_instruct_model=prog_args.is_instruct_model,
-            group_by_length=prog_args.group_by_length
+            group_by_length=prog_args.group_by_length,
+            hf_training_dataset_id=prog_args.hf_training_dataset_id
         )
         tune_arguments.validate()
         return tune_arguments
@@ -112,7 +116,7 @@ def do_initial_arg_validation(args):
         raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
     if args.fine_tune and args.epochs <= 0:
         raise ArgumentValidationException("cannot tune when epochs is set to <= 0")
-    if args.fine_tune and (not os.path.exists(args.training_data_dir) or not os.path.exists(
+    if args.fine_tune and (args.hf_training_dataset_id is None) and (not os.path.exists(args.training_data_dir) or not os.path.exists(
             f'{args.training_data_dir}/{args.training_data_file}')):
         raise ArgumentValidationException('training data directory or file not found')
 
@@ -153,7 +157,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
         prog=title,
         description=description)
     parser.add_argument('-nm', '--new-model', help="Name of the new fine-tuned model/adapter(REQUIRED[for fine-tune, merge & push only])")
-    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory or HF dataset name(REQUIRED[for fine-tune only])")
+    parser.add_argument('-hftdi', '--hf-training-dataset-id', help="HF dataset identifier(NOTE - overrides any defined tuning data file)(REQUIRED[for fine-tune without file only])")
+    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune from only])")
     parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(txt or jsonl)(REQUIRED[for fine-tune from file only])")
     parser.add_argument('-bm', '--base-model', help="Base model to tune(can be either HF model identifier or path to local model)(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")

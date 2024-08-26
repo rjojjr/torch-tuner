@@ -134,7 +134,8 @@ class TuneArguments(TunerFunctionArguments):
                  additional_vocabulary_tokens: list | None = None,
                  cpu_only_tuning: bool = False,
                  is_instruct_model: bool = False,
-                 group_by_length: bool = True):
+                 group_by_length: bool = True,
+                 hf_training_dataset_id: str | None = None):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
         self.r = r
         self.alpha = alpha
@@ -166,6 +167,7 @@ class TuneArguments(TunerFunctionArguments):
         self.cpu_only_tuning = cpu_only_tuning
         self.is_instruct_model = is_instruct_model
         self.group_by_length = group_by_length
+        self.hf_training_dataset_id = hf_training_dataset_id
 
 
     def validate(self) -> None:
@@ -186,12 +188,17 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None and self.is_tf32 is not None
         is_valid = is_valid and self.output_directory is not None and self.fp32_cpu_offload is not None
         is_valid = is_valid and not self.base_model.strip() == '' and not self.new_model.strip() == ''
-        is_valid = is_valid and not self.training_data_dir.strip() == '' and not self.train_file.strip() == ''
         is_valid = is_valid and not self.optimizer_type.strip() == '' and not self.bias.strip() == ''
         is_valid = is_valid and not self.save_strategy.strip() == '' and not self.output_directory.strip() == ''
 
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
+
+        if self.hf_training_dataset_id is not None and self.hf_training_dataset_id.strip() == '':
+            raise ArgumentValidationException("'--hf-training-dataset-id' argument value is invalid")
+
+        if self.hf_training_dataset_id is None and (self.training_data_dir is None or self.train_file is None or self.train_file.strip() == ''):
+            raise ArgumentValidationException("training data arguments are not configured properly")
 
         super(TuneArguments, self).validate()
 
