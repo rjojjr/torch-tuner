@@ -89,7 +89,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             torch_empty_cache_steps=prog_args.torch_empty_cache_steps,
             warmup_ratio=prog_args.warmup_ratio,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
-            cpu_only_tuning=prog_args.cpu_only_tuning
+            cpu_only_tuning=prog_args.cpu_only_tuning,
+            is_instruct_model=prog_args.is_instruct_model
         )
         tune_arguments.validate()
         return tune_arguments
@@ -163,6 +164,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
 
     parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
+    parser.add_argument('-iim', '--is-instruct-model', help="Is the model being tuned intended for instruct(when set to true, enables several enhancements for instruct models)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")

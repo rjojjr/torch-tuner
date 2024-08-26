@@ -132,7 +132,8 @@ class TuneArguments(TunerFunctionArguments):
                  torch_empty_cache_steps: int | None = 1,
                  warmup_ratio: float = 0.03,
                  additional_vocabulary_tokens: list | None = None,
-                 cpu_only_tuning: bool = False):
+                 cpu_only_tuning: bool = False,
+                 is_instruct_model: bool = False):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
         self.r = r
         self.alpha = alpha
@@ -162,6 +163,7 @@ class TuneArguments(TunerFunctionArguments):
         self.torch_empty_cache_steps = torch_empty_cache_steps
         self.warmup_ratio = warmup_ratio
         self.cpu_only_tuning = cpu_only_tuning
+        self.is_instruct_model = is_instruct_model
 
 
     def validate(self) -> None:
