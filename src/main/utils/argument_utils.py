@@ -157,18 +157,9 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-bm', '--base-model', help="Base model to tune(can be either HF model identifier or path to local model)(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
-    parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-tecs', '--torch-empty-cache-steps', help="Empty torch cache after x steps(NEVER empties cache when set to None)(USEFUL to prevent OOM issues)(default: 1)", type=lambda x: _parse_nullable_int_arg(x), default="1")
-    parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
-
-    parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
-    parser.add_argument('-iim', '--is-instruct-model', help="Is the model being tuned intended for instruct(when set to true, enables several enhancements for instruct models)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
-
-    parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
-    parser.add_argument('-sp', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
@@ -177,6 +168,18 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-pp', '--public-push', help="Push to public HF repo(push is private if false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
+    parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
+    parser.add_argument('-sp', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
+
+    parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
+    parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Tune with LangChain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-iim', '--is-instruct-model', help="Is the model being tuned intended for instruct(when set to true, enables several enhancements for instruct models)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+
+    parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
+
+
     # TODO - FIXME - Handle situation when user selects multiple quant./precision options(Which options take highest priority?)
     parser.add_argument('-4bit', '--use-4bit', help="Use 4bit quantization(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-8bit', '--use-8bit', help="Use 8bit quantization(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
@@ -184,7 +187,6 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-bf16', '--use-bf-16', help="Use bf-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Tune with LangChain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-bs', '--batch-size', help="Per-device training/eval batch size(default 4)", type=int, default=4)
     parser.add_argument('-wur', '--warmup-ratio', help="Linear warmup over warmup_ratio fraction of total steps(default 0.03)", type=float, default=0.03)
