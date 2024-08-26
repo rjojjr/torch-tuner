@@ -90,7 +90,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             warmup_ratio=prog_args.warmup_ratio,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
             cpu_only_tuning=prog_args.cpu_only_tuning,
-            is_instruct_model=prog_args.is_instruct_model
+            is_instruct_model=prog_args.is_instruct_model,
+            group_by_length=prog_args.group_by_length
         )
         tune_arguments.validate()
         return tune_arguments
@@ -189,6 +190,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-bs', '--batch-size', help="Per-device training/eval batch size(default 4)", type=int, default=4)
+    parser.add_argument('-gbl', '--group-by-length', help="Group training samples of similar lengths(default true)", type=lambda x: _parse_bool_arg(x), default="true")
     parser.add_argument('-wur', '--warmup-ratio', help="Linear warmup over warmup_ratio fraction of total steps(default 0.03)", type=float, default=0.03)
     parser.add_argument('-r', '--lora-r', type=int, help="LoRA rank(R) value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(determines LoRA Scale[scale = alpha/R])(NOTE - high LoRA scale can lead to over-fitting)(default: 16)", default=16)

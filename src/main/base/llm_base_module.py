@@ -73,7 +73,6 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         save_total_limit=arguments.max_checkpoints,
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
-        # TODO - CPU Tuning
         use_cpu=arguments.cpu_only_tuning,
         fp16=arguments.is_fp16,
         tf32=arguments.is_tf32,
@@ -81,7 +80,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
         warmup_ratio=arguments.warmup_ratio,
-        group_by_length=True,
+        group_by_length=arguments.group_by_length,
         lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
