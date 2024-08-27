@@ -1,8 +1,6 @@
 import sys, os
 from argparse import ArgumentParser
 
-from libfuturize.fixer_util import parse_args
-
 from exception.exceptions import ArgumentValidationException
 from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
