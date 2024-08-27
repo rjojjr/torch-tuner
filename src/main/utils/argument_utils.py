@@ -56,7 +56,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
-            training_data_dir=prog_args.prog_args.training_data_dir,
+            training_data_dir=prog_args.training_data_dir,
             train_file=prog_args.training_data_file,
             r=prog_args.lora_r,
             alpha=prog_args.lora_alpha,
