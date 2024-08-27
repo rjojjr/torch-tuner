@@ -30,6 +30,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     if arguments.hf_training_dataset_id is not None:
         ds = load_dataset(arguments.hf_training_dataset_id, split='train')
+    elif arguments.train_file.endswith(".jsonl"):
+        ds = load_dataset("json", data_files={"train": f"{arguments.training_data_dir}/{arguments.train_file}"})
     else:
         ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
 
@@ -86,7 +88,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         do_eval=arguments.do_eval,
         # TODO - is this ignored bt SFTTrainer?
         max_seq_length=4096,
-        dataset_text_field="text",
+        dataset_text_field="text" if not arguments.train_file.endswith("jsonl") else None,
         neftune_noise_alpha=5.0 if arguments.is_instruct_model else None
     )
 
