@@ -9,11 +9,11 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '1.5.2'
+version = '1.6.0'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Fine-Tuner v{version}'
-description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs using Torch, Transformers and LoRA.'
+description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs(and CPUs) using Torch, Transformers and LoRA.'
 
 args = parse_arguments(title, description)
 
