@@ -118,9 +118,6 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     del tokenizer
 
 
-
-
-
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
