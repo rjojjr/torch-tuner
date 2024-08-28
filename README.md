@@ -1,16 +1,16 @@
 # Torch Tuner CLI README
 
 The torch-tuner project currently serves as a simple convenient CLI wrapper for supervised fine-tuning(and serving) 
-Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs(CPU support coming soon) 
+Llama based LLM models(and others in the near future) on Nvidia CUDA enabled GPUs(or CPUs)
 with simple text samples(or JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA), [Transformers](https://huggingface.co/docs/transformers/en/index) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
 
 Use torch-tuner's CLI to perform Supervised Fine-Tuning(SFT)(with LoRA) of
-a suitable(Llama only ATM) base model that exists locally or on [Huggingface](https://huggingface.co) with simple text/JSONL and CUDA.
+a suitable(Llama only ATM) base model that exists locally or on [Huggingface](https://huggingface.co) with simple text/JSONL.
 You can also use this CLI to deploy your model(or any model)
 as an REST API that mimics commonly used Open AI endpoints.
 
 Ideally, in the future, the torch-tuner project will support more complex training data structures,
-non-llama LLM types, CPU based tuning and fine-tuning vision and speech models.
+non-llama LLM types and fine-tuning vision and speech models.
 
 ## Running the Torch Tuner CLI
 
@@ -181,15 +181,14 @@ always evaluate all requests against the model that is provided by the `--serve-
 
 ### Useful Notes
 
-Most of the default CLI arguments are configured to consume the least amount of VRAM possible.
-
-In theory, the base-model(`--base-model`) torch-tuner CLI argument will 
-accept a path to a locally saved model instead of a Huggingface repository
-name, but this is untested ATM.
+Most of the default CLI arguments are configured to consume the least amount of memory possible.
 
 You can find the supported arguments and their default values
 [here](src/main/utils/argument_utils.py)(in the `_build_program_argument_parser` function)
 if you don't want to run the CLI(`torch-tuner --help`) to find them.
+
+You can easily extend this CLI to support more LLM types by following the pattern 
+pointed out in the [Torch Tuner FAQ document](documentation/FAQ.md).
 
 ## Feature Requests
 

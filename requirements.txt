@@ -19,6 +19,7 @@ tensorboardX
 trl
 huggingface_hub
 requests
+intel_extension_for_pytorch
 
 # Serve Dependencies
 Flask

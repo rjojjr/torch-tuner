@@ -9,11 +9,11 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '1.5.2'
+version = '1.6.0'
 
 # TODO - Change this once support for more LLMs is added
 title = f'Llama AI LLM LoRA Torch Fine-Tuner v{version}'
-description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs using Torch, Transformers and LoRA.'
+description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs(and CPUs) using Torch, Transformers and LoRA.'
 
 args = parse_arguments(title, description)
 
@@ -74,6 +74,7 @@ def main() -> None:
     print(f'Training File: {args.training_data_file}')
 
     print('')
+    print(f'Using CPU Only Tuning: {str(args.cpu_only_tuning)}')
     print(f'Using tf32: {str(args.use_tf_32)}')
     print(f'Using bf16: {str(args.use_bf_16)}')
     print(f'Using fp16: {str(args.use_fp_16)}')
@@ -88,6 +89,7 @@ def main() -> None:
 
     print('')
     print(f'Is Chat Model: {args.is_chat_model}')
+    print(f'Is Instruct Model: {args.is_instruct_model}')
     print(f'Using Additional Vocab Tokens: {args.additional_vocabulary_tokens}')
     print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
 
