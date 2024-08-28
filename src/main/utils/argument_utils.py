@@ -1,5 +1,6 @@
 import sys, os
 from argparse import ArgumentParser
+
 from exception.exceptions import ArgumentValidationException
 from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
@@ -88,7 +89,11 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             target_modules=prog_args.target_modules,
             torch_empty_cache_steps=prog_args.torch_empty_cache_steps,
             warmup_ratio=prog_args.warmup_ratio,
-            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens
+            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
+            cpu_only_tuning=prog_args.cpu_only_tuning,
+            is_instruct_model=prog_args.is_instruct_model,
+            group_by_length=prog_args.group_by_length,
+            hf_training_dataset_id=prog_args.hf_training_dataset_id
         )
         tune_arguments.validate()
         return tune_arguments
@@ -109,7 +114,7 @@ def do_initial_arg_validation(args):
         raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
     if args.fine_tune and args.epochs <= 0:
         raise ArgumentValidationException("cannot tune when epochs is set to <= 0")
-    if args.fine_tune and (not os.path.exists(args.training_data_dir) or not os.path.exists(
+    if args.fine_tune and (args.hf_training_dataset_id is None) and (not os.path.exists(args.training_data_dir) or not os.path.exists(
             f'{args.training_data_dir}/{args.training_data_file}')):
         raise ArgumentValidationException('training data directory or file not found')
 
@@ -150,28 +155,34 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
         prog=title,
         description=description)
     parser.add_argument('-nm', '--new-model', help="Name of the new fine-tuned model/adapter(REQUIRED[for fine-tune, merge & push only])")
-    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory or HF dataset name(REQUIRED[for fine-tune only])")
+    parser.add_argument('-hftdi', '--hf-training-dataset-id', help="HF dataset identifier(NOTE - overrides any defined tuning data file)(REQUIRED[for fine-tune without file only])")
+    parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune from only])")
     parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(txt or jsonl)(REQUIRED[for fine-tune from file only])")
     parser.add_argument('-bm', '--base-model', help="Base model to tune(can be either HF model identifier or path to local model)(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
-    parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-tecs', '--torch-empty-cache-steps', help="Empty torch cache after x steps(NEVER empties cache when set to None)(USEFUL to prevent OOM issues)(default: 1)", type=lambda x: _parse_nullable_int_arg(x), default="1")
-    parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="Nonew")
-
-    parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
-
-    parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
-    parser.add_argument('-sp', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
+    parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-pp', '--public-push', help="Push to public HF repo(push is private if false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+
+    parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
+    parser.add_argument('-sp', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
+
+    parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
+    parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Tune with LangChain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-iim', '--is-instruct-model', help="Is the model being tuned intended for instruct(when set to true, enables several enhancements for instruct models)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+
+    parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
+
 
     # TODO - FIXME - Handle situation when user selects multiple quant./precision options(Which options take highest priority?)
     parser.add_argument('-4bit', '--use-4bit', help="Use 4bit quantization(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
@@ -180,18 +191,18 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-bf16', '--use-bf-16', help="Use bf-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Tune with LangChain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-bs', '--batch-size', help="Per-device training/eval batch size(default 4)", type=int, default=4)
+    parser.add_argument('-gbl', '--group-by-length', help="Group training samples of similar lengths together(default true)", type=lambda x: _parse_bool_arg(x), default="true")
     parser.add_argument('-wur', '--warmup-ratio', help="Linear warmup over warmup_ratio fraction of total steps(default 0.03)", type=float, default=0.03)
-    parser.add_argument('-r', '--lora-r', type=int, help="LoRA rank(R) value(default: 8)", default=8)
+    parser.add_argument('-r', '--lora-r', type=int, help="LoRA Rank(R) value(default: 8)", default=8)
     parser.add_argument('-a', '--lora-alpha', type=int, help="LoRA Alpha value(determines LoRA Scale[scale = alpha/R])(NOTE - high LoRA scale can lead to over-fitting)(default: 16)", default=16)
     parser.add_argument('-e', '--epochs', type=int, help="Number of iterations over of the entire dataset(default: 10)", default=10)
-    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(NOTE - consumes a lot of memory when set to true)(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(This value CHANGES if --lr-scheduler-type is not set to 'constant')(ONLY applies to AdamW optimizers)(default: 2e-5)", type=float, default=2e-5)
     parser.add_argument('-lrst', '--lr-scheduler-type', default="linear", help="Learning rate scheduler type(determines the learning rate decrease as tuning progresses[helps stabilize tuning and prevent over-fitting])(ONLY applies to AdamW optimizers)(default: linear)")
     parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(this helps to prevent over-fitting)(default: 0.05)", type=float, default=0.05)
-    parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
     parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_8bit)", default="adamw_8bit")
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 4)", type=int, default=4)
@@ -200,7 +211,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")
     parser.add_argument('-ssteps', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
     parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(this helps prevent filling up disk while tuning)(default: 5)", default=5, type=int)
-    parser.add_argument('-de', '--do-eval', help="Do evaluation on each save step(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-de', '--do-eval', help="Do evaluation on each save step(evaluates model loss after each 'save step')(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-llm', '--llm-type', help="LLM Type(default: llama)", default="llama")
 

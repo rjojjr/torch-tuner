@@ -1,11 +1,11 @@
 from utils.tokenizer_utils import add_agent_tokens, add_additional_tokens
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
-from datasets import load_dataset
+
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, TaskType, AutoPeftModelForCausalLM, PeftModel
 from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
-from utils.model_utils import get_all_layers, get_all_linear_layers
+from utils.model_utils import get_all_layers, get_all_linear_layers, load_data_set
 import os
 import shutil
 
@@ -28,10 +28,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
-    if arguments.train_file is not None:
-        ds = load_dataset(arguments.training_data_dir, data_files={"train": arguments.train_file})
-    else:
-        ds = load_dataset(arguments.training_data_dir, split='train')
+    ds = load_data_set(arguments)
 
     if arguments.target_modules is None or len(arguments.target_modules) == 0:
         target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
@@ -73,30 +70,29 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         save_total_limit=arguments.max_checkpoints,
         learning_rate=learning_rate,
         weight_decay=arguments.weight_decay,
-        # TODO - CPU Tuning
-        use_cpu=False,
+        use_cpu=arguments.cpu_only_tuning,
         fp16=arguments.is_fp16,
         tf32=arguments.is_tf32,
         bf16=arguments.is_bf16,
         max_grad_norm=arguments.max_gradient_norm,
         max_steps=-1,
         warmup_ratio=arguments.warmup_ratio,
-        group_by_length=True,
+        group_by_length=arguments.group_by_length,
         lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
         # TODO - is this ignored bt SFTTrainer?
         max_seq_length=4096,
-        dataset_text_field="text"
-        # TODO - investigate for instruction training
-        #neftune_noise_alpha
+        neftune_noise_alpha=5.0 if arguments.is_instruct_model else None,
+        dataset_text_field="text" if not arguments.train_file.endswith("jsonl") else None,
+        use_ipex=arguments.cpu_only_tuning
     )
 
     train = SFTTrainer(
+        tokenizer=tokenizer,
         model=model,
         train_dataset=ds['train'],
-        tokenizer=tokenizer,
-        args=train_params
+        args=train_params,
     )
 
     model.config.use_cache = False
@@ -122,6 +118,9 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     del tokenizer
 
 
+
+
+
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     if arguments.is_chat_model:
         base_model, tokenizer = setup_chat_format(base_model, tokenizer)
@@ -133,7 +132,7 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
-    if arguments.use_agent_tokens:
+    if arguments.use_agent_tokens or arguments.additional_vocabulary_tokens is not None:
         model = AutoPeftModelForCausalLM.from_pretrained(lora_dir)
     else:
         model = PeftModel.from_pretrained(base_model, lora_dir, quantization_config=bnb_config)
