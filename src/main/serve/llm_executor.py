@@ -1,6 +1,6 @@
 from typing import Callable
 from arguments.arguments import LlmExecutorFactoryArguments
-from transformers import AutoTokenizer, LlamaForCausalLM, StopStringCriteria, StoppingCriteriaList
+from transformers import AutoTokenizer, AutoModelForCausalLM, StopStringCriteria, StoppingCriteriaList
 from utils.torch_utils import get_bnb_config_and_dtype
 from exception.exceptions import TunerException
 import torch
@@ -68,7 +68,7 @@ def build_llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callab
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-    return lambda: LlmExecutor(LlamaForCausalLM.from_pretrained(
+    return lambda: LlmExecutor(AutoModelForCausalLM.from_pretrained(
         arguments.model,
         device_map={"":0},
         low_cpu_mem_usage=True,
