@@ -33,9 +33,9 @@ def main() -> None:
         print("Is Debug Mode: True")
         print('')
     if args.serve:
-        print(f"Running in serve mode")
+        print("Running in serve mode")
         print()
-        print(f"WARNING - Serve mode is currently EXPERIMENTAL and should NEVER be used in a production environment!")
+        print("WARNING - Serve mode is currently EXPERIMENTAL and should NEVER be used in a production environment!")
         print()
         print(f'Using bf16: {str(args.use_bf_16)}')
         print(f'Using fp16: {str(args.use_fp_16)}')
