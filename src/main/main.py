@@ -11,9 +11,8 @@ import os
 # TODO - Automate this
 version = '1.6.0'
 
-# TODO - Change this once support for more LLMs is added
-title = f'Llama AI LLM LoRA Torch Fine-Tuner v{version}'
-description = 'CLI to Fine-Tune Llama AI LLMs with simple text and jsonl on Nvidia GPUs(and CPUs) using Torch, Transformers and LoRA.'
+title = f'AI LLM LoRA Torch Fine-Tuner v{version}'
+description = 'This app is a simple CLI to automate the Supervised Fine-Tuning(SFT)(and testing of) of AI Large Language Model(LLM)s with simple text and jsonl on Nvidia GPUs(and Intel/AMD CPUs) using LoRA, Torch and Transformers.'
 
 args = parse_arguments(title, description)
 
