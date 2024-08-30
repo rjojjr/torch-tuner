@@ -24,7 +24,7 @@ def parse_temp(temp: float) -> float:
 def _construct_tuner(prog_args) -> Tuner:
     _evaluate_supported_llm_type(prog_args.llm_type)
     match prog_args.llm_type:
-        case 'LLAMA':
+        case 'llama':
             tuner = Tuner(llama.fine_tune, llama.merge, llama.push, LLM_TYPES['llama'])
         case _:
             tuner = Tuner(generic_llm.fine_tune, generic_llm.merge, generic_llm.push, LLM_TYPES['generic'])

@@ -213,6 +213,6 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(this helps prevent filling up disk while tuning)(default: 5)", default=5, type=int)
     parser.add_argument('-de', '--do-eval', help="Do evaluation on each save step(evaluates model loss after each 'save step')(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
 
-    parser.add_argument('-llm', '--llm-type', help="LLM Type(default: llama)", default="llama")
+    parser.add_argument('-llm', '--llm-type', help="LLM Type(default: generic[options: generic, llama])", default="generic")
 
     return parser
