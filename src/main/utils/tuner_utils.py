@@ -12,15 +12,6 @@ def build_llm_tuner_factory(prog_args) -> Callable[[], Tuner]:
     return lambda: _construct_tuner(prog_args)
 
 
-def parse_temp(temp: float) -> float:
-    """Handle invalid temperature values."""
-    if temp > 1:
-        return 1
-    if temp < 0:
-        return 0
-    return temp
-
-
 def _construct_tuner(prog_args) -> Tuner:
     _evaluate_supported_llm_type(prog_args.llm_type)
     match prog_args.llm_type:
