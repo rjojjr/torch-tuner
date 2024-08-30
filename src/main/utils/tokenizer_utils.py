@@ -1,6 +1,6 @@
 def add_agent_tokens(tokenizer, model):
     """Add LangChain ReAct Agent specific tokens to model vocabulary."""
-    agent_tokens = ["\nThought:", "\nAction:", "\nAction Input:", "\nObservation:", "\nFinal Answer:", "New Input:"]
+    agent_tokens = ["Thought:", "Action:", "Action Input:", "Observation:", "Final Answer:", "New Input:"]
 
     agent_tokens = set(agent_tokens) - set(tokenizer.vocab.keys())
     tokenizer.add_tokens(list(agent_tokens))
