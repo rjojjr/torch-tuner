@@ -14,10 +14,6 @@ def get_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -
     return dtype
 
 
-def get_device_map() -> str:
-    return 'cuda' if torch.cuda.is_available() else 'auto'
-
-
 def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -> tuple[BitsAndBytesConfig, torch.dtype]:
     """Construct configured BitsAndBytesConfig."""
     dtype = get_dtype(arguments)
