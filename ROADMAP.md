@@ -22,12 +22,13 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Add production wrapper to LLM REST server
 - Add ability to provide special/regular tokens to model vocabulary
 - Add Windows OS support
-- Add support for non-llama models
-  - Mistral
-  - Falcon
-  - Alpaca
-  - BERT
-  - ETC...
+- ~~Add support for non-llama models~~
+  - This is mostly satisfied with the addition of the 'GENERIC' LLM type
+  - ~~Mistral~~
+  - ~~Falcon~~
+  - ~~Alpaca~~
+  - ~~BERT~~
+  - ~~ETC...~~
 - Optimize quantization(QLoRA)
 - Add `/sft/api/v1/tune` endpoint
 - Add documentation comments to all argument classes to describe the individual arguments in more detail
