@@ -5,7 +5,8 @@ from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, TaskType, AutoPeftModelForCausalLM, PeftModel
 from trl import SFTTrainer, SFTConfig, setup_chat_format
 from transformers.trainer_utils import get_last_checkpoint
-from utils.model_utils import get_all_layers, get_all_linear_layers, load_data_set
+from utils.model_utils import get_all_layers, get_all_linear_layers
+from utils.dataset_utils import load_dataset
 import os
 import shutil
 
@@ -28,7 +29,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
-    ds = load_data_set(arguments)
+    ds = load_dataset(arguments)
 
     if arguments.target_modules is None or len(arguments.target_modules) == 0:
         target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
@@ -116,9 +117,6 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     del model
     del base_model
     del tokenizer
-
-
-
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:

@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import uuid
 from utils import time_utils
-from utils.tuner_utils import parse_temp
+from utils.serve_utils import parse_temp
 import tiktoken
 from serve.llm_executor import LlmExecutor
 
