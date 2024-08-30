@@ -1,9 +1,9 @@
 from utils.argument_utils import parse_arguments, do_initial_arg_validation
-from utils.tuner_utils import llm_tuner_factory
+from utils.tuner_utils import build_llm_tuner_factory
 from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
-from serve.llm_executor import llm_executor_factory
+from serve.llm_executor import build_llm_executor_factory
 from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
@@ -21,7 +21,7 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expand
 
 
 def main() -> None:
-    tuner_factory = llm_tuner_factory(args)
+    tuner_factory = build_llm_tuner_factory(args)
 
     print(title)
     print('---------------------------------------------')
@@ -44,8 +44,9 @@ def main() -> None:
         print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
         print()
         print(f"Serving {args.serve_model} on port {args.serve_port}")
-        factory = llm_executor_factory(LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side))
-        server = OpenAiLlmServer(factory())
+        llm_factory_args = LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side)
+        llm_executor_factory = build_llm_executor_factory(llm_factory_args)
+        server = OpenAiLlmServer(llm_executor_factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
         return
 

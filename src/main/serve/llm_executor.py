@@ -62,7 +62,7 @@ class LlmExecutor:
 
 
 # Only use this function to construct LLM executors
-def llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
+def build_llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callable[[], LlmExecutor]:
     """Construct configured LLM executor factory function."""
     arguments.validate()
 
