@@ -115,7 +115,7 @@ def main() -> None:
         print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
         print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
         print(f'Using Warmup Ratio: {args.warmup_ratio}')
-        print(f'Using Mox Sequence Length: {args.max_seq_length}')
+        print(f'Using Max Sequence Length: {args.max_seq_length}')
 
 
     if args.fine_tune:
