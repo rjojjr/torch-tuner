@@ -42,7 +42,8 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             output_dir=prog_args.output_directory,
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
-            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens
+            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
+            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl"))
         )
         merge_arguments.validate()
         return merge_arguments
