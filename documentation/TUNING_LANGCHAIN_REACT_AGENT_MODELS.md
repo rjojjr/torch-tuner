@@ -1,4 +1,4 @@
-# Tuning LangChain ReAct Agents with Torch-Tuner
+# Tuning LangChain ReAct Agents with Torch-Tuner CLI
 
 If you are looking to fine-tune LLM models for use with [LangChain](https://www.langchain.com/) 
 [ReAct agents](https://python.langchain.com/v0.1/docs/modules/agents/agent_types/react/),
@@ -37,4 +37,23 @@ by the basic ReAct agent to signify the different steps in its logical flow.
 
  - `\nNew Input:`
    - This is new input from the user.
- - `` 
+ - `\nThought:`
+   - Decision step
+   - "Do I need to use a tool?"
+   - ALWAYS follows `\nNew Input:` step
+ - `\nAction:`
+   - Tool to use 
+   - Only happens if answer to decision step is "Yes"
+   - ALWAYS follows `\nThought:` step
+ - `\nAction Input:`
+   - Tool input(tool function arguments)
+   - ALWAYS follows `\nAction:` step
+ - `\nObservation:`
+   - An observation about the tool output
+   - ALWAYS follows `\nAction Input:` step
+   - **IMPORTANT NOTE** - The `\nObservation:` token is sent as a stop sequence to the LLM by the agent
+ - `\nFinal Answer:`
+   - The agents final response to the user
+   - ALWAYS last
+   - Follows `\nThought:` step when the answer to "Do I need to use a tool?" is "No."
+   - Follows `\nObservation:` step when the answer to "Do I need to use a tool?" is "Yes."
