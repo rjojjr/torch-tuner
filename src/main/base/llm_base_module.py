@@ -83,7 +83,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         report_to="tensorboard",
         do_eval=arguments.do_eval,
         # TODO - is this ignored bt SFTTrainer?
-        max_seq_length=4096,
+        max_seq_length=arguments.max_seq_length,
         neftune_noise_alpha=5.0 if arguments.is_instruct_model else None,
         dataset_text_field="text" if not arguments.train_file.endswith("jsonl") else None,
         use_ipex=arguments.cpu_only_tuning
