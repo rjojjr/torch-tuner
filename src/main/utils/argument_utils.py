@@ -42,7 +42,8 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             output_dir=prog_args.output_directory,
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
-            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens
+            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
+            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl"))
         )
         merge_arguments.validate()
         return merge_arguments
@@ -93,7 +94,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             cpu_only_tuning=prog_args.cpu_only_tuning,
             is_instruct_model=prog_args.is_instruct_model,
             group_by_length=prog_args.group_by_length,
-            hf_training_dataset_id=prog_args.hf_training_dataset_id
+            hf_training_dataset_id=prog_args.hf_training_dataset_id,
+            max_seq_length=prog_args.max_seq_length
         )
         tune_arguments.validate()
         return tune_arguments
@@ -209,6 +211,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")
+    parser.add_argument('-msl', '--max-seq-length', help="The maximum sequence length to use for the `ConstantLengthDataset` and for automatically creating the Dataset(default: the smaller of the `tokenizer.model_max_length` and `1024`)", type=lambda x: _parse_nullable_int_arg(x), default="None")
     parser.add_argument('-ssteps', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
     parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(this helps prevent filling up disk while tuning)(default: 5)", default=5, type=int)
     parser.add_argument('-de', '--do-eval', help="Do evaluation on each save step(evaluates model loss after each 'save step')(default: true)", default="true", type=lambda x: _parse_bool_arg(x))

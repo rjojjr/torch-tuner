@@ -135,7 +135,8 @@ class TuneArguments(TunerFunctionArguments):
                  cpu_only_tuning: bool = False,
                  is_instruct_model: bool = False,
                  group_by_length: bool = True,
-                 hf_training_dataset_id: str | None = None):
+                 hf_training_dataset_id: str | None = None,
+                 max_seq_length: int | None = None):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
         self.r = r
         self.alpha = alpha
@@ -168,6 +169,7 @@ class TuneArguments(TunerFunctionArguments):
         self.is_instruct_model = is_instruct_model
         self.group_by_length = group_by_length
         self.hf_training_dataset_id = hf_training_dataset_id
+        self.max_seq_length = max_seq_length
 
 
     def validate(self) -> None:
