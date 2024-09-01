@@ -15,12 +15,12 @@ import shutil
 
 
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
-    if arguments.is_chat_model:
-        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
-    if arguments.use_agent_tokens:
-        add_agent_tokens(tokenizer, base_model)
     if arguments.additional_vocabulary_tokens is not None:
         add_additional_tokens(tokenizer, base_model, arguments.additional_vocabulary_tokens)
+    if arguments.use_agent_tokens:
+        add_agent_tokens(tokenizer, base_model)
+    if arguments.is_chat_model or (arguments.train_file.endswith(".jsonl")):
+        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
@@ -83,7 +83,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         report_to="tensorboard",
         do_eval=arguments.do_eval,
         # TODO - is this ignored bt SFTTrainer?
-        max_seq_length=4096,
+        max_seq_length=arguments.max_seq_length,
         neftune_noise_alpha=5.0 if arguments.is_instruct_model else None,
         dataset_text_field="text" if not arguments.train_file.endswith("jsonl") else None,
         use_ipex=arguments.cpu_only_tuning
@@ -120,12 +120,12 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
-    if arguments.is_chat_model:
-        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
-    if arguments.use_agent_tokens:
-        add_agent_tokens(tokenizer, base_model)
     if arguments.additional_vocabulary_tokens is not None:
         add_additional_tokens(tokenizer, base_model, arguments.additional_vocabulary_tokens)
+    if arguments.use_agent_tokens:
+        add_agent_tokens(tokenizer, base_model)
+    if arguments.is_chat_model:
+        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
     model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")

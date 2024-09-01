@@ -9,7 +9,7 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '2.0.0'
+version = '2.0.1'
 
 title = f'AI LLM LoRA Torch Fine-Tuner v{version}'
 description = 'This app is a simple CLI to automate the Supervised Fine-Tuning(SFT)(and testing of) of AI Large Language Model(LLM)s with simple text and jsonl on Nvidia GPUs(and Intel/AMD CPUs) using LoRA, Torch and Transformers.'
@@ -115,6 +115,7 @@ def main() -> None:
         print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
         print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
         print(f'Using Warmup Ratio: {args.warmup_ratio}')
+        print(f'Using Max Sequence Length: {args.max_seq_length}')
 
 
     if args.fine_tune:
