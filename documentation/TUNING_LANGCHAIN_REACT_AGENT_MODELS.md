@@ -1,4 +1,4 @@
-# Tuning LangChain ReAct Agents with Torch-Tuner CLI
+# Tuning LangChain ReAct Agent Compatible Models with Torch-Tuner CLI
 
 If you are looking to fine-tune LLM models for use with [LangChain](https://www.langchain.com/) 
 [ReAct agents](https://python.langchain.com/v0.1/docs/modules/agents/agent_types/react/),
@@ -14,7 +14,7 @@ As with anything else, your actual milage may vary.
 The magic of LangChain ReAct agents lies in their ability to "think" 
 through and solve complex multistep problems, as well as their ability
 to chose from, and use, a wide variety of tools that are provided by their
-programmer.
+programmers.
 
 ### Fork in the Road: Two Agent Paths
 
@@ -69,7 +69,7 @@ though it should work in other formats as well.
 
 The first thing to do when tuning a new agent model, is set the `--use-agent-tokens` CLI argument to
 'true'. That argument inserts the proper agent "tokens" from the related section above into
-the models vocabulary. This argument must be the same for both the "fine-tune" and "merge"
+the model's vocabulary. This argument must be the same for both the "fine-tune" and "merge"
 CLI steps.
 
 You may also want to set the `--is-instruct-model` CLI argument to 'true', but that is optional.
@@ -103,7 +103,7 @@ call the tools properly, or worse, it will start predicting tool outputs.
 ## Conclusion
 
 By combining the CLI arguments & training sample format in the sections above,
-you will be well on your way to tuning LangChain ReAct compatible LLM models
+you will be well on your way to tuning LangChain ReAct agent compatible LLM models
 with the torch-tuner CLI in no time. I do want to call out that you 
 want to be careful not to tune your model too heavily with static tools, 
 you want your model to be able to choose from the tools that are presented to it, that
