@@ -16,11 +16,11 @@ with LoRA.
 
 ### TODOs
 
-I plan to add a public [Trello](https://trello.com/) board for this project at some point,
+I plan to add a public [Trello](https://trello.com/) board(or maybe a Github Kanban board) for this project at some point,
 but in the meantime I will track work/needs/bugs/requests here.
 
 - Add production wrapper to LLM REST server
-- Add ability to provide special/regular tokens to model vocabulary
+- ~~Add ability to provide special/regular tokens to model vocabulary~~
 - Add Windows OS support
 - ~~Add support for non-llama models~~
   - This is mostly satisfied with the addition of the 'GENERIC' LLM type

@@ -7,7 +7,9 @@ with simple text samples(or JSON Lines files) using [LoRA](https://github.com/mi
 Use torch-tuner's CLI to perform Supervised Fine-Tuning(SFT)(with LoRA) of
 a suitable base model that exists locally or on [Huggingface](https://huggingface.co) with simple text/JSONL.
 You can also use this CLI to deploy your model(or any model)
-as an REST API that mimics commonly used Open AI endpoints.
+as an REST API that mimics commonly used Open AI endpoints. You can
+use this CLI to tune anything from basic chat and instructional models, to 
+[LangChain ReAct Agent compatible models](documentation/TUNING_LANGCHAIN_REACT_AGENT_MODELS.md).
 
 Ideally, in the future, the torch-tuner project will support more complex training data structures
 and fine-tuning vision and speech models.
