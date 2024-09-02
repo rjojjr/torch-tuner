@@ -57,3 +57,55 @@ by the basic ReAct agent to signify the different steps in its logical flow.
    - ALWAYS last
    - Follows `\nThought:` step when the answer to "Do I need to use a tool?" is "No."
    - Follows `\nObservation:` step when the answer to "Do I need to use a tool?" is "Yes."
+
+## Fine-Tuning ReAct Agent Models
+
+Now that we covered the basic background context, let's talk about actually fine-tuning 
+a basic LangChain ReAct Agent model. This document will assume that you are using 
+the traditional Open AI JSONL tuning-data format(`{"prompt": "a prompt", "completion": "an expected AI response"}`),
+though it should work in other formats as well.
+
+### CLI Arguments
+
+The first thing to do when tuning a new agent model, is set the `--use-agent-tokens` CLI argument to
+'true'. That argument inserts the proper agent "tokens" from the related section above into
+the models vocabulary. This argument must be the same for both the "fine-tune" and "merge"
+CLI steps.
+
+You may also want to set the `--is-instruct-model` CLI argument to 'true', but that is optional.
+That argument makes optimizations for tuning instructional flavored models, which may, or may not, help 
+in your agent tuning endeavours.
+
+### Tuning-Data Sample Formatting
+
+As mentioned above, there are two scenarios/paths you can tune your 
+agent model for: Use a Tool or NOT Use a Tool. 
+
+#### No-Tool Sample
+
+The 'No Tool' scenario is the most simple and intuitive case.
+
+```JSONL
+{"prompt": "\nNew Input: Hi!\nThought: Do I need to use a tool? No.\nFinal Answer: ", "completion": "Hi. How are you?"}
+```
+
+#### Tool Sample
+
+Since the agent sends the `\nObservation:` "token" as a stop sequence, we must set
+all completions to the `\nObservation:` stop sequence to ensure the agent
+stops and calls the tool properly. If you don't do this, the model will never 
+call the tools properly, or worse, it will start predicting tool outputs.
+
+```JSONL
+{"prompt": "\nNew Input: Hi!\nThought: Do I need to use a tool? Yes.\nAction: your_tool\nAction Input: some,args", "completion": "\nObservation:"}
+```
+
+## Conclusion
+
+By combining the CLI arguments & training sample format in the sections above,
+you will be well on your way to tuning LangChain ReAct compatible LLM models
+with the torch-tuner CLI in no time. I do want to call out that you 
+want to be careful not to tune your model too heavily with static tools, 
+you want your model to be able to choose from the tools that are presented to it, that
+way you don't have to tune a new model everytime you add/edit/remove an
+agent's available tools.
