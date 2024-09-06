@@ -1,5 +1,4 @@
 from exception.exceptions import TuningModuleFunctionException
-from utils.tokenizer_utils import add_agent_tokens, add_additional_tokens
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
@@ -25,7 +24,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print('')
 
     if os.path.exists(lora_dir) and not arguments.overwrite_output:
-        raise TuningModuleFunctionException(f'cannot overwrite existing LoRA directory({lora_dir}) when `--overwrite-output` CLI argument is not set to "true"')
+        raise TuningModuleFunctionException(f'cannot overwrite existing LoRA directory({lora_dir}) when `--overwrite-output` CLI argument is not set to "true"', 'FINE_TUNE')
 
     base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
@@ -125,10 +124,10 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
     if not os.path.exists(lora_dir):
-        raise TuningModuleFunctionException(f'cannot merge model because LoRA adapter({lora_dir}) is missing')
+        raise TuningModuleFunctionException(f'cannot merge model because LoRA adapter @ {lora_dir} is missing', 'MERGE')
 
     if os.path.exists(model_dir) and not arguments.overwrite_output:
-        raise TuningModuleFunctionException(f'cannot overwrite existing model directory({model_dir}) when `--overwrite-output` CLI argument is not set to "true"')
+        raise TuningModuleFunctionException(f'cannot overwrite existing model directory({model_dir}) when `--overwrite-output` CLI argument is not set to "true"', 'MERGE')
 
     prepare_model_vocabulary(arguments, base_model, tokenizer)
 

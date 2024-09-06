@@ -18,8 +18,8 @@ class TunerException(Exception):
 
 class TuningModuleFunctionException(TunerException):
 
-    def __init__(self, message: str):
-        super(TuningModuleFunctionException, self).__init__(message, 'TUNING_FUNCTION')
+    def __init__(self, message: str, sub_type: str | None = None):
+        super(TuningModuleFunctionException, self).__init__(message, 'TUNING_FUNCTION', sub_type)
 
 
 class ValidationException(TunerException):
