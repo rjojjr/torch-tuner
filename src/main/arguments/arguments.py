@@ -137,7 +137,8 @@ class TuneArguments(TunerFunctionArguments):
                  group_by_length: bool = True,
                  hf_training_dataset_id: str | None = None,
                  max_seq_length: int | None = None,
-                 overwrite_output: bool = True):
+                 overwrite_output: bool = True,
+                 neftune_noise_alpha: float = 5.0):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
         self.r = r
         self.alpha = alpha
@@ -172,6 +173,7 @@ class TuneArguments(TunerFunctionArguments):
         self.hf_training_dataset_id = hf_training_dataset_id
         self.max_seq_length = max_seq_length
         self.overwrite_output = overwrite_output
+        self.neftune_noise_alpha = neftune_noise_alpha
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
@@ -193,6 +195,7 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = is_valid and not self.base_model.strip() == '' and not self.new_model.strip() == ''
         is_valid = is_valid and not self.optimizer_type.strip() == '' and not self.bias.strip() == ''
         is_valid = is_valid and not self.save_strategy.strip() == '' and not self.output_directory.strip() == ''
+        is_valid = is_valid and not self.neftune_noise_alpha is None
 
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
