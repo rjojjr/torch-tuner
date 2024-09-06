@@ -8,7 +8,7 @@ import time
 import gc
 
 max_attempts = 5
-retry_interval = 0.5
+retry_interval = 1
 
 
 # TODO - use base model & apply LoRA adapters
@@ -55,7 +55,7 @@ class LlmExecutor:
             torch.cuda.empty_cache()
             if max_attempts is None or attempt <= max_attempts:
                 print("CUDA OOM: retrying")
-                time.sleep(retry_interval)
+                time.sleep(retry_interval * attempt)
                 return self.completion(input, max_tokens, attempt + 1)
             print("CUDA OOM: raising exception")
             raise LlmServerException(message="CUDA OOM, exceeded max_attempts")
