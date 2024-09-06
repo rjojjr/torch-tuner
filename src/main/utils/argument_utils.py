@@ -43,7 +43,8 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
-            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl"))
+            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl")),
+            overwrite_output=prog_args.overwrite_output
         )
         merge_arguments.validate()
         return merge_arguments
@@ -95,7 +96,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             is_instruct_model=prog_args.is_instruct_model,
             group_by_length=prog_args.group_by_length,
             hf_training_dataset_id=prog_args.hf_training_dataset_id,
-            max_seq_length=prog_args.max_seq_length
+            max_seq_length=prog_args.max_seq_length,
+            overwrite_output=prog_args.overwrite_output
         )
         tune_arguments.validate()
         return tune_arguments
@@ -162,6 +164,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(txt or jsonl)(REQUIRED[for fine-tune from file only])")
     parser.add_argument('-bm', '--base-model', help="Base model to tune(can be either HF model identifier or path to local model)(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
+    parser.add_argument('-owo', '--overwrite-output', help="Overwrite previous model output(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")

@@ -1,3 +1,4 @@
+from exception.exceptions import TuningModuleFunctionException
 from utils.tokenizer_utils import add_agent_tokens, add_additional_tokens
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
@@ -62,7 +63,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         per_device_train_batch_size=arguments.batch_size,
         per_device_eval_batch_size=arguments.batch_size,
         gradient_accumulation_steps=arguments.gradient_accumulation_steps,
-        overwrite_output_dir=True,
+        overwrite_output_dir=arguments.overwrite_output,
         optim=arguments.optimizer_type,
         save_strategy=arguments.save_strategy,
         save_steps=arguments.save_steps,
@@ -108,8 +109,10 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     print('')
     print(f'Saving LoRA adapter to {lora_dir}')
-    if os.path.exists(lora_dir):
+    if os.path.exists(lora_dir) and arguments.overwrite_output:
         shutil.rmtree(lora_dir)
+    elif os.path.exists(lora_dir):
+        raise TuningModuleFunctionException(f'cannot overwrite existing LoRA directory when `--overwrite-output` CLI argument is not set to "true"')
 
     train.model.save_pretrained(lora_dir)
     train.model.config.save_pretrained(lora_dir)
@@ -140,8 +143,10 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
 
     print(f'Saving model to {model_dir}')
     print('')
-    if os.path.exists(model_dir):
+    if os.path.exists(model_dir) and arguments.overwrite_output:
         shutil.rmtree(model_dir)
+    elif os.path.exists(model_dir):
+        raise TuningModuleFunctionException(f'cannot overwrite existing model directory when `--overwrite-output` CLI argument is not set to "true"')
     model.save_pretrained(model_dir)
     tokenizer.save_pretrained(model_dir)
     del model

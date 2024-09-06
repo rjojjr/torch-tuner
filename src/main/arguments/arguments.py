@@ -136,7 +136,8 @@ class TuneArguments(TunerFunctionArguments):
                  is_instruct_model: bool = False,
                  group_by_length: bool = True,
                  hf_training_dataset_id: str | None = None,
-                 max_seq_length: int | None = None):
+                 max_seq_length: int | None = None,
+                 overwrite_output: bool = True):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
         self.r = r
         self.alpha = alpha
@@ -170,7 +171,7 @@ class TuneArguments(TunerFunctionArguments):
         self.group_by_length = group_by_length
         self.hf_training_dataset_id = hf_training_dataset_id
         self.max_seq_length = max_seq_length
-
+        self.overwrite_output = overwrite_output
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
@@ -219,10 +220,12 @@ class MergeArguments(TunerFunctionArguments):
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
                  use_agent_tokens: bool = False,
-                 additional_vocabulary_tokens: list | None = None):
+                 additional_vocabulary_tokens: list | None = None,
+                 overwrite_output: bool = True):
         super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens)
         self.base_model = base_model
         self.output_dir = output_dir
+        self.overwrite_output = overwrite_output
 
     def validate(self) -> None:
         is_valid = self.new_model is not None and self.base_model is not None

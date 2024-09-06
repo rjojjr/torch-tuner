@@ -16,6 +16,12 @@ class TunerException(Exception):
         return f'{self.message} TYPE: {self.exception_type}{sub_type}'
 
 
+class TuningModuleFunctionException(TunerException):
+
+    def __init__(self, message: str):
+        super(TuningModuleFunctionException, self).__init__(message, 'TUNING_FUNCTION')
+
+
 class ValidationException(TunerException):
     """Application validation exception."""
 
