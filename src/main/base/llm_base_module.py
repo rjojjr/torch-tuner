@@ -4,9 +4,9 @@ from utils.tokenizer_utils import add_agent_tokens, add_additional_tokens
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, TaskType, AutoPeftModelForCausalLM, PeftModel
-from trl import SFTTrainer, SFTConfig, setup_chat_format
+from trl import SFTTrainer, SFTConfig
 from transformers.trainer_utils import get_last_checkpoint
-from utils.model_utils import get_all_layers, get_all_linear_layers
+from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
 from utils.dataset_utils import load_dataset
 import os
 import shutil
@@ -16,12 +16,6 @@ import shutil
 
 
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
-    if arguments.additional_vocabulary_tokens is not None:
-        add_additional_tokens(tokenizer, base_model, arguments.additional_vocabulary_tokens)
-    if arguments.use_agent_tokens:
-        add_agent_tokens(tokenizer, base_model)
-    if arguments.is_chat_model or (arguments.train_file.endswith(".jsonl")):
-        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
     output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
@@ -32,6 +26,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     if os.path.exists(lora_dir) and not arguments.overwrite_output:
         raise TuningModuleFunctionException(f'cannot overwrite existing LoRA directory({lora_dir}) when `--overwrite-output` CLI argument is not set to "true"')
+
+    base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
     ds = load_dataset(arguments)
 
@@ -124,18 +120,17 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
-    if arguments.additional_vocabulary_tokens is not None:
-        add_additional_tokens(tokenizer, base_model, arguments.additional_vocabulary_tokens)
-    if arguments.use_agent_tokens:
-        add_agent_tokens(tokenizer, base_model)
-    if arguments.is_chat_model:
-        base_model, tokenizer = setup_chat_format(base_model, tokenizer)
     lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
     model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
+    if not os.path.exists(lora_dir):
+        raise TuningModuleFunctionException(f'cannot merge model because LoRA adapter({lora_dir}) is missing')
+
     if os.path.exists(model_dir) and not arguments.overwrite_output:
         raise TuningModuleFunctionException(f'cannot overwrite existing model directory({model_dir}) when `--overwrite-output` CLI argument is not set to "true"')
+
+    prepare_model_vocabulary(arguments, base_model, tokenizer)
 
     if arguments.use_agent_tokens or arguments.additional_vocabulary_tokens is not None:
         model = AutoPeftModelForCausalLM.from_pretrained(lora_dir)

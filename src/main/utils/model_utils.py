@@ -1,5 +1,9 @@
 import torch
 from transformers import Conv1D
+from utils.tokenizer_utils import add_agent_tokens, add_additional_tokens
+
+from arguments.arguments import TuneArguments, MergeArguments
+from trl import setup_chat_format
 
 all_modules = (torch.nn.Linear, torch.nn.Embedding, torch.nn.Conv2d, Conv1D)
 
@@ -24,3 +28,13 @@ def _get_layer_names(model, is_linear_only: bool = False):
                 layers.append(module_name)
 
     return list(set(layers))
+
+
+def prepare_model_vocabulary(arguments: TuneArguments | MergeArguments, model, tokenizer):
+    if arguments.additional_vocabulary_tokens is not None:
+        add_additional_tokens(tokenizer, model, arguments.additional_vocabulary_tokens)
+    if arguments.use_agent_tokens:
+        add_agent_tokens(tokenizer, model)
+    if arguments.is_chat_model or (arguments.train_file is not None and arguments.train_file.endswith(".jsonl")):
+        model, tokenizer = setup_chat_format(model, tokenizer)
+    return model, tokenizer
