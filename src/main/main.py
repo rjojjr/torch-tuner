@@ -113,7 +113,7 @@ def main() -> None:
         print(f'Using Optimizer: {args.optimizer_type}')
         if 'adamw' in args.optimizer_type:
             print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
-            print(f'Using Actual(Base Learning Rate * Batch Size) Learning Rate: {str(args.base_learning_rate * args.batch_size)}')
+            print(f'Using Actual Learning Rate(Base Learning Rate * Batch Size): {str(args.base_learning_rate * args.batch_size)}')
             print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
         print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
         print(f'Using Warmup Ratio: {args.warmup_ratio}')
