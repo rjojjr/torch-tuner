@@ -2,7 +2,7 @@ from typing import Callable
 from arguments.arguments import LlmExecutorFactoryArguments
 from transformers import AutoTokenizer, AutoModelForCausalLM, StopStringCriteria, StoppingCriteriaList
 from utils.torch_utils import get_bnb_config_and_dtype
-from exception.exceptions import TunerException
+from exception.exceptions import TunerException, LlmServerException
 import torch
 import time
 import gc
@@ -58,7 +58,7 @@ class LlmExecutor:
                 time.sleep(retry_interval)
                 return self.completion(input, max_tokens, attempt + 1)
             print("CUDA OOM: raising exception")
-            raise TunerException(message="CUDA OOM, exceeded max_attempts")
+            raise LlmServerException(message="CUDA OOM, exceeded max_attempts")
 
 
 # Only use this function to construct LLM executors
