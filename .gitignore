@@ -1,7 +1,7 @@
 /venv/
 torch-tuner.iml
+tuner.iml
 /.idea/
 /models/
 /logs/
 /.venv/
-/src/tuner/tuner.iml
