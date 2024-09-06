@@ -30,6 +30,9 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         print(f'Checkpointing to {output_dir}')
         print('')
 
+    if os.path.exists(lora_dir) and not arguments.overwrite_output:
+        raise TuningModuleFunctionException(f'cannot overwrite existing LoRA directory({lora_dir}) when `--overwrite-output` CLI argument is not set to "true"')
+
     ds = load_dataset(arguments)
 
     if arguments.target_modules is None or len(arguments.target_modules) == 0:
@@ -111,8 +114,6 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     print(f'Saving LoRA adapter to {lora_dir}')
     if os.path.exists(lora_dir) and arguments.overwrite_output:
         shutil.rmtree(lora_dir)
-    elif os.path.exists(lora_dir):
-        raise TuningModuleFunctionException(f'cannot overwrite existing LoRA directory when `--overwrite-output` CLI argument is not set to "true"')
 
     train.model.save_pretrained(lora_dir)
     train.model.config.save_pretrained(lora_dir)
@@ -133,6 +134,9 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
+    if os.path.exists(model_dir) and not arguments.overwrite_output:
+        raise TuningModuleFunctionException(f'cannot overwrite existing model directory({model_dir}) when `--overwrite-output` CLI argument is not set to "true"')
+
     if arguments.use_agent_tokens or arguments.additional_vocabulary_tokens is not None:
         model = AutoPeftModelForCausalLM.from_pretrained(lora_dir)
     else:
@@ -145,8 +149,7 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
     print('')
     if os.path.exists(model_dir) and arguments.overwrite_output:
         shutil.rmtree(model_dir)
-    elif os.path.exists(model_dir):
-        raise TuningModuleFunctionException(f'cannot overwrite existing model directory when `--overwrite-output` CLI argument is not set to "true"')
+
     model.save_pretrained(model_dir)
     tokenizer.save_pretrained(model_dir)
     del model
