@@ -36,7 +36,7 @@ class LlmExecutor:
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     # TODO - Don't always return all `max_tokens` && return stop reason
     def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None) -> str:
-        """Predict what text should follow the given prompt."""
+        """Predict what text should follow the provided input."""
         if stops is None:
             stops = []
         try:
