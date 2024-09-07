@@ -33,20 +33,22 @@ installed on the host. I would like to add CPU based tuning in the near future.
 
 #### Install the Torch Tuner CLI
 
-You can install the torch tuner CLI as a system-wide application on any Linux OS(and Mac OS)(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
-with [this script](scripts/install-torch-tuner.sh) if you don't want to have to mess with python or the repository in general. After installation,
+You can install the torch tuner CLI as a system-wide application on any Linux OS(also on MacOS and Windows 
+OS[although the linux script will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
+with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS](scripts/win/install-torch-tuner.bat)) 
+if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
-**NOTE** - You must run the script with the `sudo` command.
+**NOTE** - You must run the script with root/admin privileges.
 
-You can download the latest installer script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh)
+You can download the latest installer script from [Github](https://github.com)
 and execute it with the following single command:
 
 ```shell
-# Linux
+# Linux(and WSL)
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 
-# Windows
+# Windows(non-WSL) (requires wget, git, python3, pip already installed on target machine)
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat | cmd
 ```
 
@@ -63,7 +65,11 @@ You can update the installed torch-tuner CLI instance at anytime by running the 
 You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
+# Linux(and MacOS/WSL)
 sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
+
+# Windows 
+"%UserProfile%\.local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
 ```
 
 #### Merging your LoRA Adapter
