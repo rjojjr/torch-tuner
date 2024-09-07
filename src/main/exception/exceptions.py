@@ -16,6 +16,24 @@ class TunerException(Exception):
         return f'{self.message} TYPE: {self.exception_type}{sub_type}'
 
 
+class ServeModeException(TunerException):
+    """General serve mode exception"""
+    def __init__(self, message: str, sub_type: str | None = None):
+        super(ServeModeException, self).__init__(message, 'SERVE_MODE', sub_type)
+
+
+class LlmServerException(ServeModeException):
+    """LLM server exception"""
+    def __init__(self, message: str):
+        super(LlmServerException, self).__init__(message, 'LLM_SERVER')
+
+
+class TuningModuleFunctionException(TunerException):
+    """General tuning module function execution exception"""
+    def __init__(self, message: str, sub_type: str | None = None):
+        super(TuningModuleFunctionException, self).__init__(message, 'TUNING_FUNCTION', sub_type)
+
+
 class ValidationException(TunerException):
     """Application validation exception."""
 

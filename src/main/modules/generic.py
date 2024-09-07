@@ -4,11 +4,12 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 import base.llm_base_module as base_module
+import os
 
 
 def merge(arguments: MergeArguments) -> None:
     """Generic LLM type specific merge function."""
-    lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
+    lora_dir = f"{arguments.output_dir}{os.sep}adapters{os.sep}{arguments.new_model}"
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
     base_model = AutoModelForCausalLM.from_pretrained(

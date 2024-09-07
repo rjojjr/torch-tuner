@@ -9,7 +9,7 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '2.0.2'
+version = '2.1.0'
 
 title = f'Torch-Tuner CLI v{version}'
 description = 'This app is a simple CLI to automate the Supervised Fine-Tuning(SFT)(and testing of) of AI Large Language Model(LLM)s with simple text and jsonl on Nvidia GPUs(and Intel/AMD CPUs) using LoRA, Torch and Transformers.'
@@ -44,7 +44,8 @@ def main() -> None:
         print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
         print()
         print(f"Serving {args.serve_model} on port {args.serve_port}")
-        llm_factory_args = LlmExecutorFactoryArguments(model=args.serve_model, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side)
+        model_path = os.path.expanduser(f"{args.output_directory}{os.sep}{args.serve_model}" if (not '/' in args.serve_model and not os.sep in args.serve_model) else args.serve_model)
+        llm_factory_args = LlmExecutorFactoryArguments(model=model_path, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side)
         llm_executor_factory = build_llm_executor_factory(llm_factory_args)
         server = OpenAiLlmServer(llm_executor_factory())
         server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
@@ -56,7 +57,7 @@ def main() -> None:
     tuner = tuner_factory()
 
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
-    model_dir = f'{args.output_directory}/merged-models/{args.new_model}'
+    model_dir = os.path.expanduser(f'{args.output_directory}{os.sep}merged-models{os.sep}{args.new_model}')
 
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
@@ -101,7 +102,6 @@ def main() -> None:
         print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
         print(f'Using Max Saves: {str(args.max_saved)}')
         print(f'Using Batch Size: {str(args.batch_size)}')
-        print(f'Using Optimizer: {args.optimizer_type}')
         print(f'Using Save Strategy: {args.save_strategy}')
         print(f'Using Save Steps: {str(args.save_steps)}')
         print(f'Using Save Embeddings: {str(args.save_embeddings)}')
@@ -111,8 +111,11 @@ def main() -> None:
         print(f'Using LoRA R: {str(args.lora_r)}')
         print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
         print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
-        print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
-        print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
+        print(f'Using Optimizer: {args.optimizer_type}')
+        if 'adamw' in args.optimizer_type:
+            print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
+            print(f'Using Actual Learning Rate(Base Learning Rate * Batch Size): {str(args.base_learning_rate * args.batch_size)}')
+            print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
         print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
         print(f'Using Warmup Ratio: {args.warmup_ratio}')
         print(f'Using Max Sequence Length: {args.max_seq_length}')
