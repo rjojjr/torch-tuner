@@ -43,7 +43,11 @@ You can download the latest installer script from [Github](https://raw.githubuse
 and execute it with the following single command:
 
 ```shell
+# Linux
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
+
+# Windows
+wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat | cmd
 ```
 
 **NOTE** - If the installer script fails with OS level python dependency errors, and you are using Debian Linux, 
