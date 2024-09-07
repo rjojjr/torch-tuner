@@ -2,13 +2,13 @@ from typing import Callable
 from arguments.arguments import LlmExecutorFactoryArguments
 from transformers import AutoTokenizer, AutoModelForCausalLM, StopStringCriteria, StoppingCriteriaList
 from utils.torch_utils import get_bnb_config_and_dtype
-from exception.exceptions import TunerException
+from exception.exceptions import LlmServerException
 import torch
 import time
 import gc
 
 max_attempts = 5
-retry_interval = 0.5
+retry_interval = 1
 
 
 # TODO - use base model & apply LoRA adapters
@@ -36,7 +36,7 @@ class LlmExecutor:
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     # TODO - Don't always return all `max_tokens` && return stop reason
     def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None) -> str:
-        """Predict what text should follow the given prompt."""
+        """Predict what text should follow the provided input."""
         if stops is None:
             stops = []
         try:
@@ -55,10 +55,10 @@ class LlmExecutor:
             torch.cuda.empty_cache()
             if max_attempts is None or attempt <= max_attempts:
                 print("CUDA OOM: retrying")
-                time.sleep(retry_interval)
+                time.sleep(retry_interval * attempt)
                 return self.completion(input, max_tokens, attempt + 1)
             print("CUDA OOM: raising exception")
-            raise TunerException(message="CUDA OOM, exceeded max_attempts")
+            raise LlmServerException(message="CUDA OOM, exceeded max_attempts")
 
 
 # Only use this function to construct LLM executors
@@ -70,6 +70,7 @@ def build_llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callab
 
     return lambda: LlmExecutor(AutoModelForCausalLM.from_pretrained(
         arguments.model,
+        # TODO - use CPU
         device_map={"":0},
         low_cpu_mem_usage=True,
         quantization_config=bnb_config,

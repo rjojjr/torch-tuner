@@ -10,7 +10,7 @@ def build_and_validate_push_args(prog_args, model_dir: str):
     if prog_args.push:
         push_arguments = PushArguments(
             new_model=prog_args.new_model,
-            model_dir=model_dir,
+            model_dir=os.path.expanduser(model_dir),
             use_4bit=prog_args.use_4bit,
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
@@ -39,11 +39,12 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
-            output_dir=prog_args.output_directory,
+            output_dir=os.path.expanduser(prog_args.output_directory),
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
-            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl"))
+            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl")),
+            overwrite_output=prog_args.overwrite_output
         )
         merge_arguments.validate()
         return merge_arguments
@@ -57,7 +58,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
-            training_data_dir=prog_args.training_data_dir,
+            training_data_dir=os.path.expanduser(prog_args.training_data_dir),
             train_file=prog_args.training_data_file,
             r=prog_args.lora_r,
             alpha=prog_args.lora_alpha,
@@ -81,7 +82,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             use_8bit=prog_args.use_8bit,
             use_4bit=prog_args.use_4bit,
             save_embeddings=prog_args.save_embeddings,
-            output_directory=prog_args.output_directory,
+            output_directory=os.path.expanduser(prog_args.output_directory),
             fp32_cpu_offload=prog_args.fp32_cpu_offload,
             is_chat_model=prog_args.is_chat_model,
             padding_side=prog_args.padding_side,
@@ -95,7 +96,9 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             is_instruct_model=prog_args.is_instruct_model,
             group_by_length=prog_args.group_by_length,
             hf_training_dataset_id=prog_args.hf_training_dataset_id,
-            max_seq_length=prog_args.max_seq_length
+            max_seq_length=prog_args.max_seq_length,
+            overwrite_output=prog_args.overwrite_output,
+            neftune_noise_alpha=prog_args.neftune_noise_alpha
         )
         tune_arguments.validate()
         return tune_arguments
@@ -147,6 +150,11 @@ def _parse_nullable_int_arg(arg: str | None) -> int | None:
         return None
     return int(arg)
 
+def _parse_nullable_float_arg(arg: str | None) -> float | None:
+    if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
+        return None
+    return float(arg)
+
 def _parse_nullable_list_arg(arg: str | None) -> list | None:
     if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
         return None
@@ -161,7 +169,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune from only])")
     parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(txt or jsonl)(REQUIRED[for fine-tune from file only])")
     parser.add_argument('-bm', '--base-model', help="Base model to tune(can be either HF model identifier or path to local model)(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
-    parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
+    parser.add_argument('-od', '--output-directory', help=f"Directory path to store output state(default: ~{os.sep}torch-tuner)", default=f"~{os.sep}torch-tuner")
+    parser.add_argument('-owo', '--overwrite-output', help="Overwrite previous model output(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
@@ -182,6 +191,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Tune with LangChain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-iim', '--is-instruct-model', help="Is the model being tuned intended for instruct(when set to true, enables several enhancements for instruct models)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-nna', '--neftune-noise-alpha', help="NEFTune Noise Alpha(ONLY applies when '--is-instruct-model' argument is set to true)(default 5.0)", type=lambda x: _parse_nullable_float_arg(x), default="5.0")
 
     parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
 
@@ -193,6 +203,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-bf16', '--use-bf-16', help="Use bf-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
+
 
     parser.add_argument('-bs', '--batch-size', help="Per-device training/eval batch size(default 4)", type=int, default=4)
     parser.add_argument('-gbl', '--group-by-length', help="Group training samples of similar lengths together(default true)", type=lambda x: _parse_bool_arg(x), default="true")
