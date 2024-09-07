@@ -18,7 +18,8 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             public_push=prog_args.public_push,
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
-            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens
+            additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
+            huggingface_auth_token=prog_args.huggingface_auth_token
         )
         push_arguments.validate()
         return push_arguments
@@ -44,7 +45,8 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
             is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl")),
-            overwrite_output=prog_args.overwrite_output
+            overwrite_output=prog_args.overwrite_output,
+            huggingface_auth_token=prog_args.huggingface_auth_token
         )
         merge_arguments.validate()
         return merge_arguments
@@ -98,7 +100,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             hf_training_dataset_id=prog_args.hf_training_dataset_id,
             max_seq_length=prog_args.max_seq_length,
             overwrite_output=prog_args.overwrite_output,
-            neftune_noise_alpha=prog_args.neftune_noise_alpha
+            neftune_noise_alpha=prog_args.neftune_noise_alpha,
+            huggingface_auth_token=prog_args.huggingface_auth_token
         )
         tune_arguments.validate()
         return tune_arguments
@@ -176,6 +179,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-tecs', '--torch-empty-cache-steps', help="Empty torch cache after x steps(NEVER empties cache when set to None)(USEFUL to prevent OOM issues)(default: 1)", type=lambda x: _parse_nullable_int_arg(x), default="1")
     parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-hfat', '--huggingface-auth-token', default="false", help="Huggingface auth token(default: None)", type=lambda x: _parse_nullable_arg(x))
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",

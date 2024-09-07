@@ -44,6 +44,8 @@ def main() -> None:
         print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
         print()
         print(f"Serving {args.serve_model} on port {args.serve_port}")
+
+        authenticate_with_hf(args.huggingface_auth_token)
         model_path = os.path.expanduser(f"{args.output_directory}{os.sep}{args.serve_model}" if (not '/' in args.serve_model and not os.sep in args.serve_model) else args.serve_model)
         llm_factory_args = LlmExecutorFactoryArguments(model=model_path, use_4bit=args.use_4bit, use_8bit=args.use_8bit, is_fp16=args.use_fp_16, is_bf16=args.use_bf_16, padding_side=args.padding_side)
         llm_executor_factory = build_llm_executor_factory(llm_factory_args)
@@ -62,8 +64,6 @@ def main() -> None:
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
     push_arguments = build_and_validate_push_args(args, model_dir)
-
-    authenticate_with_hf()
 
     print('')
     print(f'Using LLM Type: {tuner.llm_type}')
