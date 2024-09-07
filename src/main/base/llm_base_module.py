@@ -17,8 +17,8 @@ import shutil
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
     print('')
-    output_dir = f"{arguments.output_directory}/checkpoints/{arguments.new_model}"
-    lora_dir = f"{arguments.output_directory}/adapters/{arguments.new_model}"
+    output_dir = f"{arguments.output_directory}{os.sep}checkpoints{os.sep}{arguments.new_model}"
+    lora_dir = f"{arguments.output_directory}{os.sep}adapters{os.sep}{arguments.new_model}"
     if not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
         print('')
@@ -119,8 +119,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
-    lora_dir = f"{arguments.output_dir}/adapters/{arguments.new_model}"
-    model_dir = f'{arguments.output_dir}/merged-models/{arguments.new_model}'
+    lora_dir = f"{arguments.output_dir}{os.sep}adapters{os.sep}{arguments.new_model}"
+    model_dir = f'{arguments.output_dir}{os.sep}merged-models{os.sep}{arguments.new_model}'
     print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
 
     if not os.path.exists(lora_dir):

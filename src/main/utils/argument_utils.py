@@ -10,7 +10,7 @@ def build_and_validate_push_args(prog_args, model_dir: str):
     if prog_args.push:
         push_arguments = PushArguments(
             new_model=prog_args.new_model,
-            model_dir=model_dir,
+            model_dir=os.path.expanduser(model_dir),
             use_4bit=prog_args.use_4bit,
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
@@ -39,7 +39,7 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
-            output_dir=prog_args.output_directory,
+            output_dir=os.path.expanduser(prog_args.output_directory),
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
@@ -58,7 +58,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
-            training_data_dir=prog_args.training_data_dir,
+            training_data_dir=os.path.expanduser(prog_args.training_data_dir),
             train_file=prog_args.training_data_file,
             r=prog_args.lora_r,
             alpha=prog_args.lora_alpha,
@@ -82,7 +82,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             use_8bit=prog_args.use_8bit,
             use_4bit=prog_args.use_4bit,
             save_embeddings=prog_args.save_embeddings,
-            output_directory=prog_args.output_directory,
+            output_directory=os.path.expanduser(prog_args.output_directory),
             fp32_cpu_offload=prog_args.fp32_cpu_offload,
             is_chat_model=prog_args.is_chat_model,
             padding_side=prog_args.padding_side,
@@ -169,7 +169,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tdd', '--training-data-dir', help="Training data directory(REQUIRED[for fine-tune from only])")
     parser.add_argument('-tdf', '--training-data-file', help="Training dataset filename(txt or jsonl)(REQUIRED[for fine-tune from file only])")
     parser.add_argument('-bm', '--base-model', help="Base model to tune(can be either HF model identifier or path to local model)(default: meta-llama/Meta-Llama-3-8B-Instruct)", default="meta-llama/Meta-Llama-3-8B-Instruct")
-    parser.add_argument('-od', '--output-directory', help="Directory path to store output state(default: ./models)", default="./models")
+    parser.add_argument('-od', '--output-directory', help=f"Directory path to store output state(default: ~{os.sep}torch-tuner)", default=f"~{os.sep}torch-tuner")
     parser.add_argument('-owo', '--overwrite-output', help="Overwrite previous model output(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-debug', '--debug', help="Debug mode(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-tam', '--target-all-modules', help="Target all tunable modules(targets all linear modules when false)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
