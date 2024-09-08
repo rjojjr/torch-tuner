@@ -69,7 +69,7 @@ You can uninstall the torch-tuner CLI by running the uninstaller script:
 sudo bash /usr/local/torch-tuner.bat/scripts/uninstall-torch-tuner.bat.sh
 
 # Windows 
-"%UserProfile%\.local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
+"%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
 ```
 
 #### Merging your LoRA Adapter
@@ -145,7 +145,7 @@ python src/main/main.py \
   --lora-alpha 32
   
 # A Real Example with CLI Installed
-torch-tuner.bat \
+torch-tuner \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \
@@ -173,7 +173,7 @@ python src/main/main.py \
   --serve-port 8080
   
 # When the Torch Tuner CLI is installed
-torch-tuner.bat \
+torch-tuner \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080
