@@ -21,7 +21,7 @@ but in the meantime I will track work/needs/bugs/requests here.
 
 - Add production wrapper to LLM REST server
 - ~~Add ability to provide special/regular tokens to model vocabulary~~
-- Add Windows OS support
+- ~~Add Windows OS support~~
 - ~~Add support for non-llama models~~
   - This is mostly satisfied with the addition of the 'GENERIC' LLM type
   - ~~Mistral~~
@@ -44,3 +44,6 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Add support for ignored OpenAI request properties
 - Add embeddings endpoint to serve mode
 - Add ability to serve models on CPU
+- Add ability to use JSON configs instead of argument config
+- Add change serve model with API endpoint
+- Add ability to serve models with CPU

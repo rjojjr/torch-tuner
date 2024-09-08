@@ -24,7 +24,7 @@ class ServerArguments(CliArguments):
 class LlmArguments(CliArguments):
     """Base LLM load parameters."""
 
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right'):
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', huggingface_auth_token: str | None = None):
         self.model = model
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
@@ -32,6 +32,7 @@ class LlmArguments(CliArguments):
         self.is_bf16 = is_bf16
         self.fp32_cpu_offload = fp32_cpu_offload
         self.padding_side = padding_side
+        self.huggingface_auth_token = huggingface_auth_token
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
@@ -49,7 +50,7 @@ class TunerFunctionArguments(CliArguments):
 
     def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False,
                  fp32_cpu_offload: bool = False, is_chat_model: bool = True,
-                 padding_side: str | None = 'right', use_agent_tokens: bool = False, additional_vocabulary_tokens: list | None = None):
+                 padding_side: str | None = 'right', use_agent_tokens: bool = False, additional_vocabulary_tokens: list | None = None, huggingface_auth_token: str | None = None):
         self.new_model = new_model
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
@@ -60,6 +61,7 @@ class TunerFunctionArguments(CliArguments):
         self.padding_side = padding_side
         self.use_agent_tokens = use_agent_tokens
         self.additional_vocabulary_tokens = additional_vocabulary_tokens
+        self.huggingface_auth_token = huggingface_auth_token
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
@@ -138,8 +140,9 @@ class TuneArguments(TunerFunctionArguments):
                  hf_training_dataset_id: str | None = None,
                  max_seq_length: int | None = None,
                  overwrite_output: bool = True,
-                 neftune_noise_alpha: float = 5.0):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens)
+                 neftune_noise_alpha: float = 5.0,
+                 huggingface_auth_token: str | None = None):
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -224,8 +227,9 @@ class MergeArguments(TunerFunctionArguments):
                  padding_side: str | None = 'right',
                  use_agent_tokens: bool = False,
                  additional_vocabulary_tokens: list | None = None,
-                 overwrite_output: bool = True):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens)
+                 overwrite_output: bool = True,
+                 huggingface_auth_token: str | None = None):
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token)
         self.base_model = base_model
         self.output_dir = output_dir
         self.overwrite_output = overwrite_output
@@ -257,8 +261,9 @@ class PushArguments(TunerFunctionArguments):
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
                  use_agent_tokens: bool = False,
-                 additional_vocabulary_tokens: list | None = None):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens)
+                 additional_vocabulary_tokens: list | None = None,
+                 huggingface_auth_token: str | None = None):
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token)
         self.model_dir = model_dir
         self.public_push = public_push
 
