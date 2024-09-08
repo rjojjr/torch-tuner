@@ -33,7 +33,7 @@ installed on the host. I would like to add CPU based tuning in the near future.
 
 #### Install the Torch Tuner CLI
 
-You can install the torch tuner CLI as a system-wide application on any Linux OS(also on MacOS and Windows 
+You can install the torch tuner CLI as a system-wide application on any OS(including Windows 
 OS[although the linux script will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
 with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS](scripts/win/install-torch-tuner.bat)) 
 if you don't want to have to mess with python or the repository in general. After installation,
@@ -49,10 +49,10 @@ and execute it with the following single command:
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 
 # Windows(non-WSL) (requires git & python3.11 already installed on target machine)
-curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat.bat && del install-torch-tuner.bat
+curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
 ```
 
-**NOTE** - If the installer script fails with OS level python dependency errors, and you are using Debian Linux, 
+**NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian Linux, 
 try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv)
 and run the torch-tuner CLI installer script again.
 
@@ -69,7 +69,7 @@ You can uninstall the torch-tuner CLI by running the uninstaller script:
 sudo bash /usr/local/torch-tuner.bat/scripts/uninstall-torch-tuner.bat.sh
 
 # Windows 
-"%UserProfile%\.local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
+"%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
 ```
 
 #### Merging your LoRA Adapter
@@ -145,7 +145,7 @@ python src/main/main.py \
   --lora-alpha 32
   
 # A Real Example with CLI Installed
-torch-tuner.bat \
+torch-tuner \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \
@@ -173,7 +173,7 @@ python src/main/main.py \
   --serve-port 8080
   
 # When the Torch Tuner CLI is installed
-torch-tuner.bat \
+torch-tuner \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080
