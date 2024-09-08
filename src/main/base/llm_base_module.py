@@ -99,6 +99,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
 
     # TODO - FIXME - There is a warning from checkpointing I believe is do to underlying torch impl.
     if os.path.exists(output_dir) and not arguments.no_checkpoint:
+        print('Loading checkpoint')
         model.gradient_checkpointing_enable()
         last_checkpoint = get_last_checkpoint(output_dir)
         train.train(resume_from_checkpoint=last_checkpoint)

@@ -33,20 +33,26 @@ installed on the host. I would like to add CPU based tuning in the near future.
 
 #### Install the Torch Tuner CLI
 
-You can install the torch tuner CLI as a system-wide application on any Linux OS(and Mac OS)(Windows support coming soon[although this will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
-with [this script](scripts/install-torch-tuner.sh) if you don't want to have to mess with python or the repository in general. After installation,
+You can install the torch tuner CLI as a system-wide application on any OS(including Windows 
+OS[although the linux script will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
+with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS](scripts/win/install-torch-tuner.bat)) 
+if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
-**NOTE** - You must run the script with the `sudo` command.
+**NOTE** - You must run the script with root/admin privileges.
 
-You can download the latest installer script from [Github](https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh)
+You can download the latest installer script from [Github](https://github.com)
 and execute it with the following single command:
 
 ```shell
+# Linux(and WSL)
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
+
+# Windows(non-WSL) (requires git & python3.11 already installed on target machine)
+curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
 ```
 
-**NOTE** - If the installer script fails with OS level python dependency errors, and you are using Debian Linux, 
+**NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian Linux, 
 try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv)
 and run the torch-tuner CLI installer script again.
 
@@ -59,7 +65,11 @@ You can update the installed torch-tuner CLI instance at anytime by running the 
 You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
-sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
+# Linux(and MacOS/WSL)
+sudo bash /usr/local/torch-tuner.bat/scripts/uninstall-torch-tuner.bat.sh
+
+# Windows 
+"%UserProfile%\.local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
 ```
 
 #### Merging your LoRA Adapter
@@ -135,7 +145,7 @@ python src/main/main.py \
   --lora-alpha 32
   
 # A Real Example with CLI Installed
-torch-tuner \
+torch-tuner.bat \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \
@@ -163,7 +173,7 @@ python src/main/main.py \
   --serve-port 8080
   
 # When the Torch Tuner CLI is installed
-torch-tuner \
+torch-tuner.bat \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080
