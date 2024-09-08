@@ -40,7 +40,7 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
-            output_dir=os.path.expanduser(prog_args.output_directory),
+            output_dir=os.path.expanduser(prog_args.output_directory) if prog_args.output_directory is not None else None,
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
@@ -60,7 +60,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
-            training_data_dir=os.path.expanduser(prog_args.training_data_dir),
+            training_data_dir=os.path.expanduser(prog_args.training_data_dir) if prog_args.training_data_dir is not None else None,
             train_file=prog_args.training_data_file,
             r=prog_args.lora_r,
             alpha=prog_args.lora_alpha,
@@ -122,9 +122,11 @@ def do_initial_arg_validation(args):
         raise ArgumentValidationException("'merge-only' cannot be used when both 'merge' and 'push' are set to 'false'")
     if args.fine_tune and args.epochs <= 0:
         raise ArgumentValidationException("cannot tune when epochs is set to <= 0")
-    if args.fine_tune and (args.hf_training_dataset_id is None) and (not os.path.exists(args.training_data_dir) or not os.path.exists(
+    if args.fine_tune and (args.hf_training_dataset_id is None) and (args.training_data_dir is None or args.training_data_file is None or not os.path.exists(args.training_data_dir) or not os.path.exists(
             f'{args.training_data_dir}/{args.training_data_file}')):
         raise ArgumentValidationException('training data directory or file not found')
+    if args.new_model is None:
+        raise ArgumentValidationException("'--new-mode' CLI argument must be provided")
 
 
 def parse_arguments(title: str, description: str):

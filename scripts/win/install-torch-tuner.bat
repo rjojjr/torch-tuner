@@ -1,35 +1,31 @@
-echo on
+@echo off
 echo "Installing Torch Tuner CLI"
-echo ""
+
+pushd .
 
 echo "Preparing installation directory"
-echo ""
-if exist "%UserProfile%\.local\torch-tuner" @RD /S /Q "%UserProfile%\.local\torch-tuner"
-CD "%UserProfile%\.local"
+if exist "%UserProfile%\AppData\Local\torch-tuner" @RD /S /Q "%UserProfile%\AppData\Local\torch-tuner"
+cd "%UserProfile%\AppData\Local"
 echo "Getting latest CLI from github"
-echo ""
 git clone https://github.com/rjojjr/torch-tuner.git
 
 cd torch-tuner
 
-git checkout create-windows-os-installer-script
-echo ""
 echo "Installing python dependencies"
-echo ""
-python -m venv .\.venv && .\.venv\Scripts\activate.bat
-pip install -I -r requirements.txt
-deactivate
 
-echo ""
+python3.11 -m venv .\.venv && call .\.venv\Scripts\activate.bat
+python3.11 -m pip install -I -r requirements.txt --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us
+call deactivate
+
 echo "Finalizing install"
-echo ""
 
-xcopy scripts\win\torch-tuner C:\Windows\System32\torch-tuner
+echo f | xcopy /f /y scripts\win\torch-tuner.bat C:\Windows\System32\torch-tuner.bat
 
-icacls "%UserProfile%\.local\torch-tuner" /grant Users:F
-attrib -s C:\Windows\System32\torch-tuner
+icacls "%UserProfile%\AppData\Local\torch-tuner" /grant Users:F
+attrib -s C:\Windows\System32\torch-tuner.bat
 
-echo ""
+popd
+
 echo "Torch Tuner CLI installed successfully!"
 echo "You can now access the Torch Tuner CLI with the 'torch-tuner' command."
 

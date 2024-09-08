@@ -1,4 +1,6 @@
 # TODO - Lock down dep. versions?
+numpy
+scipy
 torch
 torchvision
 torchaudio

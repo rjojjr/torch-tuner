@@ -48,8 +48,8 @@ and execute it with the following single command:
 # Linux(and WSL)
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 
-# Windows(non-WSL) (requires wget, git, python3, pip already installed on target machine)
-wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat | cmd
+# Windows(non-WSL) (requires git & python3.11 already installed on target machine)
+curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat.bat && del install-torch-tuner.bat
 ```
 
 **NOTE** - If the installer script fails with OS level python dependency errors, and you are using Debian Linux, 
@@ -66,7 +66,7 @@ You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
 # Linux(and MacOS/WSL)
-sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
+sudo bash /usr/local/torch-tuner.bat/scripts/uninstall-torch-tuner.bat.sh
 
 # Windows 
 "%UserProfile%\.local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
@@ -145,7 +145,7 @@ python src/main/main.py \
   --lora-alpha 32
   
 # A Real Example with CLI Installed
-torch-tuner \
+torch-tuner.bat \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \
@@ -173,7 +173,7 @@ python src/main/main.py \
   --serve-port 8080
   
 # When the Torch Tuner CLI is installed
-torch-tuner \
+torch-tuner.bat \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080
