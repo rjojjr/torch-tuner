@@ -9,7 +9,7 @@ from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '2.1.0'
+version = '2.1.1'
 
 title = f'Torch-Tuner CLI v{version}'
 description = 'This app is a simple CLI to automate the Supervised Fine-Tuning(SFT)(and testing of) of AI Large Language Model(LLM)s with simple text and jsonl on Nvidia GPUs(and Intel/AMD CPUs) using LoRA, Torch and Transformers.'
