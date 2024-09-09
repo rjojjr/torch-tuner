@@ -182,7 +182,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-tm', '--target-modules', help="Modules to target(CSV List: 'q,k')(OVERRIDES '--target-all-modules' when not None)(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-tecs', '--torch-empty-cache-steps', help="Empty torch cache after x steps(NEVER empties cache when set to None)(USEFUL to prevent OOM issues)(default: 1)", type=lambda x: _parse_nullable_int_arg(x), default="1")
     parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-hfat', '--huggingface-auth-token', default="false", help="Huggingface auth token(default: None)", type=lambda x: _parse_nullable_arg(x))
+    parser.add_argument('-hfat', '--huggingface-auth-token', default="None", help="Huggingface auth token(default: None)", type=lambda x: _parse_nullable_arg(x))
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
