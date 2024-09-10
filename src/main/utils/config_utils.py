@@ -35,7 +35,6 @@ def print_fine_tune_merge_common_config(args, model_dir):
 
 def print_fine_tune_config(args, lora_scale, tune_arguments):
     print()
-    print(f'Tuning Adapter: {args.new_model}')
     print(f'Epochs: {str(args.epochs)}')
     print(f'Using Tuning Dataset: {args.hf_training_dataset_id if args.hf_training_dataset_id is not None else args.training_data_file}')
 
