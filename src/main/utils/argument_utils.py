@@ -91,7 +91,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             use_agent_tokens=prog_args.use_agent_tokens,
             lr_scheduler_type=prog_args.lr_scheduler_type,
             target_modules=prog_args.target_modules,
-            torch_empty_cache_steps=prog_args.torch_empty_cache_steps,
+            torch_empty_cache_steps=prog_args.torch_empty_cache_steps if not prog_args.use_low_gpu_memory else (1 if prog_args.torch_empty_cache_steps is None else prog_args.torch_empty_cache_steps),
             warmup_ratio=prog_args.warmup_ratio,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
             cpu_only_tuning=prog_args.cpu_only_tuning,
