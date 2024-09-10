@@ -18,7 +18,8 @@ description = 'This app is a simple CLI to automate the Supervised Fine-Tuning(S
 args = parse_arguments(title, description)
 
 # For better performance with less GPU memory
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
+if args.use_low_gpu_memory:
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.8,expandable_segments:True"
 
 
 def main() -> None:
@@ -30,6 +31,7 @@ def main() -> None:
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     print('')
+    print(f'Is Low GPU Memory Mode: {args.use_low_gpu_memory}')
     if args.debug:
         print("Is Debug Mode: True")
         print('')
@@ -62,8 +64,6 @@ def main() -> None:
 
     if args.fine_tune:
         print_fine_tune_config(args, lora_scale, tune_arguments)
-
-    if args.fine_tune:
         print('')
         print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
         print('')

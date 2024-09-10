@@ -186,6 +186,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-hfat', '--huggingface-auth-token', default="None", help="Huggingface auth token(default: None)", type=lambda x: _parse_nullable_arg(x))
 
+    parser.add_argument('-lgpumem', '--use-low-gpu-memory', default="true", help="Use low GPU memory(default: true)", type=lambda x: _parse_bool_arg(x))
+
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
@@ -203,7 +205,6 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-nna', '--neftune-noise-alpha', help="NEFTune Noise Alpha(ONLY applies when '--is-instruct-model' argument is set to true)(default 5.0)", type=lambda x: _parse_nullable_float_arg(x), default="5.0")
 
     parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
-
 
     # TODO - FIXME - Handle situation when user selects multiple quant./precision options(Which options take highest priority?)
     parser.add_argument('-4bit', '--use-4bit', help="Use 4bit quantization(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
