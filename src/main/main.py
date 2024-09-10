@@ -61,9 +61,10 @@ def main() -> None:
     push_arguments = build_and_validate_push_args(args, model_dir)
 
     print_tuner_mode_config(args, tuner)
+    if args.fine_tune or args.merge:
+        print_fine_tune_merge_common_config(args, model_dir)
 
     if args.fine_tune:
-        print_fine_tune_merge_common_config(args, model_dir)
         print_fine_tune_config(args, lora_scale, tune_arguments)
         print('')
         print(f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
@@ -73,7 +74,6 @@ def main() -> None:
         print(f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
 
     if args.merge:
-        print_fine_tune_merge_common_config(args, model_dir)
         print('')
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
         print('')
