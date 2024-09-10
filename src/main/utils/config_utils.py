@@ -1,46 +1,41 @@
 def print_serve_mode_config(args):
+    print()
     print("Running in serve mode")
     print()
     print("WARNING - Serve mode is currently EXPERIMENTAL and should NEVER be used in a production environment!")
-    print()
-    print(f'Using bf16: {str(args.use_bf_16)}')
-    print(f'Using fp16: {str(args.use_fp_16)}')
-    print(f'Using 8bit: {str(args.use_8bit)}')
-    print(f'Using 4bit: {str(args.use_4bit)}')
-    print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
+    _print_dtype_config(args)
     print()
     print(f"Serving {args.serve_model} on port {args.serve_port}")
 
 
-def print_tuner_mode_config(args, model_dir, tuner):
-    print('')
+def print_tuner_mode_config(args, tuner):
+    print()
     print(f'Using LLM Type: {tuner.llm_type}')
-    print('')
-    print(f'Output Directory: {args.output_directory}')
-    print(f'Base Model: {args.base_model}')
-    print(f'Model Save Directory: {model_dir}')
 
-    print('')
-    print(f'Using CPU Only Tuning: {str(args.cpu_only_tuning)}')
-    print(f'Using tf32: {str(args.use_tf_32)}')
-    print(f'Using bf16: {str(args.use_bf_16)}')
-    print(f'Using fp16: {str(args.use_fp_16)}')
-    print(f'Using 8bit: {str(args.use_8bit)}')
-    print(f'Using 4bit: {str(args.use_4bit)}')
-    print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
-    print('')
+    _print_dtype_config(args)
+
+    print()
     print(f'Is Fine-Tuning: {str(args.fine_tune)}')
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')
-    print('')
+
+
+def print_fine_tune_merge_common_config(args, model_dir):
+    print()
+    print(f'Creating Model/Adapter: {args.new_model}')
+    print(f'Output Directory: {args.output_directory}')
+    print(f'Base Model: {args.base_model}')
+    print(f'Model Save Directory: {model_dir}')
+    print()
     print(f'Is Chat Model: {args.is_chat_model}')
     print(f'Is Instruct Model: {args.is_instruct_model}')
-    print(f'Using Additional Vocab Tokens: {args.additional_vocabulary_tokens}')
-    print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
+    print(f'Using LangChain Agent Tokens: {args.use_agent_tokens}')
+    print(f'Using Additional Vocabulary Tokens: {args.additional_vocabulary_tokens}')
 
 
 def print_fine_tune_config(args, lora_scale, tune_arguments):
-    print('')
+    print()
+    print(f'Tuning Adapter: {args.new_model}')
     print(f'Epochs: {str(args.epochs)}')
     print(f'Using Tuning Dataset: {args.hf_training_dataset_id if args.hf_training_dataset_id is not None else args.training_data_file}')
 
@@ -59,7 +54,7 @@ def print_fine_tune_config(args, lora_scale, tune_arguments):
         print(f'Targeting Modules: ALL')
     else:
         print(f'Targeting Modules: LINEAR')
-    print('')
+    print()
     print(f'Using LoRA R: {str(args.lora_r)}')
     print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
     print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
@@ -70,7 +65,7 @@ def print_fine_tune_config(args, lora_scale, tune_arguments):
     if 'adamw' in args.optimizer_type:
         print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
         print(
-            f'Using Actual Learning Rate(Base Learning Rate * Batch Size): {str(args.base_learning_rate * args.batch_size)}')
+            f'Using Actual Learning Rate(LR)(Base LR * Batch Size): {str(args.base_learning_rate * args.batch_size)}')
         print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
 
     print(f'Using Warmup Ratio: {args.warmup_ratio}')
@@ -92,5 +87,16 @@ def print_fine_tune_config(args, lora_scale, tune_arguments):
     print()
     if args.is_instruct_model:
         print(f'Using NEFTune Noise Alpha: {args.neftune_noise_alpha}')
+
+
+def _print_dtype_config(args):
+    print()
+    print(f'Using CPU Only: {str(args.cpu_only_tuning)}')
+    print(f'Using tf32: {str(args.use_tf_32)}')
+    print(f'Using bf16: {str(args.use_bf_16)}')
+    print(f'Using fp16: {str(args.use_fp_16)}')
+    print(f'Using 8bit: {str(args.use_8bit)}')
+    print(f'Using 4bit: {str(args.use_4bit)}')
+    print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
 
 
