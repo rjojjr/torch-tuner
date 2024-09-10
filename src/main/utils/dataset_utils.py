@@ -28,6 +28,7 @@ def load_dataset(arguments: TuneArguments) -> Union[DatasetDict, Dataset, Iterab
 
 
 def _load_eval_ds(arguments: TuneArguments, train_set: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
+    """Process evaluation dataset."""
     if arguments.eval_dataset is None:
         train_set['eval'] = train_set['train']
         return train_set
