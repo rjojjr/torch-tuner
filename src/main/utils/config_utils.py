@@ -12,7 +12,7 @@ def print_serve_mode_config(args):
     print(f"Serving {args.serve_model} on port {args.serve_port}")
 
 
-def print_tune_mode_config(args, model_dir, tuner):
+def print_tuner_mode_config(args, model_dir, tuner):
     print('')
     print(f'Using LLM Type: {tuner.llm_type}')
     print('')
