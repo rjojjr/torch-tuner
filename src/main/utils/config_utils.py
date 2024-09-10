@@ -1,0 +1,72 @@
+def print_serve_mode_config(args):
+    print("Running in serve mode")
+    print()
+    print("WARNING - Serve mode is currently EXPERIMENTAL and should NEVER be used in a production environment!")
+    print()
+    print(f'Using bf16: {str(args.use_bf_16)}')
+    print(f'Using fp16: {str(args.use_fp_16)}')
+    print(f'Using 8bit: {str(args.use_8bit)}')
+    print(f'Using 4bit: {str(args.use_4bit)}')
+    print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
+    print()
+    print(f"Serving {args.serve_model} on port {args.serve_port}")
+
+
+def print_tune_mode_config(args, model_dir, tuner):
+    print('')
+    print(f'Using LLM Type: {tuner.llm_type}')
+    print('')
+    print(f'Output Directory: {args.output_directory}')
+    print(f'Base Model: {args.base_model}')
+    print(f'Model Save Directory: {model_dir}')
+    print(f'Training File: {args.training_data_file}')
+    print('')
+    print(f'Using CPU Only Tuning: {str(args.cpu_only_tuning)}')
+    print(f'Using tf32: {str(args.use_tf_32)}')
+    print(f'Using bf16: {str(args.use_bf_16)}')
+    print(f'Using fp16: {str(args.use_fp_16)}')
+    print(f'Using 8bit: {str(args.use_8bit)}')
+    print(f'Using 4bit: {str(args.use_4bit)}')
+    print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
+    print('')
+    print(f'Is Fine-Tuning: {str(args.fine_tune)}')
+    print(f'Is Merging: {str(args.merge)}')
+    print(f'Is Pushing: {str(args.push)}')
+    print('')
+    print(f'Is Chat Model: {args.is_chat_model}')
+    print(f'Is Instruct Model: {args.is_instruct_model}')
+    print(f'Using Additional Vocab Tokens: {args.additional_vocabulary_tokens}')
+    print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
+
+
+def print_fine_tune_config(args, lora_scale, tune_arguments):
+    print('')
+    if args.torch_empty_cache_steps is not None:
+        print(f'Empty Torch Cache After {args.torch_empty_cache_steps} Steps')
+    print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
+    if not args.no_checkpoint:
+        print(f'Using Max Saved Checkpoints: {args.max_saved}')
+    print(f'Using Batch Size: {str(args.batch_size)}')
+    print(f'Using Save Strategy: {args.save_strategy}')
+    print(f'Using Save Steps: {str(args.save_steps)}')
+    print(f'Using Save Embeddings: {str(args.save_embeddings)}')
+    print('')
+    print(f'Epochs: {str(args.epochs)}')
+    print(f'Using LoRA R: {str(args.lora_r)}')
+    print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
+    print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
+    print(f'Using Optimizer: {args.optimizer_type}')
+    if 'adamw' in args.optimizer_type:
+        print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
+        print(
+            f'Using Actual Learning Rate(Base Learning Rate * Batch Size): {str(args.base_learning_rate * args.batch_size)}')
+        print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
+    print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
+    print(f'Using Warmup Ratio: {args.warmup_ratio}')
+    print(f'Using Max Sequence Length: {args.max_seq_length}')
+    print(f'Using Do Eval: {args.do_eval}')
+    if args.do_eval is not None and args.do_eval:
+        print(f'Using Eval Strategy: {tune_arguments.eval_strategy}')
+        if tune_arguments.eval_strategy == 'steps':
+            print(f'Using Eval Steps: {tune_arguments.eval_steps}')
+        print(f'Using Eval Dataset: {args.eval_dataset}')

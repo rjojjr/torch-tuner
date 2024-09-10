@@ -102,7 +102,9 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             overwrite_output=prog_args.overwrite_output,
             neftune_noise_alpha=prog_args.neftune_noise_alpha,
             huggingface_auth_token=prog_args.huggingface_auth_token,
-            eval_dataset=prog_args.eval_dataset
+            eval_dataset=prog_args.eval_dataset,
+            eval_strategy=prog_args.eval_strategy if prog_args.eval_strategy is not None else prog_args.save_strategy,
+            eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps
         )
         tune_arguments.validate()
         return tune_arguments
@@ -230,10 +232,12 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")
     parser.add_argument('-msl', '--max-seq-length', help="The maximum sequence length to use for the `ConstantLengthDataset` and for automatically creating the Dataset(default: the smaller of the `tokenizer.model_max_length` and `1024`)", type=lambda x: _parse_nullable_int_arg(x), default="None")
-    parser.add_argument('-ssteps', '--save-steps', help="Save after each --save-steps steps(ignored when --save-strategy='epoch')(default: 50)", default=50, type=int)
+    parser.add_argument('-ssteps', '--save-steps', help="Save after each --save-steps steps(ignored when SAVE_STRATEGY='epoch')(default: 50)", default=50, type=int)
     parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(this helps prevent filling up disk while tuning)(default: 5)", default=5, type=int)
-    parser.add_argument('-de', '--do-eval', help="Do evaluation on each save step(evaluates model loss after each 'save step')(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-eds', '--eval-dataset', help="Path or HF id of evaluation dataset(defaults to training dataset when set to None)(default: None)", default="none", type=lambda x: _parse_nullable_arg(x))
+    parser.add_argument('-de', '--do-eval', help="Do evaluation on each save step(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-eds', '--eval-dataset', help="Path or HF id of evaluation dataset(defaults to training dataset when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_arg(x))
     parser.add_argument('-llm', '--llm-type', help="LLM Type(default: generic[options: generic, llama])", default="generic")
+    parser.add_argument('-evalstrat', '--eval-strategy', help="Eval strategy('None', 'epoch' or 'steps')(Defaults to SAVE_STRATEGY when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_arg(x))
+    parser.add_argument('-evalsteps', '--eval-steps', help="Steps between evaluations(Ignored when EVAL_STRATEGY is set to 'epoch')(Defaults to SAVE_STEPS when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_int_arg(x))
 
     return parser

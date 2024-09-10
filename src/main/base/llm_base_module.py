@@ -65,7 +65,7 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         optim=arguments.optimizer_type,
         save_strategy=arguments.save_strategy,
         save_steps=arguments.save_steps,
-        eval_steps=arguments.save_steps,
+        eval_steps=arguments.eval_steps,
         logging_strategy=arguments.save_strategy,
         logging_steps=arguments.save_steps,
         save_total_limit=arguments.max_checkpoints,
@@ -82,7 +82,8 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         lr_scheduler_type=arguments.lr_scheduler_type,
         report_to="tensorboard",
         do_eval=arguments.do_eval,
-        eval_strategy=arguments.save_strategy if arguments.do_eval else 'no',
+        eval_strategy=arguments.eval_strategy if arguments.do_eval else 'no',
+        eval_on_start=arguments.do_eval,
         # TODO - is this ignored bt SFTTrainer?
         max_seq_length=arguments.max_seq_length,
         neftune_noise_alpha=arguments.neftune_noise_alpha if arguments.is_instruct_model else None,
