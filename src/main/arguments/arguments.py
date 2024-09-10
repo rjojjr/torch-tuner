@@ -1,3 +1,5 @@
+from sympy.plotting.textplot import is_valid
+
 from exception.exceptions import ArgumentValidationException
 
 
@@ -64,6 +66,20 @@ class TunerFunctionArguments(CliArguments):
         self.huggingface_auth_token = huggingface_auth_token
 
     def validate(self) -> None:
+        """Validate members."""
+        is_valid_dtype = self.is_fp16 is not None and self.is_bf16 is not None
+        is_valid_dtype = is_valid_dtype and self.use_8bit is not None and self.use_4bit is not None
+        is_valid_dtype = is_valid_dtype and self.fp32_cpu_offload is not None
+
+        if not is_valid_dtype:
+            raise ArgumentValidationException("'Tuner Arguments' are missing required data-type properties")
+
+        is_valid = self.new_model is not None and self.is_chat_model is not None
+        is_valid = is_valid and self.use_agent_tokens is not None
+
+        if not is_valid:
+            raise ArgumentValidationException("'Tuner Arguments' are missing required properties")
+
         if self.use_4bit and self.use_8bit:
             raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
 
@@ -140,7 +156,7 @@ class TuneArguments(TunerFunctionArguments):
                  hf_training_dataset_id: str | None = None,
                  max_seq_length: int | None = None,
                  overwrite_output: bool = True,
-                 neftune_noise_alpha: float = 5.0,
+                 neftune_noise_alpha: float | None = 5.0,
                  huggingface_auth_token: str | None = None,
                  eval_dataset: str | None = None,
                  eval_strategy: str | None = None,
@@ -186,7 +202,6 @@ class TuneArguments(TunerFunctionArguments):
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
-        # TODO - validate some fields individually so that ArgumentExceptions are more useful
         is_valid = self.new_model is not None and self.base_model is not None
         is_valid = is_valid and self.r is not None and self.alpha is not None
         is_valid = is_valid and self.epochs is not None and self.training_data_dir is not None
@@ -198,13 +213,10 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = is_valid and self.save_strategy is not None and self.save_steps is not None
         is_valid = is_valid and self.do_eval is not None and self.max_checkpoints is not None
         is_valid = is_valid and self.save_embeddings is not None
-        is_valid = is_valid and self.is_fp16 is not None and self.is_bf16 is not None
-        is_valid = is_valid and self.use_8bit is not None and self.use_4bit is not None and self.is_tf32 is not None
-        is_valid = is_valid and self.output_directory is not None and self.fp32_cpu_offload is not None
+        is_valid = is_valid and self.output_directory is not None
         is_valid = is_valid and not self.base_model.strip() == '' and not self.new_model.strip() == ''
         is_valid = is_valid and not self.optimizer_type.strip() == '' and not self.bias.strip() == ''
         is_valid = is_valid and not self.save_strategy.strip() == '' and not self.output_directory.strip() == ''
-        is_valid = is_valid and not self.neftune_noise_alpha is None
 
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
@@ -214,6 +226,9 @@ class TuneArguments(TunerFunctionArguments):
 
         if self.hf_training_dataset_id is None and (self.training_data_dir is None or self.train_file is None or self.train_file.strip() == ''):
             raise ArgumentValidationException("training data arguments are not configured properly")
+
+        if self.alpha <= 0 or self.r <= 0:
+            raise ArgumentValidationException("'--lora-r' and '--lora-alpha' arguments must both be greater than zero")
 
         super(TuneArguments, self).validate()
 
