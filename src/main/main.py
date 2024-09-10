@@ -3,13 +3,14 @@ from utils.tuner_utils import build_llm_tuner_factory
 from exception.exceptions import main_exception_handler
 from hf.hf_auth import authenticate_with_hf
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
+from utils.config_utils import print_serve_mode_config, print_tune_mode_config, print_fine_tune_config
 from serve.llm_executor import build_llm_executor_factory
 from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
 import os
 
 # TODO - Automate this
-version = '2.1.1'
+version = '2.1.2'
 
 title = f'Torch-Tuner CLI v{version}'
 description = 'This app is a simple CLI to automate the Supervised Fine-Tuning(SFT)(and testing of) of AI Large Language Model(LLM)s with simple text and jsonl on Nvidia GPUs(and Intel/AMD CPUs) using LoRA, Torch and Transformers.'
@@ -33,17 +34,7 @@ def main() -> None:
         print("Is Debug Mode: True")
         print('')
     if args.serve:
-        print("Running in serve mode")
-        print()
-        print("WARNING - Serve mode is currently EXPERIMENTAL and should NEVER be used in a production environment!")
-        print()
-        print(f'Using bf16: {str(args.use_bf_16)}')
-        print(f'Using fp16: {str(args.use_fp_16)}')
-        print(f'Using 8bit: {str(args.use_8bit)}')
-        print(f'Using 4bit: {str(args.use_4bit)}')
-        print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
-        print()
-        print(f"Serving {args.serve_model} on port {args.serve_port}")
+        print_serve_mode_config(args)
 
         authenticate_with_hf(args.huggingface_auth_token)
         model_path = os.path.expanduser(f"{args.output_directory}{os.sep}{args.serve_model}" if (not '/' in args.serve_model and not os.sep in args.serve_model) else args.serve_model)
@@ -61,65 +52,16 @@ def main() -> None:
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = os.path.expanduser(f'{args.output_directory}{os.sep}merged-models{os.sep}{args.new_model}')
 
+    authenticate_with_hf(args.huggingface_auth_token)
+
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
     push_arguments = build_and_validate_push_args(args, model_dir)
 
-    print('')
-    print(f'Using LLM Type: {tuner.llm_type}')
-
-    print('')
-    print(f'Output Directory: {args.output_directory}')
-    print(f'Base Model: {args.base_model}')
-    print(f'Model Save Directory: {model_dir}')
-    print(f'Training File: {args.training_data_file}')
-
-    print('')
-    print(f'Using CPU Only Tuning: {str(args.cpu_only_tuning)}')
-    print(f'Using tf32: {str(args.use_tf_32)}')
-    print(f'Using bf16: {str(args.use_bf_16)}')
-    print(f'Using fp16: {str(args.use_fp_16)}')
-    print(f'Using 8bit: {str(args.use_8bit)}')
-    print(f'Using 4bit: {str(args.use_4bit)}')
-    print(f'Using fp32 CPU Offload: {str(args.fp32_cpu_offload)}')
-
-    print('')
-    print(f'Is Fine-Tuning: {str(args.fine_tune)}')
-    print(f'Is Merging: {str(args.merge)}')
-    print(f'Is Pushing: {str(args.push)}')
-
-    print('')
-    print(f'Is Chat Model: {args.is_chat_model}')
-    print(f'Is Instruct Model: {args.is_instruct_model}')
-    print(f'Using Additional Vocab Tokens: {args.additional_vocabulary_tokens}')
-    print(f'Is LangChain Agent Model: {args.use_agent_tokens}')
+    print_tune_mode_config(args, model_dir, tuner)
 
     if args.fine_tune:
-        print('')
-        if args.torch_empty_cache_steps is not None:
-            print(f'Empty Torch Cache After {args.torch_empty_cache_steps} Steps')
-
-        print(f'Using Checkpointing: {str(not args.no_checkpoint)}')
-        print(f'Using Max Saves: {str(args.max_saved)}')
-        print(f'Using Batch Size: {str(args.batch_size)}')
-        print(f'Using Save Strategy: {args.save_strategy}')
-        print(f'Using Save Steps: {str(args.save_steps)}')
-        print(f'Using Save Embeddings: {str(args.save_embeddings)}')
-
-        print('')
-        print(f'Epochs: {str(args.epochs)}')
-        print(f'Using LoRA R: {str(args.lora_r)}')
-        print(f'Using LoRA Alpha: {str(args.lora_alpha)}')
-        print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
-        print(f'Using Optimizer: {args.optimizer_type}')
-        if 'adamw' in args.optimizer_type:
-            print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
-            print(f'Using Actual Learning Rate(Base Learning Rate * Batch Size): {str(args.base_learning_rate * args.batch_size)}')
-            print(f'Learning Rate Scheduler Type: {str(args.lr_scheduler_type)}')
-        print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
-        print(f'Using Warmup Ratio: {args.warmup_ratio}')
-        print(f'Using Max Sequence Length: {args.max_seq_length}')
-
+        print_fine_tune_config(args, lora_scale, tune_arguments)
 
     if args.fine_tune:
         print('')
@@ -148,6 +90,9 @@ def main() -> None:
     print('')
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
+
+
+
 
 
 main_exception_handler(main, title, args.debug)

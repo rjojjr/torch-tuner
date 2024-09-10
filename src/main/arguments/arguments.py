@@ -141,7 +141,10 @@ class TuneArguments(TunerFunctionArguments):
                  max_seq_length: int | None = None,
                  overwrite_output: bool = True,
                  neftune_noise_alpha: float = 5.0,
-                 huggingface_auth_token: str | None = None):
+                 huggingface_auth_token: str | None = None,
+                 eval_dataset: str | None = None,
+                 eval_strategy: str | None = None,
+                 eval_steps: int | None = None):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token)
         self.r = r
         self.alpha = alpha
@@ -177,6 +180,9 @@ class TuneArguments(TunerFunctionArguments):
         self.max_seq_length = max_seq_length
         self.overwrite_output = overwrite_output
         self.neftune_noise_alpha = neftune_noise_alpha
+        self.eval_dataset = eval_dataset
+        self.eval_strategy = eval_strategy
+        self.eval_steps = eval_steps
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
