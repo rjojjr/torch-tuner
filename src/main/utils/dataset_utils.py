@@ -1,3 +1,4 @@
+import os.path
 from typing import Union
 
 from datasets import load_dataset as load_data_set, DatasetDict, Dataset, IterableDatasetDict, IterableDataset
@@ -7,9 +8,37 @@ from arguments.arguments import TuneArguments
 def load_dataset(arguments: TuneArguments) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
     """Load dataset for SFT trainer."""
     if arguments.hf_training_dataset_id is not None:
-        return load_data_set(arguments.hf_training_dataset_id, split='train')
+        train_set = load_data_set(arguments.hf_training_dataset_id, split='train')
+        if arguments.do_eval:
+            train_set = _load_eval_ds(arguments, train_set)
+        return train_set
+
     elif arguments.train_file.endswith(".jsonl"):
-        seperator = "/" if not arguments.training_data_dir.endswith("/") else ""
-        return load_data_set("json", data_files={"train": f"{arguments.training_data_dir}{seperator}{arguments.train_file}"})
+        seperator = os.sep if not arguments.training_data_dir.endswith(os.sep) else ""
+        train_set = load_data_set("json", data_files={"train": f"{arguments.training_data_dir}{seperator}{arguments.train_file}"})
+        if arguments.do_eval:
+            train_set = _load_eval_ds(arguments, train_set)
+        return train_set
     else:
-        return load_data_set(arguments.training_data_dir, data_files={"train": arguments.train_file})
+        train_set = load_data_set(arguments.training_data_dir, data_files={"train": arguments.train_file})
+        if arguments.do_eval:
+            train_set = _load_eval_ds(arguments, train_set)
+        return train_set
+
+
+def _load_eval_ds(arguments: TuneArguments, train_set: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
+    if arguments.eval_dataset is None:
+        train_set['eval'] = train_set['train']
+        return train_set
+    if os.path.exists(arguments.eval_dataset) and arguments.eval_dataset.endswith('jsonl'):
+        eval_set = load_data_set("json", data_files={"train": arguments.eval_dataset})
+        train_set['eval'] = eval_set['train']
+        return train_set
+    if os.path.exists(arguments.eval_dataset):
+        eval_set = load_data_set(arguments.eval_dataset.replace(arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1], ''), data_files={"train": arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1]})
+        train_set['eval'] = eval_set['train']
+        return train_set
+
+    eval_set = load_data_set(arguments.hf_training_dataset_id, split='train')
+    train_set['eval'] = eval_set['train']
+    return train_set
