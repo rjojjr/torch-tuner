@@ -1,4 +1,15 @@
-def print_serve_mode_config(args):
+from base.tuner import Tuner
+
+
+def print_global_config(args) -> None:
+    print('')
+    print(f'Is Low GPU Memory Mode: {args.use_low_gpu_memory}')
+    if args.debug:
+        print("Is Debug Mode: True")
+        print('')
+
+
+def print_serve_mode_config(args) -> None:
     print()
     print("Running in serve mode")
     print()
@@ -8,7 +19,7 @@ def print_serve_mode_config(args):
     print(f"Serving {args.serve_model} on port {args.serve_port}")
 
 
-def print_tuner_mode_config(args, tuner):
+def print_tuner_mode_config(args, tuner: Tuner) -> None:
     print()
     print(f'Using LLM Type: {tuner.llm_type}')
 
@@ -20,7 +31,7 @@ def print_tuner_mode_config(args, tuner):
     print(f'Is Pushing: {str(args.push)}')
 
 
-def print_fine_tune_merge_common_config(args, model_dir):
+def print_fine_tune_merge_common_config(args, model_dir) -> None:
     print()
     print(f'Creating Model/Adapter: {args.new_model}')
     print(f'Output Directory: {args.output_directory}')
@@ -33,7 +44,7 @@ def print_fine_tune_merge_common_config(args, model_dir):
     print(f'Using Additional Vocabulary Tokens: {args.additional_vocabulary_tokens}')
 
 
-def print_fine_tune_config(args, lora_scale, tune_arguments):
+def print_fine_tune_config(args, lora_scale, tune_arguments) -> None:
     print()
     print(f'Epochs: {str(args.epochs)}')
     print(f'Using Tuning Dataset: {args.hf_training_dataset_id if args.hf_training_dataset_id is not None else args.training_data_file}')
@@ -88,7 +99,7 @@ def print_fine_tune_config(args, lora_scale, tune_arguments):
         print(f'Using NEFTune Noise Alpha: {args.neftune_noise_alpha}')
 
 
-def _print_dtype_config(args):
+def _print_dtype_config(args) -> None:
     print()
     print(f'Using CPU Only: {str(args.cpu_only_tuning)}')
     print(f'Using tf32: {str(args.use_tf_32)}')
