@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify
 import uuid
+
+from openai import completions
+
 from utils import time_utils
 from utils.serve_utils import parse_temp
 import tiktoken
@@ -24,7 +27,8 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
 
         prompt = _construct_chat_prompt(body)
 
-        completion = llm.completion(prompt, int(body['max_tokens']), parse_temp(float(body['temperature'])), stops=body['stop'])
+        max_tokens = int(body['max_tokens']) if body['max_tokens'] is not None else 100
+        completion = llm.completion(prompt, max_tokens, parse_temp(float(body['temperature'])), stops=body['stop'], repetition_penalty=body['frequency_penalty'])
         prompt_tokens = len(encoding.encode(prompt))
         completion_tokens = len(encoding.encode(completion))
         chat_response = {
@@ -40,8 +44,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
                     "content": f"{completion}",
                 },
                 "logprobs": None,
-                # TODO - return real finish reason
-                "finish_reason": "stop"
+                "finish_reason": "length" if body['stop'] is None or not completion.endswith(body['stop']) else "stop"
             }],
             "usage": {
                 "prompt_tokens": prompt_tokens,
@@ -54,7 +57,8 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
     @app.route("/v1/completions", methods=['POST'])
     def completions_endpoint():
         body = request.get_json(force=True)
-        completion = llm.completion(body['prompt'], int(body['max_tokens']), parse_temp(float(body['temperature'])), stops=body['stop'])
+        max_tokens = int(body['max_tokens']) if body['max_tokens'] is not None else 100
+        completion = llm.completion(body['prompt'], max_tokens, parse_temp(float(body['temperature'])), stops=body['stop'], repetition_penalty=body['frequency_penalty'])
         prompt_tokens = len(encoding.encode(body['prompt']))
         completion_tokens = len(encoding.encode(completion))
 
@@ -69,7 +73,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
                     "text": completion,
                     "index": 0,
                     "logprobs": None,
-                    "finish_reason": "length"
+                    "finish_reason": "length" if body['stop'] is None or not completion.endswith(body['stop']) else "stop"
                 }
             ],
             "usage": {

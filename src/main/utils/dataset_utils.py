@@ -5,6 +5,7 @@ from datasets import load_dataset as load_data_set, DatasetDict, Dataset, Iterab
 
 from arguments.arguments import TuneArguments
 
+
 def load_dataset(arguments: TuneArguments) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
     """Load dataset for SFT trainer."""
     if arguments.hf_training_dataset_id is not None:
@@ -27,18 +28,19 @@ def load_dataset(arguments: TuneArguments) -> Union[DatasetDict, Dataset, Iterab
 
 
 def _load_eval_ds(arguments: TuneArguments, train_set: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
+    """Process evaluation dataset."""
     if arguments.eval_dataset is None:
         train_set['eval'] = train_set['train']
         return train_set
-    if os.path.exists(arguments.eval_dataset) and arguments.eval_dataset.endswith('jsonl'):
-        eval_set = load_data_set("json", data_files={"train": arguments.eval_dataset})
-        train_set['eval'] = eval_set['train']
+    elif os.path.isfile(arguments.eval_dataset) and arguments.eval_dataset.strip().endswith('jsonl'):
+        eval_set = load_data_set("json", data_files={"eval": arguments.eval_dataset})
+        train_set['eval'] = eval_set['eval']
         return train_set
-    if os.path.exists(arguments.eval_dataset):
-        eval_set = load_data_set(arguments.eval_dataset.replace(arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1], ''), data_files={"train": arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1]})
-        train_set['eval'] = eval_set['train']
+    elif os.path.isfile(arguments.eval_dataset):
+        eval_set = load_data_set(arguments.eval_dataset.replace(arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1], ''), data_files={"eval": arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1]})
+        train_set['eval'] = eval_set['eval']
         return train_set
-
-    eval_set = load_data_set(arguments.hf_training_dataset_id, split='train')
-    train_set['eval'] = eval_set['train']
-    return train_set
+    else:
+        eval_set = load_data_set(arguments.eval_dataset, split='eval')
+        train_set['eval'] = eval_set['eval']
+        return train_set

@@ -34,8 +34,7 @@ class LlmExecutor:
         self._tokenizer = tokenizer
 
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
-    # TODO - Don't always return all `max_tokens` && return stop reason
-    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None) -> str:
+    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
         """Predict what text should follow the provided input."""
         if stops is None:
             stops = []
@@ -43,7 +42,7 @@ class LlmExecutor:
             stopping_criteria = StoppingCriteriaList([StopStringCriteria(stop_strings=stops, tokenizer=self._tokenizer)])
             model_inputs = self._tokenizer([input], padding=True if self._padding_side is not None else False, return_tensors="pt").to("cuda")
             input_length = model_inputs.input_ids.shape[1]
-            generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature, stopping_criteria=stopping_criteria)
+            generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature, stopping_criteria=stopping_criteria, repetition_penalty=repetition_penalty)
             response = self._tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
             # TODO - FIXME - big hack to stop OOM
             gc.collect()
