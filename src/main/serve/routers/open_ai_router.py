@@ -24,9 +24,8 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
         body = request.get_json(force=True)
 
         prompt = _construct_chat_prompt(body)
-
-        max_tokens = int(body['max_tokens']) if body['max_tokens'] is not None else 100
-        completion = llm.completion(prompt, max_tokens, parse_temp(float(body['temperature'])), stops=body['stop'], repetition_penalty=body['frequency_penalty'])
+        max_tokens = int(body['max_tokens']) if 'max_tokens' in body else 100
+        completion = llm.completion(prompt, max_tokens, parse_temp(float(body['temperature']) if 'temperature' in body else 0), stops=body['stop'] if 'stop' in body else None, repetition_penalty=body['frequency_penalty'] if 'frequency_penalty' in body else None)
         prompt_tokens = len(encoding.encode(prompt))
         completion_tokens = len(encoding.encode(completion))
         chat_response = {
@@ -42,7 +41,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
                     "content": f"{completion}",
                 },
                 "logprobs": None,
-                "finish_reason": "length" if body['stop'] is None or not completion.endswith(body['stop']) else "stop"
+                "finish_reason": _get_finish_reason(body, completion)
             }],
             "usage": {
                 "prompt_tokens": prompt_tokens,
@@ -55,8 +54,8 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
     @app.route("/v1/completions", methods=['POST'])
     def completions_endpoint():
         body = request.get_json(force=True)
-        max_tokens = int(body['max_tokens']) if body['max_tokens'] is not None else 100
-        completion = llm.completion(body['prompt'], max_tokens, parse_temp(float(body['temperature'])), stops=body['stop'], repetition_penalty=body['frequency_penalty'])
+        max_tokens = int(body['max_tokens']) if 'max_tokens' in body else 100
+        completion = llm.completion(body['prompt'], max_tokens, parse_temp(float(body['temperature']) if 'temperature' in body else 0), stops=body['stop'] if 'stop' in body else None, repetition_penalty=body['frequency_penalty'] if 'frequency_penalty' in body else None)
         prompt_tokens = len(encoding.encode(body['prompt']))
         completion_tokens = len(encoding.encode(completion))
 
@@ -71,7 +70,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
                     "text": completion,
                     "index": 0,
                     "logprobs": None,
-                    "finish_reason": "length" if body['stop'] is None or not completion.endswith(body['stop']) else "stop"
+                    "finish_reason": _get_finish_reason(body, completion)
                 }
             ],
             "usage": {
@@ -82,3 +81,10 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
         }
 
         return jsonify(completion_response)
+
+def _get_finish_reason(body: dict, completion: str) -> str:
+    if 'stop' in body:
+        for stop in body['stop']:
+            if completion.endswith(stop):
+                return "stop"
+    return "length"
