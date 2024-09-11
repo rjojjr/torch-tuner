@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify
 import uuid
 
-from openai import completions
-
 from utils import time_utils
 from utils.serve_utils import parse_temp
 import tiktoken
