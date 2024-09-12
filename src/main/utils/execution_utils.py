@@ -31,7 +31,7 @@ def _execute_tuner_mode(args) -> None:
     merge_arguments = build_and_validate_merge_args(args)
     push_arguments = build_and_validate_push_args(args, model_dir)
     print_tuner_mode_config(args, tuner)
-    if args.fine_tune or args.merge:
+    if args.fine_tune or args.merge or args.do_eval:
         print_fine_tune_merge_common_config(args, model_dir)
     if args.fine_tune:
         print_fine_tune_config(args, lora_scale, tune_arguments)
@@ -42,7 +42,14 @@ def _execute_tuner_mode(args) -> None:
         tuner.fine_tune(tune_arguments)
         print('')
         print(
-            f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+            f'Tuned LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+    if not args.fine_tune and args.do_eval:
+        print('')
+        print(f'Running full evaluation against model {args.new_model}')
+        print('')
+        tuner.fine_tune(tune_arguments)
+        print('')
+        print(f'Ran full evaluation against model {args.new_model}')
     if args.merge:
         print('')
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')

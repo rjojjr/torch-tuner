@@ -58,14 +58,14 @@ def push(arguments: PushArguments) -> None:
 
 def fine_tune(arguments: TuneArguments) -> None:
     """Llama specific fine-tune function."""
-    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model)
+    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model if arguments.do_train else arguments.new_model)
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-    model = LlamaForCausalLM.from_pretrained(arguments.base_model, quantization_config=bnb_config, device_map="auto")
+    model = LlamaForCausalLM.from_pretrained(arguments.base_model if arguments.do_train else arguments.new_model, quantization_config=bnb_config, device_map="auto")
 
     base_module.fine_tune_base(arguments, tokenizer, model)
 

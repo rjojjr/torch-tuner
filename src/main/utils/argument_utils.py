@@ -56,7 +56,7 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
 
 def build_and_validate_tune_args(prog_args) -> TuneArguments:
     """Construct/validate tune arguments."""
-    if prog_args.fine_tune:
+    if prog_args.fine_tune or prog_args.do_eval:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
@@ -103,6 +103,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             neftune_noise_alpha=prog_args.neftune_noise_alpha,
             huggingface_auth_token=prog_args.huggingface_auth_token,
             eval_dataset=prog_args.eval_dataset,
+            do_train=prog_args.fine_tune,
             eval_strategy=prog_args.eval_strategy if prog_args.eval_strategy is not None else prog_args.save_strategy,
             eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps
         )

@@ -15,27 +15,33 @@ import shutil
 
 
 def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
-    print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
-    print('')
+    if arguments.do_train:
+        print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
+        print('')
+    else:
+        print(f"Starting evaluation of {arguments.new_model}")
+        print('')
     output_dir = f"{arguments.output_directory}{os.sep}checkpoints{os.sep}{arguments.new_model}"
     lora_dir = f"{arguments.output_directory}{os.sep}adapters{os.sep}{arguments.new_model}"
-    if not arguments.no_checkpoint:
+    if arguments.do_train and not arguments.no_checkpoint:
         print(f'Checkpointing to {output_dir}')
         print('')
 
-    if os.path.exists(lora_dir) and not arguments.overwrite_output:
+    if arguments.do_train and os.path.exists(lora_dir) and not arguments.overwrite_output:
         raise TuningModuleFunctionException(f'cannot overwrite existing LoRA directory({lora_dir}) when `--overwrite-output` CLI argument is not set to "true"', 'FINE_TUNE')
 
-    base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
+    if arguments.do_train:
+        base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
     ds = load_dataset(arguments)
+    target_modules = []
+    if arguments.do_train:
+        if arguments.target_modules is None or len(arguments.target_modules) == 0:
+            target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
+        else:
+            target_modules = arguments.target_modules
 
-    if arguments.target_modules is None or len(arguments.target_modules) == 0:
-        target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
-    else:
-        target_modules = arguments.target_modules
-
-    modules_to_save=["embed_tokens"] if arguments.save_embeddings else []
+    modules_to_save=["embed_tokens"] if arguments.do_train and arguments.save_embeddings else []
 
 
     lora_config = LoraConfig(
@@ -47,15 +53,19 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         bias=arguments.bias,
         task_type=TaskType.CAUSAL_LM
     )
-    model = prepare_model_for_kbit_training(base_model)
-    model = get_peft_model(model, lora_config)
-    model.print_trainable_parameters()
+    if arguments.do_train:
+        model = prepare_model_for_kbit_training(base_model)
+        model = get_peft_model(model, lora_config)
+        model.print_trainable_parameters()
+    else:
+        model = base_model
     learning_rate = arguments.batch_size * arguments.base_learning_rate
 
     train_params = SFTConfig(
         output_dir=output_dir,
-        include_tokens_per_second=False,
-        include_num_input_tokens_seen=False,
+        do_train=arguments.do_train,
+        include_tokens_per_second=not arguments.do_train,
+        include_num_input_tokens_seen=not arguments.do_train,
         num_train_epochs=arguments.epochs,
         torch_empty_cache_steps=arguments.torch_empty_cache_steps,
         per_device_train_batch_size=arguments.batch_size,
@@ -94,30 +104,33 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     train = SFTTrainer(
         tokenizer=tokenizer,
         model=model,
-        train_dataset=ds['train'],
+        train_dataset=ds['train'] if arguments.do_train else None,
         args=train_params,
         eval_dataset=ds['eval'] if arguments.do_eval else None
     )
 
     model.config.use_cache = False
+    if arguments.do_train:
+        # TODO - FIXME - There is a warning from checkpointing I believe is do to underlying torch impl.
+        if os.path.exists(output_dir) and not arguments.no_checkpoint:
+            print('Loading checkpoint')
+            model.gradient_checkpointing_enable()
+            last_checkpoint = get_last_checkpoint(output_dir)
+            train.train(resume_from_checkpoint=last_checkpoint)
+        else:
+            train.train()
 
-    # TODO - FIXME - There is a warning from checkpointing I believe is do to underlying torch impl.
-    if os.path.exists(output_dir) and not arguments.no_checkpoint:
-        print('Loading checkpoint')
-        model.gradient_checkpointing_enable()
-        last_checkpoint = get_last_checkpoint(output_dir)
-        train.train(resume_from_checkpoint=last_checkpoint)
+        print('')
+        print(f'Saving LoRA adapter to {lora_dir}')
+        if os.path.exists(lora_dir) and arguments.overwrite_output:
+            shutil.rmtree(lora_dir)
+
+        train.model.save_pretrained(lora_dir)
+        train.model.config.save_pretrained(lora_dir)
+        tokenizer.save_pretrained(lora_dir)
     else:
-        train.train()
+        train.evaluate()
 
-    print('')
-    print(f'Saving LoRA adapter to {lora_dir}')
-    if os.path.exists(lora_dir) and arguments.overwrite_output:
-        shutil.rmtree(lora_dir)
-
-    train.model.save_pretrained(lora_dir)
-    train.model.config.save_pretrained(lora_dir)
-    tokenizer.save_pretrained(lora_dir)
     del model
     del base_model
     del tokenizer
