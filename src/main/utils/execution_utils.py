@@ -43,6 +43,8 @@ def _execute_tuner_mode(args) -> None:
         print('')
         print(
             f'Tuned LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+
+    # TODO - create new base module function for full eval
     if not args.fine_tune and args.do_eval:
         print('')
         print(f'Running full evaluation against model {args.new_model}')
