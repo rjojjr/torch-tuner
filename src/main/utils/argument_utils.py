@@ -194,6 +194,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-pp', '--public-push', help="Push to public HF repo(push is private if false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-de', '--do-eval', help="Do evaluation on each configured step(does full evaluation when `--fine-tune` argument is set to false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
@@ -236,7 +237,6 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-msl', '--max-seq-length', help="The maximum sequence length to use for the `ConstantLengthDataset` and for automatically creating the Dataset(default: the smaller of the `tokenizer.model_max_length` and `1024`)", type=lambda x: _parse_nullable_int_arg(x), default="None")
     parser.add_argument('-ssteps', '--save-steps', help="Save after each --save-steps steps(ignored when SAVE_STRATEGY='epoch')(default: 50)", default=50, type=int)
     parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(this helps prevent filling up disk while tuning)(default: 5)", default=5, type=int)
-    parser.add_argument('-de', '--do-eval', help="Do evaluation on each save step(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-eds', '--eval-dataset', help="Path or HF id of evaluation dataset(defaults to training dataset when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_arg(x))
     parser.add_argument('-llm', '--llm-type', help="LLM Type(default: generic[options: generic, llama])", default="generic")
     parser.add_argument('-evalstrat', '--eval-strategy', help="Eval strategy('None', 'epoch' or 'steps')(Defaults to SAVE_STRATEGY when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_arg(x))
