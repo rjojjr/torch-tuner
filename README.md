@@ -35,7 +35,7 @@ installed on the host. I would like to add CPU based tuning in the near future.
 
 You can install the torch tuner CLI as a system-wide application on any OS(including Windows 
 OS[although the linux script will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
-with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS](scripts/win/install-torch-tuner.bat)) 
+with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS[NON-WSL]](scripts/win/install-torch-tuner.bat)) 
 if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
@@ -66,7 +66,7 @@ You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
 # Linux, MacOS & WSL
-sudo bash /usr/local/torch-tuner.bat/scripts/uninstall-torch-tuner.bat.sh
+sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
 
 # Windows 
 "%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
@@ -159,7 +159,7 @@ torch-tuner \
 To List Available Torch Tuner CLI Arguments:
 
 ```shell
-python src/main/main.py --help
+python3 src/main/main.py --help
 ```
 
 ### Serve Mode(EXPERIMENTAL)
