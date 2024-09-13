@@ -26,7 +26,6 @@ def _execute_tuner_mode(args) -> None:
     tuner = tuner_factory()
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = os.path.expanduser(f'{args.output_directory}{os.sep}merged-models{os.sep}{args.new_model}')
-    authenticate_with_hf(args.huggingface_auth_token)
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
     push_arguments = build_and_validate_push_args(args, model_dir)

@@ -1,5 +1,6 @@
 from typing import Callable
 from arguments.arguments import LlmExecutorFactoryArguments
+from hf.hf_auth import resolve_hf_token
 from transformers import AutoTokenizer, AutoModelForCausalLM, StopStringCriteria, StoppingCriteriaList
 from utils.torch_utils import get_bnb_config_and_dtype
 from exception.exceptions import LlmServerException
@@ -73,9 +74,10 @@ def build_llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callab
         device_map={"":0},
         low_cpu_mem_usage=True,
         quantization_config=bnb_config,
-        torch_dtype="auto"
+        torch_dtype="auto",
+        token=resolve_hf_token(arguments.huggingface_auth_token)
         # TODO - investigate if this is effective
         # attn_implementation="flash_attention_2"
-    ), AutoTokenizer.from_pretrained(arguments.model), padding_side=arguments.padding_side)
+    ), AutoTokenizer.from_pretrained(arguments.model, token=resolve_hf_token(arguments.huggingface_auth_token)), padding_side=arguments.padding_side)
 
 
