@@ -35,28 +35,28 @@ which tool to use, and what input to provide the tool(if any).
 We now arrive at the next subject: Basic Agent Tokens. These "tokens" are used
 by the basic ReAct agent to signify the different steps in its logical flow.
 
- - `\nNew Input:`
+ - `\nNew Input`
    - This is new input from the user.
- - `\nThought:`
+ - `\nThought`
    - Decision step
    - "Do I need to use a tool?"
-   - ALWAYS follows `\nNew Input:` step
- - `\nAction:`
+   - ALWAYS follows `\nNew Input` step
+ - `\nAction`
    - Tool to use 
    - Only happens if answer to decision step is "Yes"
-   - ALWAYS follows `\nThought:` step
- - `\nAction Input:`
+   - ALWAYS follows `\nThought` step
+ - `\nAction Input`
    - Tool input(tool function arguments)
-   - ALWAYS follows `\nAction:` step
- - `\nObservation:`
+   - ALWAYS follows `\nAction` step
+ - `\nObservation`
    - An observation about the tool output
-   - ALWAYS follows `\nAction Input:` step
-   - **IMPORTANT NOTE** - The `\nObservation:` token is sent as a stop sequence to the LLM by the agent
- - `\nFinal Answer:`
+   - ALWAYS follows `\nAction Input` step
+   - **IMPORTANT NOTE** - The `\nObservation` token is sent as a stop sequence to the LLM by the agent
+ - `\nFinal Answer`
    - The agents final response to the user
    - ALWAYS last
-   - Follows `\nThought:` step when the answer to "Do I need to use a tool?" is "No."
-   - Follows `\nObservation:` step when the answer to "Do I need to use a tool?" is "Yes."
+   - Follows `\nThought` step when the answer to "Do I need to use a tool?" is "No."
+   - Follows `\nObservation` step when the answer to "Do I need to use a tool?" is "Yes."
 
 ## Fine-Tuning ReAct Agent Models
 
@@ -86,18 +86,18 @@ agent model for: Use a Tool or NOT Use a Tool.
 The 'No Tool' scenario is the most simple and intuitive case.
 
 ```JSONL
-{"prompt": "\nNew Input: Hi!\nThought: Do I need to use a tool? No.\nFinal Answer: ", "completion": "Hi. How are you?"}
+{"prompt": "\nNew Input: Hi!", "completion": "\nThought: Do I need to use a tool? No.\nFinal Answer: Hi. How are you?"}
 ```
 
 #### Tool Sample
 
-Since the agent sends the `\nObservation:` "token" as a stop sequence, we must set
-all completions to the `\nObservation:` stop sequence to ensure the agent
+Since the agent sends the `\nObservation` "token" as a stop sequence, we must set
+all completions to end with the `\nObservation` stop sequence to ensure the agent
 stops and calls the tool properly. If you don't do this, the model will never 
 call the tools properly, or worse, it will start predicting tool outputs.
 
 ```JSONL
-{"prompt": "\nNew Input: Hi!\nThought: Do I need to use a tool? Yes.\nAction: your_tool\nAction Input: some,args", "completion": "\nObservation:"}
+{"prompt": "\nNew Input: Hi!", "completion": "\nThought: Do I need to use a tool? Yes.\nAction: your_tool\nAction Input: some,args\nObservation:"}
 ```
 
 ## Conclusion

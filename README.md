@@ -4,7 +4,7 @@ The torch-tuner project currently serves as a simple convenient CLI wrapper for 
 LLM models(and others in the near future) on Nvidia CUDA enabled GPUs(or CPUs)
 with simple text samples(or JSON Lines files) using [LoRA](https://github.com/microsoft/LoRA), [Transformers](https://huggingface.co/docs/transformers/en/index) and [Torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)).
 
-Use torch-tuner's CLI to perform Supervised Fine-Tuning(SFT)(with LoRA) of
+Use torch-tuner's CLI to perform Supervised Fine-Tuning(SFT)(with LoRA[and QLoRA]) of
 a suitable base model that exists locally or on [Huggingface](https://huggingface.co) with simple text/JSONL.
 You can also use this CLI to deploy your model(or any model)
 as an REST API that mimics commonly used Open AI endpoints. You can
@@ -35,24 +35,24 @@ installed on the host. I would like to add CPU based tuning in the near future.
 
 You can install the torch tuner CLI as a system-wide application on any OS(including Windows 
 OS[although the linux script will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
-with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS](scripts/win/install-torch-tuner.bat)) 
+with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS[NON-WSL]](scripts/win/install-torch-tuner.bat)) 
 if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
 **NOTE** - You must run the script with root/admin privileges.
 
-You can download the latest installer script from [Github](https://github.com)
-and execute it with the following single command:
+You can download the latest installer script from this repo
+and execute it with one of the following single commands:
 
 ```shell
-# Linux(and WSL)
+# Linux, MacOS & WSL
 wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 
 # Windows(non-WSL) (requires git & python3.11 already installed on target machine)
 curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
 ```
 
-**NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian Linux, 
+**NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian-Based Linux, 
 try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv)
 and run the torch-tuner CLI installer script again.
 
@@ -65,8 +65,8 @@ You can update the installed torch-tuner CLI instance at anytime by running the 
 You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
-# Linux(and MacOS/WSL)
-sudo bash /usr/local/torch-tuner.bat/scripts/uninstall-torch-tuner.bat.sh
+# Linux, MacOS & WSL
+sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
 
 # Windows 
 "%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
@@ -84,8 +84,9 @@ to your command.
 
 ### Tuning Data
 
-You can use a dataset from Huggingface by setting the `--training-data-dir` argument
-to the desired HF repo name and excluding the `--training-data-file` argument.
+You can use a dataset from Huggingface by setting the `--hf-training-dataset-id` argument
+to the desired HF repository identifier. Otherwise, you can use a local dataset by setting
+both the `--training-data-dir` and `--training-data-file` CLI arguments.
 
 #### Simple Text
 
@@ -132,10 +133,10 @@ This should most likely be added as an argument in the future(it is only really 
 From the torch-tuner CLI project root(using the virtual environment[if any] that you used to install torch-tuner's dependencies), run:
 
 ```shell
-python src/main/main.py <your args>
+python3 src/main/main.py <your args>
 
 # A Real Example
-python src/main/main.py \
+python3 src/main/main.py \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \
@@ -149,7 +150,7 @@ torch-tuner \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \
-  --training-data-file samples.txt \
+  --training-data-file samples.json \
   --epochs 10 \
   --lora-r 16 \
   --lora-alpha 32
@@ -158,7 +159,7 @@ torch-tuner \
 To List Available Torch Tuner CLI Arguments:
 
 ```shell
-python src/main/main.py --help
+python3 src/main/main.py --help
 ```
 
 ### Serve Mode(EXPERIMENTAL)
@@ -167,7 +168,7 @@ You can run the torch-tuner CLI in the new experimental serve mode to serve your
 completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
 
 ```shell
-python src/main/main.py \
+python3 src/main/main.py \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080
@@ -179,7 +180,7 @@ torch-tuner \
   --serve-port 8080
   
 # Use dynamic quantization
-python src/main/main.py \
+python3 src/main/main.py \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080 \
