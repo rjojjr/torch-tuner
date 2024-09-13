@@ -82,6 +82,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
 
         return jsonify(completion_response)
 
+
 def _get_finish_reason(body: dict, completion: str) -> str:
     if 'stop' in body:
         for stop in body['stop']:
