@@ -1,6 +1,7 @@
 import os
+
 from utils.argument_utils import do_initial_arg_validation
-from hf.hf_auth import authenticate_with_hf
+from hf.hf_auth import authenticate_with_hf, resolve_hf_token
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 from utils.config_utils import print_global_config, print_serve_mode_config, print_fine_tune_merge_common_config, print_tuner_mode_config, print_fine_tune_config
 from serve.llm_executor import build_llm_executor_factory
@@ -11,11 +12,18 @@ from utils.tuner_utils import build_llm_tuner_factory
 
 def execute_command(args) -> None:
     print_global_config(args)
+    _execute_hf_auth(args)
     if args.serve:
         _execute_serve_mode(args)
         return
 
     _execute_tuner_mode(args)
+
+
+def _execute_hf_auth(args):
+    hf_token = resolve_hf_token(args.huggingface_auth_token)
+    if hf_token is not None:
+        authenticate_with_hf(hf_token)
 
 
 def _execute_tuner_mode(args) -> None:
@@ -26,12 +34,11 @@ def _execute_tuner_mode(args) -> None:
     tuner = tuner_factory()
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = os.path.expanduser(f'{args.output_directory}{os.sep}merged-models{os.sep}{args.new_model}')
-    authenticate_with_hf(args.huggingface_auth_token)
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
     push_arguments = build_and_validate_push_args(args, model_dir)
     print_tuner_mode_config(args, tuner)
-    if args.fine_tune or args.merge:
+    if args.fine_tune or args.merge or args.do_eval:
         print_fine_tune_merge_common_config(args, model_dir)
     if args.fine_tune:
         print_fine_tune_config(args, lora_scale, tune_arguments)
@@ -42,7 +49,16 @@ def _execute_tuner_mode(args) -> None:
         tuner.fine_tune(tune_arguments)
         print('')
         print(
-            f'Tuned LoRA adapter for model {args.base_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+            f'Tuned LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
+
+    # TODO - create new base module function for full eval
+    if not args.fine_tune and args.do_eval:
+        print('')
+        print(f'Running full evaluation against model {args.new_model}')
+        print('')
+        tuner.fine_tune(tune_arguments)
+        print('')
+        print(f'Ran full evaluation against model {args.new_model}')
     if args.merge:
         print('')
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')

@@ -33,7 +33,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
             "object": "chat.completion",
             "created": time_utils.current_milli_time(),
             "model": body['model'],
-            "system_fingerprint": "fp_44709d6fcb",
+            "system_fingerprint": "fp_torch_tuner",
             "choices": [{
                 "index": 0,
                 "message": {
@@ -64,7 +64,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
             "object": "text_completion",
             "created": time_utils.current_milli_time(),
             "model": body['model'],
-            "system_fingerprint": "fp_44709d6fcb",
+            "system_fingerprint": "fp_torch_tuner",
             "choices": [
                 {
                     "text": completion,
@@ -81,6 +81,7 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
         }
 
         return jsonify(completion_response)
+
 
 def _get_finish_reason(body: dict, completion: str) -> str:
     if 'stop' in body:

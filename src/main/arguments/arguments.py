@@ -52,7 +52,8 @@ class TunerFunctionArguments(CliArguments):
 
     def __init__(self, new_model: str, is_fp16: bool = False, is_bf16: bool = False, use_4bit: bool = False, use_8bit: bool = False,
                  fp32_cpu_offload: bool = False, is_chat_model: bool = True,
-                 padding_side: str | None = 'right', use_agent_tokens: bool = False, additional_vocabulary_tokens: list | None = None, huggingface_auth_token: str | None = None):
+                 padding_side: str | None = 'right', use_agent_tokens: bool = False, additional_vocabulary_tokens: list | None = None, huggingface_auth_token: str | None = None,
+                 is_debug_mode: bool = False):
         self.new_model = new_model
         self.is_fp16 = is_fp16
         self.is_bf16 = is_bf16
@@ -64,6 +65,7 @@ class TunerFunctionArguments(CliArguments):
         self.use_agent_tokens = use_agent_tokens
         self.additional_vocabulary_tokens = additional_vocabulary_tokens
         self.huggingface_auth_token = huggingface_auth_token
+        self.is_debug_mode = is_debug_mode
 
     def validate(self) -> None:
         """Validate members."""
@@ -160,8 +162,10 @@ class TuneArguments(TunerFunctionArguments):
                  huggingface_auth_token: str | None = None,
                  eval_dataset: str | None = None,
                  eval_strategy: str | None = None,
-                 eval_steps: int | None = None):
-        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token)
+                 eval_steps: int | None = None,
+                 do_train: bool = True,
+                 is_debug_mode: bool = True):
+        super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.r = r
         self.alpha = alpha
         self.epochs = epochs
@@ -199,6 +203,7 @@ class TuneArguments(TunerFunctionArguments):
         self.eval_dataset = eval_dataset
         self.eval_strategy = eval_strategy
         self.eval_steps = eval_steps
+        self.do_train = do_train
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
@@ -249,8 +254,9 @@ class MergeArguments(TunerFunctionArguments):
                  use_agent_tokens: bool = False,
                  additional_vocabulary_tokens: list | None = None,
                  overwrite_output: bool = True,
-                 huggingface_auth_token: str | None = None):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token)
+                 huggingface_auth_token: str | None = None,
+                 is_debug_mode: bool = False):
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.base_model = base_model
         self.output_dir = output_dir
         self.overwrite_output = overwrite_output
@@ -283,8 +289,9 @@ class PushArguments(TunerFunctionArguments):
                  padding_side: str | None = 'right',
                  use_agent_tokens: bool = False,
                  additional_vocabulary_tokens: list | None = None,
-                 huggingface_auth_token: str | None = None):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token)
+                 huggingface_auth_token: str | None = None,
+                 is_debug_mode: bool = False):
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.model_dir = model_dir
         self.public_push = public_push
 
