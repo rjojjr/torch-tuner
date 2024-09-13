@@ -14,7 +14,7 @@ import shutil
 # LLM independent base functions
 
 
-def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
+def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     if arguments.do_train:
         print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
         print('')
@@ -94,7 +94,6 @@ def fine_tune_base(arguments: TuneArguments, tokenizer, base_model) -> None:
         do_eval=arguments.do_eval,
         eval_strategy=arguments.eval_strategy if arguments.do_eval else 'no',
         eval_on_start=arguments.do_eval,
-        # TODO - is this ignored bt SFTTrainer?
         max_seq_length=arguments.max_seq_length,
         neftune_noise_alpha=arguments.neftune_noise_alpha if arguments.is_instruct_model else None,
         dataset_text_field="text" if not arguments.train_file.endswith("jsonl") else None,

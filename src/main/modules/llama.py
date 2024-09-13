@@ -71,6 +71,6 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     model = LlamaForCausalLM.from_pretrained(arguments.base_model if arguments.do_train else arguments.new_model, quantization_config=bnb_config, device_map="auto", token=resolve_hf_token(arguments.huggingface_auth_token))
 
-    base_module.fine_tune_base(arguments, tokenizer, model)
+    base_module.fine_tune_eval_base(arguments, tokenizer, model)
 
 
