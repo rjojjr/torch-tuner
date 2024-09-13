@@ -15,6 +15,7 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
+            is_debug_mode=prog_args.debug,
             public_push=prog_args.public_push,
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
@@ -40,6 +41,7 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             use_8bit=prog_args.use_8bit,
             is_bf16=prog_args.use_bf_16,
             is_fp16=prog_args.use_fp_16,
+            is_debug_mode=prog_args.debug,
             output_dir=os.path.expanduser(prog_args.output_directory) if prog_args.output_directory is not None else None,
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
@@ -104,6 +106,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             huggingface_auth_token=prog_args.huggingface_auth_token,
             eval_dataset=prog_args.eval_dataset,
             do_train=prog_args.fine_tune,
+            is_debug_mode=prog_args.debug,
             eval_strategy=prog_args.eval_strategy if prog_args.eval_strategy is not None else prog_args.save_strategy,
             eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps
         )

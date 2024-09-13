@@ -1,6 +1,7 @@
 import os
+
 from utils.argument_utils import do_initial_arg_validation
-from hf.hf_auth import authenticate_with_hf
+from hf.hf_auth import authenticate_with_hf, resolve_hf_token
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 from utils.config_utils import print_global_config, print_serve_mode_config, print_fine_tune_merge_common_config, print_tuner_mode_config, print_fine_tune_config
 from serve.llm_executor import build_llm_executor_factory
@@ -11,11 +12,18 @@ from utils.tuner_utils import build_llm_tuner_factory
 
 def execute_command(args) -> None:
     print_global_config(args)
+    _execute_hf_auth(args)
     if args.serve:
         _execute_serve_mode(args)
         return
 
     _execute_tuner_mode(args)
+
+
+def _execute_hf_auth(args):
+    hf_token = resolve_hf_token(args.huggingface_auth_token)
+    if hf_token is not None:
+        authenticate_with_hf(hf_token)
 
 
 def _execute_tuner_mode(args) -> None:

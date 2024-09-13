@@ -1,5 +1,4 @@
 from utils.torch_utils import get_bnb_config_and_dtype
-from hf.hf_auth import resolve_hf_token
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
@@ -15,11 +14,10 @@ def merge(arguments: MergeArguments) -> None:
     base_model = AutoModelForCausalLM.from_pretrained(
         arguments.base_model,
         low_cpu_mem_usage=False,
-        return_dict=True,
-        torch_dtype=dtype, token=resolve_hf_token(arguments.huggingface_auth_token)
+        return_dict=True
     )
 
-    tokenizer = AutoTokenizer.from_pretrained(lora_dir, token=resolve_hf_token(arguments.huggingface_auth_token))
+    tokenizer = AutoTokenizer.from_pretrained(lora_dir)
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
@@ -37,8 +35,7 @@ def push(arguments: PushArguments) -> None:
             arguments.model_dir,
             low_cpu_mem_usage=False,
             return_dict=True,
-            torch_dtype=dtype,
-            token=resolve_hf_token(arguments.huggingface_auth_token)
+            torch_dtype=dtype
         )
     else:
         model = AutoModelForCausalLM.from_pretrained(
@@ -46,11 +43,10 @@ def push(arguments: PushArguments) -> None:
             low_cpu_mem_usage=True,
             return_dict=True,
             quantization_config=bnb_config,
-            device_map="auto",
-            token=resolve_hf_token(arguments.huggingface_auth_token)
+            device_map="auto"
         )
 
-    tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir, token=resolve_hf_token(arguments.huggingface_auth_token))
+    tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
@@ -60,13 +56,15 @@ def push(arguments: PushArguments) -> None:
 
 def fine_tune(arguments: TuneArguments) -> None:
     """Generic LLM type specific fine-tune function."""
-    tokenizer = AutoTokenizer.from_pretrained(arguments.base_model if arguments.do_train else arguments.new_model, token=resolve_hf_token(arguments.huggingface_auth_token))
+    model_to_use = arguments.base_model if arguments.do_train else arguments.output_directory + os.sep + arguments.new_model
+
+    tokenizer = AutoTokenizer.from_pretrained(model_to_use)
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-    model = AutoModelForCausalLM.from_pretrained(arguments.base_model if arguments.do_train else arguments.new_model, quantization_config=bnb_config, device_map="auto", token=resolve_hf_token(arguments.huggingface_auth_token))
+    model = AutoModelForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, device_map="auto")
 
     base_module.fine_tune_eval_base(arguments, tokenizer, model)
