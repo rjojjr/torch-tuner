@@ -113,11 +113,18 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         model.config.use_cache = False
         if arguments.do_train:
             if os.path.exists(output_dir) and not arguments.no_checkpoint:
+                print()
                 print('Loading checkpoint')
                 model.gradient_checkpointing_enable()
                 last_checkpoint = get_last_checkpoint(output_dir)
+                print()
+                print('Executing fine-tune job')
+                print()
                 train.train(resume_from_checkpoint=last_checkpoint)
             else:
+                print()
+                print('Executing fine-tune job')
+                print()
                 train.train()
 
             print('')
@@ -129,6 +136,9 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             train.model.config.save_pretrained(lora_dir)
             tokenizer.save_pretrained(lora_dir)
         else:
+            print()
+            print('Executing evaluation job')
+            print()
             train.evaluate()
         del model
         del base_model
