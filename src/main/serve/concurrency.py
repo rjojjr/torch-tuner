@@ -14,6 +14,7 @@ class ConcurrencyGateKeeper:
         self._retry_interval=retry_interval
         self._mutex = Lock()
 
+    # TODO - FIFO queue
     def _get_lock(self) -> bool:
         with self._mutex:
             if self._current_active.value < self._max_parallel_requests:
