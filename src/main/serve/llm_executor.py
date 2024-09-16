@@ -15,7 +15,6 @@ retry_interval = 1
 
 
 # TODO - use base model & apply LoRA adapters
-# TODO - max concurrent requests
 # TODO - Set context size?
 class LlmExecutor:
     """Manage served LLM instance."""
