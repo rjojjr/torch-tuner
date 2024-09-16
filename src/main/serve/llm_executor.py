@@ -10,7 +10,7 @@ import torch
 import time
 import gc
 
-max_attempts = 5
+max_attempts = 10
 retry_interval = 1
 
 
