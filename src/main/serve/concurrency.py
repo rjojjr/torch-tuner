@@ -1,6 +1,4 @@
 from collections.abc import Callable
-from threading import Lock
-from collections import deque
 
 import time
 
