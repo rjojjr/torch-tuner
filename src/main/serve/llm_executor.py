@@ -32,7 +32,7 @@ class LlmExecutor:
             tokenizer.padding_side = padding_side
 
         model.resize_token_embeddings(len(tokenizer))
-        self.gate_keeper = ConcurrencyGateKeeper(max_parallel_requests)
+        self._gate_keeper = ConcurrencyGateKeeper(max_parallel_requests)
 
         self._model = model
         self._tokenizer = tokenizer
@@ -40,7 +40,7 @@ class LlmExecutor:
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     def completion(self, prompt: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
         """Predict what text should follow the provided input."""
-        return self.gate_keeper.execute(lambda : self._execute_completion(prompt, max_tokens, temperature, attempt, stops, repetition_penalty))
+        return self._gate_keeper.execute(lambda : self._execute_completion(prompt, max_tokens, temperature, attempt, stops, repetition_penalty))
 
     def _execute_completion(self, prompt: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
         if stops is None:
