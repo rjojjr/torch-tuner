@@ -26,7 +26,7 @@ class ServerArguments(CliArguments):
 class LlmArguments(CliArguments):
     """Base LLM load parameters."""
 
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', huggingface_auth_token: str | None = None):
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', huggingface_auth_token: str | None = None, max_parallel_requests: int = 1):
         self.model = model
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
@@ -35,6 +35,7 @@ class LlmArguments(CliArguments):
         self.fp32_cpu_offload = fp32_cpu_offload
         self.padding_side = padding_side
         self.huggingface_auth_token = huggingface_auth_token
+        self.max_parallel_requests = max_parallel_requests
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
@@ -97,8 +98,8 @@ class TunerFunctionArguments(CliArguments):
 
 class LlmExecutorFactoryArguments(LlmArguments):
     """Init LLM Executor factory."""
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right'):
-        super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload, padding_side)
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', max_parallel_requests: int = 1):
+        super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload, padding_side, max_parallel_requests=max_parallel_requests)
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:

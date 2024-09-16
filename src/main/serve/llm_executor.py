@@ -2,6 +2,8 @@ from typing import Callable
 from arguments.arguments import LlmExecutorFactoryArguments
 from hf.hf_auth import resolve_hf_token
 from transformers import AutoTokenizer, AutoModelForCausalLM, StopStringCriteria, StoppingCriteriaList
+
+from serve.concurrency import ConcurrencyGateKeeper
 from utils.torch_utils import get_bnb_config_and_dtype
 from exception.exceptions import LlmServerException
 import torch
@@ -19,7 +21,7 @@ class LlmExecutor:
     """Manage served LLM instance."""
 
     # TODO - Another instance of a constructor to that needs to be made "private"
-    def __init__(self, model, tokenizer, padding_side: str | None):
+    def __init__(self, model, tokenizer, padding_side: str | None,  max_parallel_requests: int = 1):
         # TODO - fix this
         # model.generation_config.cache_implementation = "static"
         # model.forward = torch.compile(model.forward, mode="reduce-overhead", fullgraph=True)
@@ -30,18 +32,22 @@ class LlmExecutor:
             tokenizer.padding_side = padding_side
 
         model.resize_token_embeddings(len(tokenizer))
+        self.gate_keeper = ConcurrencyGateKeeper(max_parallel_requests)
 
         self._model = model
         self._tokenizer = tokenizer
 
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
-    def completion(self, input: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
+    def completion(self, prompt: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
         """Predict what text should follow the provided input."""
+        return self.gate_keeper.execute(lambda : self._execute_completion(prompt, max_tokens, temperature, attempt, stops, repetition_penalty))
+
+    def _execute_completion(self, prompt: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
         if stops is None:
             stops = []
         try:
             stopping_criteria = StoppingCriteriaList([StopStringCriteria(stop_strings=stops, tokenizer=self._tokenizer)])
-            model_inputs = self._tokenizer([input], padding=True if self._padding_side is not None else False, return_tensors="pt").to("cuda")
+            model_inputs = self._tokenizer([prompt], padding=True if self._padding_side is not None else False, return_tensors="pt").to("cuda")
             input_length = model_inputs.input_ids.shape[1]
             generated_ids = self._model.generate(**model_inputs, max_new_tokens=max_tokens, do_sample=True, temperature=temperature, stopping_criteria=stopping_criteria, repetition_penalty=repetition_penalty)
             response = self._tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
@@ -56,7 +62,7 @@ class LlmExecutor:
             if max_attempts is None or attempt <= max_attempts:
                 print("CUDA OOM: retrying")
                 time.sleep(retry_interval * attempt)
-                return self.completion(input, max_tokens, attempt + 1)
+                return self.completion(prompt, max_tokens, attempt + 1)
             print("CUDA OOM: raising exception")
             raise LlmServerException(message="CUDA OOM, exceeded max_attempts")
 
