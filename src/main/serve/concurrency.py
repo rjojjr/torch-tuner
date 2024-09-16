@@ -7,9 +7,10 @@ from serve.atomic_integer import AtomicInteger
 
 class ConcurrencyGateKeeper:
 
-    def __init__(self, max_parallel_requests: int = 1):
+    def __init__(self, max_parallel_requests: int = 1, retry_interval: float = 0.1):
         self.max_parallel_requests = max_parallel_requests
         self.current_active = AtomicInteger(0)
+        self._retry_interval=retry_interval
 
     def execute(self, request: Callable):
         if self.current_active.value < self.max_parallel_requests:
@@ -17,5 +18,5 @@ class ConcurrencyGateKeeper:
             response = request()
             self.current_active.decrement()
             return response
-        time.sleep(0.5)
+        time.sleep(self._retry_interval)
         return self.execute(request)
