@@ -38,7 +38,7 @@ class LlmExecutor:
 
     # TODO - FIXME - multiple calls results in GPU memory overload(may be caused bnb?)
     def completion(self, prompt: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
-        """Predict what text should follow the provided input."""
+        """Predict what text should follow the provided prompt."""
         return self._gate_keeper.execute(lambda : self._execute_completion(prompt, max_tokens, temperature, attempt, stops, repetition_penalty))
 
     def _execute_completion(self, prompt: str, max_tokens: int = 150, temperature: float = 1, attempt: int = 1, stops: list | None = None, repetition_penalty: float | None = None) -> str:
