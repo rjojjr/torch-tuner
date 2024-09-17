@@ -65,6 +65,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
         train_params = SFTConfig(
             output_dir=output_dir,
+            load_best_model_at_end=arguments.load_best_before_save,
             do_train=arguments.do_train,
             include_tokens_per_second=not arguments.do_train,
             include_num_input_tokens_seen=not arguments.do_train,

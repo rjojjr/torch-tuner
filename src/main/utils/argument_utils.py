@@ -68,6 +68,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             alpha=prog_args.lora_alpha,
             epochs=prog_args.epochs,
             batch_size=prog_args.batch_size,
+            load_best_before_save=prog_args.load_best_before_save,
             is_fp16=prog_args.use_fp_16,
             is_bf16=prog_args.use_bf_16,
             base_learning_rate=prog_args.base_learning_rate,
@@ -193,6 +194,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-lgpumem', '--use-low-gpu-memory', default="true", help="Use low GPU memory(default: true)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-lbbs', '--load-best-before-save', default="false", help="Load best checkpoint before saving LoRA adapter(default: false)", type=lambda x: _parse_bool_arg(x))
+
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
