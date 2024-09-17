@@ -62,6 +62,7 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
         tune_arguments = TuneArguments(
             base_model=prog_args.base_model,
             new_model=prog_args.new_model,
+            show_token_metrics=prog_args.show_token_metrics,
             training_data_dir=os.path.expanduser(prog_args.training_data_dir) if prog_args.training_data_dir is not None else None,
             train_file=prog_args.training_data_file,
             r=prog_args.lora_r,
@@ -195,6 +196,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lbbs', '--load-best-before-save', default="false", help="Load best checkpoint before saving LoRA adapter(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-stm', '--show-token-metrics', default="false", help="Show token metrics during fine-tuning(WARNING - slows down training)(default: false)", type=lambda x: _parse_bool_arg(x))
+
 
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))

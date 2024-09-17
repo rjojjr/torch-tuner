@@ -166,7 +166,8 @@ class TuneArguments(TunerFunctionArguments):
                  eval_steps: int | None = None,
                  do_train: bool = True,
                  is_debug_mode: bool = True,
-                 load_best_before_save: bool = False):
+                 load_best_before_save: bool = False,
+                 show_token_metrics: bool = False):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.r = r
         self.alpha = alpha
@@ -207,6 +208,7 @@ class TuneArguments(TunerFunctionArguments):
         self.eval_steps = eval_steps
         self.do_train = do_train
         self.load_best_before_save = load_best_before_save
+        self.show_token_metrics = show_token_metrics
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
