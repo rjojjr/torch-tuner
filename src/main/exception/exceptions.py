@@ -74,7 +74,7 @@ def main_exception_handler(main: Callable, title: str, is_debug: bool = False) -
             print("Please verify that the provided program arguments are valid")
         if e.sub_type is not None and e.sub_type == 'HUGGINGFACE_AUTH':
             print('')
-            print("Please verify that the `HUGGING_FACE_TOKEN` environment variable is set to a valid Huggingface auth token")
+            print("Please verify that the `--huggingface-auth-token` CLI argument OR the `HUGGING_FACE_TOKEN` environment variable is set to a valid Huggingface auth token")
         print('')
         print(f"{title} is being terminated!")
         exit(100)
