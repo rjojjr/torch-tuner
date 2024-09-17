@@ -26,7 +26,7 @@ class ServerArguments(CliArguments):
 class LlmArguments(CliArguments):
     """Base LLM load parameters."""
 
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', huggingface_auth_token: str | None = None):
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', huggingface_auth_token: str | None = None, max_parallel_requests: int = 1):
         self.model = model
         self.use_4bit = use_4bit
         self.use_8bit = use_8bit
@@ -35,6 +35,7 @@ class LlmArguments(CliArguments):
         self.fp32_cpu_offload = fp32_cpu_offload
         self.padding_side = padding_side
         self.huggingface_auth_token = huggingface_auth_token
+        self.max_parallel_requests = max_parallel_requests
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
@@ -97,8 +98,8 @@ class TunerFunctionArguments(CliArguments):
 
 class LlmExecutorFactoryArguments(LlmArguments):
     """Init LLM Executor factory."""
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right'):
-        super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload, padding_side)
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', max_parallel_requests: int = 1):
+        super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload, padding_side, max_parallel_requests=max_parallel_requests)
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
@@ -164,7 +165,9 @@ class TuneArguments(TunerFunctionArguments):
                  eval_strategy: str | None = None,
                  eval_steps: int | None = None,
                  do_train: bool = True,
-                 is_debug_mode: bool = True):
+                 is_debug_mode: bool = True,
+                 load_best_before_save: bool = False,
+                 show_token_metrics: bool = False):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.r = r
         self.alpha = alpha
@@ -204,6 +207,8 @@ class TuneArguments(TunerFunctionArguments):
         self.eval_strategy = eval_strategy
         self.eval_steps = eval_steps
         self.do_train = do_train
+        self.load_best_before_save = load_best_before_save
+        self.show_token_metrics = show_token_metrics
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually

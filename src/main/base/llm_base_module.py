@@ -36,12 +36,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
         ds = load_dataset(arguments)
-        target_modules = []
-        if arguments.do_train:
-            if arguments.target_modules is None or len(arguments.target_modules) == 0:
-                target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
-            else:
-                target_modules = arguments.target_modules
+        if arguments.target_modules is None or len(arguments.target_modules) == 0:
+            target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
+        else:
+            target_modules = arguments.target_modules
 
         modules_to_save=["embed_tokens"] if arguments.do_train and arguments.save_embeddings else []
 
@@ -55,19 +53,18 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             bias=arguments.bias,
             task_type=TaskType.CAUSAL_LM
         )
-        if arguments.do_train:
-            model = prepare_model_for_kbit_training(base_model)
-            model = get_peft_model(model, lora_config)
-            model.print_trainable_parameters()
-        else:
-            model = base_model
+
+        model = prepare_model_for_kbit_training(base_model)
+        model = get_peft_model(model, lora_config)
+        model.print_trainable_parameters()
         learning_rate = arguments.batch_size * arguments.base_learning_rate
 
         train_params = SFTConfig(
             output_dir=output_dir,
+            load_best_model_at_end=arguments.load_best_before_save,
             do_train=arguments.do_train,
-            include_tokens_per_second=not arguments.do_train,
-            include_num_input_tokens_seen=not arguments.do_train,
+            include_tokens_per_second=arguments.show_token_metrics,
+            include_num_input_tokens_seen=arguments.show_token_metrics,
             num_train_epochs=arguments.epochs,
             torch_empty_cache_steps=arguments.torch_empty_cache_steps,
             per_device_train_batch_size=arguments.batch_size,
@@ -105,7 +102,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         train = SFTTrainer(
             tokenizer=tokenizer,
             model=model,
-            train_dataset=ds['train'] if arguments.do_train else None,
+            train_dataset=ds['train'] if arguments.do_train else ds['eval'],
             args=train_params,
             eval_dataset=ds['eval'] if arguments.do_eval else None
         )
@@ -113,11 +110,18 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         model.config.use_cache = False
         if arguments.do_train:
             if os.path.exists(output_dir) and not arguments.no_checkpoint:
+                print()
                 print('Loading checkpoint')
                 model.gradient_checkpointing_enable()
                 last_checkpoint = get_last_checkpoint(output_dir)
+                print()
+                print('Executing fine-tune job')
+                print()
                 train.train(resume_from_checkpoint=last_checkpoint)
             else:
+                print()
+                print('Executing fine-tune job')
+                print()
                 train.train()
 
             print('')
@@ -129,7 +133,15 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             train.model.config.save_pretrained(lora_dir)
             tokenizer.save_pretrained(lora_dir)
         else:
-            train.evaluate()
+            print()
+            print('Executing evaluation job')
+            print()
+
+            metrics = train.evaluate()
+            print()
+            print(f'Evaluation Results: {str(metrics)}')
+            print()
+
         del model
         del base_model
         del tokenizer
