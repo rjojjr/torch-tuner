@@ -56,7 +56,7 @@ def push(arguments: PushArguments) -> None:
 
 def fine_tune(arguments: TuneArguments) -> None:
     """Generic LLM type specific fine-tune function."""
-    model_to_use = arguments.base_model if arguments.do_train else arguments.output_directory + os.sep + arguments.new_model
+    model_to_use = arguments.base_model if arguments.do_train else arguments.output_directory + os.sep + 'merged-models' + os.sep + arguments.new_model
 
     tokenizer = AutoTokenizer.from_pretrained(model_to_use)
     if arguments.padding_side is not None:

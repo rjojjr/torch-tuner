@@ -36,12 +36,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
         ds = load_dataset(arguments)
-        target_modules = []
-        if arguments.do_train:
-            if arguments.target_modules is None or len(arguments.target_modules) == 0:
-                target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
-            else:
-                target_modules = arguments.target_modules
+        if arguments.target_modules is None or len(arguments.target_modules) == 0:
+            target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
+        else:
+            target_modules = arguments.target_modules
 
         modules_to_save=["embed_tokens"] if arguments.do_train and arguments.save_embeddings else []
 
@@ -55,12 +53,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             bias=arguments.bias,
             task_type=TaskType.CAUSAL_LM
         )
-        if arguments.do_train:
-            model = prepare_model_for_kbit_training(base_model)
-            model = get_peft_model(model, lora_config)
-            model.print_trainable_parameters()
-        else:
-            model = base_model
+
+        model = prepare_model_for_kbit_training(base_model)
+        model = get_peft_model(model, lora_config)
+        model.print_trainable_parameters()
         learning_rate = arguments.batch_size * arguments.base_learning_rate
 
         train_params = SFTConfig(
@@ -106,7 +102,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         train = SFTTrainer(
             tokenizer=tokenizer,
             model=model,
-            train_dataset=ds['train'] if arguments.do_train else None,
+            train_dataset=ds['train'] if arguments.do_train else ds['eval'],
             args=train_params,
             eval_dataset=ds['eval'] if arguments.do_eval else None
         )
@@ -140,7 +136,12 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             print()
             print('Executing evaluation job')
             print()
-            train.evaluate()
+
+            metrics = train.evaluate()
+            print()
+            print(f'Evaluation Results: {str(metrics)}')
+            print()
+
         del model
         del base_model
         del tokenizer
