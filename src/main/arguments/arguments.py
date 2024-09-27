@@ -167,7 +167,11 @@ class TuneArguments(TunerFunctionArguments):
                  do_train: bool = True,
                  is_debug_mode: bool = True,
                  load_best_before_save: bool = False,
-                 show_token_metrics: bool = False):
+                 show_token_metrics: bool = False,
+                 train_masked_language_model: bool = False,
+                 mask_token: str = '\nObservation',
+                 mlm_probability: float = 0.15
+                 ):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.r = r
         self.alpha = alpha
@@ -209,6 +213,9 @@ class TuneArguments(TunerFunctionArguments):
         self.do_train = do_train
         self.load_best_before_save = load_best_before_save
         self.show_token_metrics = show_token_metrics
+        self.train_masked_language_model = train_masked_language_model
+        self.mask_token = mask_token
+        self.mlm_probability = mlm_probability
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
@@ -260,11 +267,15 @@ class MergeArguments(TunerFunctionArguments):
                  additional_vocabulary_tokens: list | None = None,
                  overwrite_output: bool = True,
                  huggingface_auth_token: str | None = None,
-                 is_debug_mode: bool = False):
+                 is_debug_mode: bool = False,
+                 train_masked_language_model: bool = False,
+                 mask_token: str = '\nObservation'):
         super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.base_model = base_model
         self.output_dir = output_dir
         self.overwrite_output = overwrite_output
+        self.train_masked_language_model = train_masked_language_model
+        self.mask_token = mask_token
 
     def validate(self) -> None:
         is_valid = self.new_model is not None and self.base_model is not None

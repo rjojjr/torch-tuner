@@ -208,6 +208,9 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-sm', '--serve-model', help="Huggingface repo or full path of the model to serve(REQUIRED[for serve only)")
     parser.add_argument('-sp', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
+    parser.add_argument('-tmlm', '--train-masked-language-model', help="Train masked language model(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-mlmp', '--mlm-probability', help="MLM probability(default: 0.15)", type=lambda x: _parse_nullable_float_arg(x), default=0.15)
+    parser.add_argument('-mt', '--mask-token', help="Mask token(default: \nObservation)", default="\nObservation")
     parser.add_argument('-mpr', '--max-parallel-requests', help="Maximum nuber of requests to execute against LLM in parallel(for serve only)(default: 1)", type=int, default=1)
 
 
