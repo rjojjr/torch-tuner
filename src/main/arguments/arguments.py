@@ -247,6 +247,9 @@ class TuneArguments(TunerFunctionArguments):
         if self.alpha <= 0 or self.r <= 0:
             raise ArgumentValidationException("'--lora-r' and '--lora-alpha' arguments must both be greater than zero")
 
+        if self.train_masked_language_model and self.mask_token == '':
+            raise ArgumentValidationException('`--mask-token` argument must be non-empty string')
+
         super(TuneArguments, self).validate()
 
 
@@ -286,6 +289,9 @@ class MergeArguments(TunerFunctionArguments):
 
         if not is_valid:
             raise ArgumentValidationException("'Merge Arguments' are missing required properties")
+
+        if self.train_masked_language_model and self.mask_token == '':
+            raise ArgumentValidationException('`--mask-token` argument must be non-empty string')
 
         super(MergeArguments, self).validate()
 
