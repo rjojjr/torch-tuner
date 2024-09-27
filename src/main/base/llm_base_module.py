@@ -1,3 +1,5 @@
+from transformers import DataCollatorForLanguageModeling
+
 from exception.exceptions import TuningModuleFunctionException
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
@@ -58,7 +60,9 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
         learning_rate = arguments.batch_size * arguments.base_learning_rate
-
+        if arguments.train_masked_language_model:
+            tokenizer._mask_token = arguments.mask_token
+            data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=arguments.mlm_probability)
         train_params = SFTConfig(
             output_dir=output_dir,
             load_best_model_at_end=arguments.load_best_before_save,
@@ -104,7 +108,8 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             model=model,
             train_dataset=ds['train'] if arguments.do_train else ds['eval'],
             args=train_params,
-            eval_dataset=ds['eval'] if arguments.do_eval else None
+            eval_dataset=ds['eval'] if arguments.do_eval else None,
+            data_collator=data_collator if arguments.train_masked_language_model else None
         )
 
         model.config.use_cache = False
@@ -149,6 +154,8 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
+        if arguments.train_masked_language_model:
+            tokenizer._mask_token = arguments.mask_token
         lora_dir = f"{arguments.output_dir}{os.sep}adapters{os.sep}{arguments.new_model}"
         model_dir = f'{arguments.output_dir}{os.sep}merged-models{os.sep}{arguments.new_model}'
         print(f"merging {arguments.base_model} with LoRA into {arguments.new_model}")
