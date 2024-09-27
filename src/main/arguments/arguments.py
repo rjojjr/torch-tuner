@@ -1,5 +1,3 @@
-from sympy.plotting.textplot import is_valid
-
 from exception.exceptions import ArgumentValidationException
 
 
