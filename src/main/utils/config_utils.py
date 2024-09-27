@@ -42,6 +42,11 @@ def print_fine_tune_merge_common_config(args, model_dir) -> None:
     print(f'Is Instruct Model: {args.is_instruct_model}')
     print(f'Using LangChain Agent Tokens: {args.use_agent_tokens}')
     print(f'Using Additional Vocabulary Tokens: {args.additional_vocabulary_tokens}')
+    if args.train_masked_language_model:
+        print()
+        print(f'Using MLM: {args.train_masked_language_model}')
+        print(f'Using Mask Token: {args.mask_token}')
+        print(f'Using MLM Probability: {args.mlm_probability}')
 
 
 def print_fine_tune_config(args, lora_scale, tune_arguments) -> None:

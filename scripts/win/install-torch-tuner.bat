@@ -14,7 +14,7 @@ cd torch-tuner
 echo "Installing python dependencies"
 
 python3.11 -m venv .\.venv && call .\.venv\Scripts\activate.bat
-python3.11 -m pip install -I -r requirements.txt --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us
+python3.11 -m pip install -I -r requirements.in --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us
 call deactivate
 
 echo "Finalizing install"

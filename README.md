@@ -121,7 +121,7 @@ but that is up to you.
 From the torch-tuner project root, run:
 
 ```shell
-pip install -r requirements.txt
+pip install -r requirements.in
 ```
 
 ### Run the Torch Tuner CLI
