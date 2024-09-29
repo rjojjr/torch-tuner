@@ -18,13 +18,14 @@ if args.use_low_gpu_memory:
 
 
 def main() -> None:
+    print()
     print(title)
     print('---------------------------------------------')
     print(description)
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     execute_command(args)
-    print('')
+    print()
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
 
