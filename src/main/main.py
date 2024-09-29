@@ -5,7 +5,7 @@ from utils.execution_utils import execute_command
 import os
 
 # TODO - Automate this
-version = '2.1.7'
+version = '2.2.0'
 
 title = f'Torch-Tuner CLI v{version}'
 description = 'This app is a simple CLI to automate the Supervised Fine-Tuning(SFT)(and testing of) of AI Large Language Model(LLM)s with simple text and jsonl on Nvidia GPUs(and Intel/AMD CPUs) using LoRA, Torch and Transformers.'
