@@ -192,11 +192,11 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-hfat', '--huggingface-auth-token', default="None", help="Huggingface auth token(default: None)", type=lambda x: _parse_nullable_arg(x))
 
-    parser.add_argument('-lgpumem', '--use-low-gpu-memory', default="true", help="Use low GPU memory(default: true)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-lgpumem', '--use-low-gpu-memory', default="true", help="Use low GPU memory optimizations(default: true)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lbbs', '--load-best-before-save', default="false", help="Load best checkpoint before saving LoRA adapter(default: false)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-stm', '--show-token-metrics', default="false", help="Show token metrics during fine-tuning(WARNING - slows down training)(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-stm', '--show-token-metrics', default="false", help="Print token metrics during fine-tuning(WARNING - slows down tuning)(default: false)", type=lambda x: _parse_bool_arg(x))
 
 
     parser.add_argument('-m', '--merge', default="true",
@@ -240,17 +240,17 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(NOTE - consumes a lot of memory when set to true)(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(This value CHANGES if --lr-scheduler-type is not set to 'constant')(ONLY applies to AdamW optimizers)(default: 2e-5)", type=float, default=2e-5)
     parser.add_argument('-lrst', '--lr-scheduler-type', default="linear", help="Learning rate scheduler type(determines the learning rate decrease as tuning progresses[helps stabilize tuning and prevent over-fitting])(ONLY applies to AdamW optimizers)(default: linear)")
-    parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(this helps to prevent over-fitting)(default: 0.05)", type=float, default=0.05)
+    parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(this helps to prevent over-fitting)(default: 0.02)", type=float, default=0.02)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
-    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_8bit)", default="adamw_8bit")
+    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_torch_fused)", default="adamw_torch_fused")
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 4)", type=int, default=4)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")
     parser.add_argument('-msl', '--max-seq-length', help="The maximum sequence length to use for the `ConstantLengthDataset` and for automatically creating the Dataset(default: the smaller of the `tokenizer.model_max_length` and `1024`)", type=lambda x: _parse_nullable_int_arg(x), default="None")
     parser.add_argument('-ssteps', '--save-steps', help="Save after each --save-steps steps(ignored when SAVE_STRATEGY='epoch')(default: 50)", default=50, type=int)
-    parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(this helps prevent filling up disk while tuning)(default: 5)", default=5, type=int)
+    parser.add_argument('-ms', '--max-saved', help="Maximum number of checkpoint saves to keep(this helps prevent filling up disk while tuning)(default: 5)(USE None to keep all checkpoint saves)", default="5", type=lambda x: _parse_nullable_int_arg(x))
     parser.add_argument('-eds', '--eval-dataset', help="Path or HF id of evaluation dataset(defaults to training dataset when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_arg(x))
     parser.add_argument('-llm', '--llm-type', help="LLM Type(default: generic[options: generic, llama])", default="generic")
     parser.add_argument('-evalstrat', '--eval-strategy', help="Eval strategy('None', 'epoch' or 'steps')(Defaults to SAVE_STRATEGY when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_arg(x))

@@ -68,7 +68,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-    model = LlamaForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, device_map="auto")
+    model = LlamaForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, device_map="auto" if not arguments.cpu_only_tuning else "cpu")
 
     base_module.fine_tune_eval_base(arguments, tokenizer, model)
 
