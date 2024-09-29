@@ -76,7 +76,7 @@ def build_llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callab
     return lambda: LlmExecutor(AutoModelForCausalLM.from_pretrained(
         arguments.model,
         # TODO - use CPU
-        device_map={"":0},
+        device_map={"":0} if not arguments.cpu_only else "cpu",
         low_cpu_mem_usage=True,
         quantization_config=bnb_config,
         torch_dtype="auto",

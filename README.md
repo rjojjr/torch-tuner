@@ -19,6 +19,8 @@ and fine-tuning vision and speech models.
 The torch-tuner CLI will fine-tune, merge, push(to Huggingface) and/or serve your new fine-tuned model depending 
 on the arguments you run it with.
 
+**IMPORTANT** - The Torch Tuner CLI currently requires python 3.10 for linux/Mac OS/WSL or python 3.11 for Windows.
+
 ### Using the Torch Tuner CLI
 
 The torch-tuner CLI can be installed as a system-wide application, or run from source with python.
@@ -46,7 +48,7 @@ and execute it with one of the following single commands:
 
 ```shell
 # Linux, MacOS & WSL
-wget -O - https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 
 # Windows(non-WSL) (requires git & python3.11 already installed on target machine)
 curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
@@ -133,10 +135,10 @@ This should most likely be added as an argument in the future(it is only really 
 From the torch-tuner CLI project root(using the virtual environment[if any] that you used to install torch-tuner's dependencies), run:
 
 ```shell
-python3 src/main/main.py <your args>
+python3.10 src/main/main.py <your args>
 
 # A Real Example
-python3 src/main/main.py \
+python3.10 src/main/main.py \
   --base-model meta-llama/Meta-Llama-3-8B-Instruct \
   --new-model llama-tuned \
   --training-data-dir /path/to/data \
@@ -168,7 +170,7 @@ You can run the torch-tuner CLI in the new experimental serve mode to serve your
 completions(`/v1/completions` & `/v1/chat/completions`) endpoints.
 
 ```shell
-python3 src/main/main.py \
+python3.10 src/main/main.py \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080
@@ -180,7 +182,7 @@ torch-tuner \
   --serve-port 8080
   
 # Use dynamic quantization
-python3 src/main/main.py \
+python3.10 src/main/main.py \
   --serve true \
   --serve-model llama-tuned \
   --serve-port 8080 \

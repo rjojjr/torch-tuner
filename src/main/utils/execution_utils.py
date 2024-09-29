@@ -82,7 +82,7 @@ def _execute_serve_mode(args):
             not '/' in args.serve_model and not os.sep in args.serve_model) else args.serve_model)
     llm_factory_args = LlmExecutorFactoryArguments(model=model_path, use_4bit=args.use_4bit, use_8bit=args.use_8bit,
                                                    is_fp16=args.use_fp_16, is_bf16=args.use_bf_16,
-                                                   padding_side=args.padding_side, max_parallel_requests=args.max_parallel_requests)
+                                                   padding_side=args.padding_side, max_parallel_requests=args.max_parallel_requests, use_cpu_only=args.cpu_only_tuning)
     llm_executor_factory = build_llm_executor_factory(llm_factory_args)
     server = OpenAiLlmServer(llm_executor_factory())
     server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))

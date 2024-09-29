@@ -1,5 +1,3 @@
-from sympy.plotting.textplot import is_valid
-
 from exception.exceptions import ArgumentValidationException
 
 
@@ -98,8 +96,9 @@ class TunerFunctionArguments(CliArguments):
 
 class LlmExecutorFactoryArguments(LlmArguments):
     """Init LLM Executor factory."""
-    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', max_parallel_requests: int = 1):
+    def __init__(self, model: str, use_4bit: bool = False, use_8bit: bool = False, is_fp16: bool = False, is_bf16: bool = False, fp32_cpu_offload: bool = False, padding_side: str | None = 'right', max_parallel_requests: int = 1, use_cpu_only: bool = False):
         super(LlmExecutorFactoryArguments, self).__init__(model, use_4bit, use_8bit, is_fp16, is_bf16, fp32_cpu_offload, padding_side, max_parallel_requests=max_parallel_requests)
+        self.use_cpu_only = use_cpu_only
 
     def validate(self) -> None:
         if self.use_4bit and self.use_8bit:
