@@ -192,11 +192,11 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-cft', '--cpu-only-tuning', default="false", help="Run a fine-tune job on CPU ONLY(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-hfat', '--huggingface-auth-token', default="None", help="Huggingface auth token(default: None)", type=lambda x: _parse_nullable_arg(x))
 
-    parser.add_argument('-lgpumem', '--use-low-gpu-memory', default="true", help="Use low GPU memory(default: true)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-lgpumem', '--use-low-gpu-memory', default="true", help="Use low GPU memory optimizations(default: true)", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lbbs', '--load-best-before-save', default="false", help="Load best checkpoint before saving LoRA adapter(default: false)", type=lambda x: _parse_bool_arg(x))
-    parser.add_argument('-stm', '--show-token-metrics', default="false", help="Show token metrics during fine-tuning(WARNING - slows down training)(default: false)", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-stm', '--show-token-metrics', default="false", help="Print token metrics during fine-tuning(WARNING - slows down tuning)(default: false)", type=lambda x: _parse_bool_arg(x))
 
 
     parser.add_argument('-m', '--merge', default="true",
