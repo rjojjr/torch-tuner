@@ -243,7 +243,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(this helps to prevent over-fitting)(default: 0.05)", type=float, default=0.05)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
-    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_8bit)", default="adamw_8bit")
+    parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_torch_fused)", default="adamw_torch_fused")
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 4)", type=int, default=4)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
