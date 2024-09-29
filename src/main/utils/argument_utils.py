@@ -240,7 +240,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-se', '--save-embeddings', default="false", help="Save embeddings layers(NOTE - consumes a lot of memory when set to true)(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lrb', '--base-learning-rate', help="Base learning rate(actual rate = batch-size * learning-base-rate)(This value CHANGES if --lr-scheduler-type is not set to 'constant')(ONLY applies to AdamW optimizers)(default: 2e-5)", type=float, default=2e-5)
     parser.add_argument('-lrst', '--lr-scheduler-type', default="linear", help="Learning rate scheduler type(determines the learning rate decrease as tuning progresses[helps stabilize tuning and prevent over-fitting])(ONLY applies to AdamW optimizers)(default: linear)")
-    parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(this helps to prevent over-fitting)(default: 0.05)", type=float, default=0.05)
+    parser.add_argument('-do', '--lora-dropout', help="LoRA dropout(this helps to prevent over-fitting)(default: 0.02)", type=float, default=0.02)
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
     parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_torch_fused)", default="adamw_torch_fused")
