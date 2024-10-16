@@ -8,7 +8,7 @@ absl-py==2.1.0
     # via
     #   rouge-score
     #   tensorboard
-accelerate==0.34.2
+accelerate==1.0.1
     # via
     #   -r requirements.txt
     #   peft
@@ -25,6 +25,8 @@ async-timeout==4.0.3
     # via aiohttp
 attrs==24.2.0
     # via aiohttp
+beautifulsoup4==4.12.3
+    # via -r requirements.txt
 bitsandbytes==0.43.3
     # via -r requirements.txt
 blinker==1.8.2
@@ -127,9 +129,11 @@ multivolumefile==0.2.3
     # via py7zr
 networkx==3.3
     # via torch
-nltk==3.9.1
-    # via rouge-score
-numpy==2.1.1
+nltk==3.8.1
+    # via
+    #   -r requirements.txt
+    #   rouge-score
+numpy==1.26.4
     # via
     #   -r requirements.txt
     #   accelerate
@@ -267,6 +271,8 @@ six==1.16.0
     #   python-dateutil
     #   rouge-score
     #   tensorboard
+soupsieve==2.6
+    # via beautifulsoup4
 sympy==1.13.3
     # via torch
 tensorboard==2.17.1
@@ -279,7 +285,7 @@ texttable==1.7.0
     # via py7zr
 tiktoken==0.7.0
     # via -r requirements.txt
-tokenizers==0.19.1
+tokenizers==0.20.1
     # via transformers
 torch==2.4.1
     # via
@@ -302,7 +308,7 @@ tqdm==4.66.5
     #   nltk
     #   peft
     #   transformers
-transformers==4.44.2
+transformers==4.45.2
     # via
     #   -r requirements.txt
     #   peft
