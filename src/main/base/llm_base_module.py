@@ -128,12 +128,18 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             batched=True,
             desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
 
+        processed_eval_dataset = ds['eval'].map(
+            tokenize_jsonl_dataset,
+            batched=True,
+            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']
+
         train = SFTTrainer(
             model=model,
             # formatting_func=formatting_prompts_func,
-            train_dataset=processed_dataset if arguments.do_train else ds['eval'],
+            train_dataset=processed_dataset if arguments.do_train else processed_eval_dataset,
             args=train_params,
-            eval_dataset=ds['eval'] if arguments.do_eval else None,
+            # TODO - FIXME - eval_loss stat is not printed
+            eval_dataset=processed_eval_dataset if arguments.do_eval else None,
             data_collator=data_collator if arguments.train_masked_language_model else None,
         )
 
