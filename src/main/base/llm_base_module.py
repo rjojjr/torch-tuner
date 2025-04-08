@@ -1,3 +1,4 @@
+from sympy.abc import lamda
 from transformers import DataCollatorForLanguageModeling
 
 from exception.exceptions import TuningModuleFunctionException
@@ -19,6 +20,8 @@ import shutil
 
 def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
+        tokenizer.chat_template = None
+
         if arguments.do_train:
             print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
             print('')
@@ -62,6 +65,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
             data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=arguments.mlm_probability)
+
         train_params = SFTConfig(
             output_dir=output_dir,
             load_best_model_at_end=arguments.load_best_before_save,
@@ -73,6 +77,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             per_device_train_batch_size=arguments.batch_size,
             per_device_eval_batch_size=arguments.batch_size,
             gradient_accumulation_steps=arguments.gradient_accumulation_steps,
+            eval_accumulation_steps=arguments.gradient_accumulation_steps,
             overwrite_output_dir=arguments.overwrite_output,
             optim=arguments.optimizer_type,
             save_strategy=arguments.save_strategy,
@@ -98,17 +103,51 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             eval_on_start=arguments.do_eval,
             max_seq_length=arguments.max_seq_length,
             neftune_noise_alpha=arguments.neftune_noise_alpha if arguments.is_instruct_model else None,
-            dataset_text_field="text" if not arguments.train_file.endswith("jsonl") else None,
-            use_ipex=arguments.cpu_only_tuning
+            dataset_text_field="text" ,
+            label_names=["completions"] if arguments.train_file.endswith("jsonl") else ['labels'],
+            use_ipex=arguments.cpu_only_tuning,
         )
 
+        # TODO - custom dataset formatting
+        def formatting_prompts_func(sample):
+            output_texts = []
+            for i in range(len(sample['prompt'])):
+                text = f"### Prompt: {sample['prompt'][i - 1]}\n ### Completion: {sample['completion'][i - 1]}"
+                output_texts.append(text)
+            return output_texts
+
+        def tokenize_jsonl_dataset_factory(prediction_target = 'completion', template_func = None):
+            def tokenize_jsonl_dataset(samples):
+                prompts = [prompt
+                           for prompt in samples["prompt"]] if template_func is None else template_func(samples)
+                return tokenizer(prompts,
+                                 text_target=samples[prediction_target],
+                                 truncation=True, padding='do_not_pad',
+                                 max_length=arguments.max_seq_length if arguments.max_seq_length is not None else (1024 if 1024 >= tokenizer.model_max_length else tokenizer.model_max_length),
+                                 return_overflowing_tokens=True
+                                 )
+
+
+            return tokenize_jsonl_dataset
+
+        processed_dataset = ds['train'].map(
+            tokenize_jsonl_dataset_factory(),
+            batched=True,
+            desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
+
+        processed_eval_dataset = ds['eval'].map(
+            tokenize_jsonl_dataset_factory(),
+            batched=True,
+            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']
+
         train = SFTTrainer(
-            tokenizer=tokenizer,
             model=model,
-            train_dataset=ds['train'] if arguments.do_train else ds['eval'],
+            # formatting_func=formatting_prompts_func,
+            train_dataset=processed_dataset if arguments.do_train else processed_eval_dataset,
             args=train_params,
-            eval_dataset=ds['eval'] if arguments.do_eval else None,
-            data_collator=data_collator if arguments.train_masked_language_model else None
+            # TODO - FIXME - eval_loss stat is not printed
+            eval_dataset=processed_eval_dataset if arguments.do_eval else None,
+            data_collator=data_collator if arguments.train_masked_language_model else None,
         )
 
         model.config.use_cache = False
@@ -153,6 +192,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
+        tokenizer.chat_template = None
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
         lora_dir = f"{arguments.output_dir}{os.sep}adapters{os.sep}{arguments.new_model}"
