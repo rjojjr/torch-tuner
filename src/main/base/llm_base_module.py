@@ -62,6 +62,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
             data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=arguments.mlm_probability)
+
         train_params = SFTConfig(
             output_dir=output_dir,
             load_best_model_at_end=arguments.load_best_before_save,
@@ -98,17 +99,41 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             eval_on_start=arguments.do_eval,
             max_seq_length=arguments.max_seq_length,
             neftune_noise_alpha=arguments.neftune_noise_alpha if arguments.is_instruct_model else None,
-            dataset_text_field="text" if not arguments.train_file.endswith("jsonl") else None,
-            use_ipex=arguments.cpu_only_tuning
+            dataset_text_field="text" ,
+            label_names=["completions"] if arguments.train_file.endswith("jsonl") else ['labels'],
+            use_ipex=arguments.cpu_only_tuning,
         )
 
+        # TODO - custom dataset formatting
+        def formatting_prompts_func(example):
+            output_texts = []
+            for i in range(len(example['prompt'])):
+                text = f"### Prompt: {example['prompt'][i-1]}\n ### Completion: {example['completion'][i-1]}"
+                output_texts.append(text)
+            return output_texts
+
+        def tokenize_jsonl_dataset(examples):
+            prompts = [prompt
+                     for prompt in examples["prompt"]]
+            return tokenizer(prompts,
+                             text_target=examples["completion"],
+                             truncation=True, padding='do_not_pad',
+                             max_length=arguments.max_seq_length,
+                             return_overflowing_tokens=True
+                             )
+
+        processed_dataset = ds['train'].map(
+            tokenize_jsonl_dataset,
+            batched=True,
+            desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
+
         train = SFTTrainer(
-            tokenizer=tokenizer,
             model=model,
-            train_dataset=ds['train'] if arguments.do_train else ds['eval'],
+            # formatting_func=formatting_prompts_func,
+            train_dataset=processed_dataset if arguments.do_train else ds['eval'],
             args=train_params,
             eval_dataset=ds['eval'] if arguments.do_eval else None,
-            data_collator=data_collator if arguments.train_masked_language_model else None
+            data_collator=data_collator if arguments.train_masked_language_model else None,
         )
 
         model.config.use_cache = False
