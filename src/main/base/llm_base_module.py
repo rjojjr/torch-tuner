@@ -20,6 +20,8 @@ import shutil
 
 def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
+        tokenizer.chat_template = None
+
         if arguments.do_train:
             print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
             print('')
@@ -190,6 +192,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
+        tokenizer.chat_template = None
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
         lora_dir = f"{arguments.output_dir}{os.sep}adapters{os.sep}{arguments.new_model}"
