@@ -74,6 +74,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             per_device_train_batch_size=arguments.batch_size,
             per_device_eval_batch_size=arguments.batch_size,
             gradient_accumulation_steps=arguments.gradient_accumulation_steps,
+            eval_accumulation_steps=arguments.gradient_accumulation_steps,
             overwrite_output_dir=arguments.overwrite_output,
             optim=arguments.optimizer_type,
             save_strategy=arguments.save_strategy,
