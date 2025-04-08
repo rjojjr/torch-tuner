@@ -47,3 +47,5 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Add ability to use JSON configs instead of argument config
 - Add change serve model with API endpoint
 - Fix eval_loss stat is not printed
+- Add ability to use unsloth for memory/GPU constrained users
+- Add ability to use flash_attention
