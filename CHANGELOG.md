@@ -5,4 +5,5 @@
 - Improve memory efficiency
 - Fix QLORA
 - Update agent tokens
-- Change default optimizer to 'paged_adamw_23bit'
+- Update default arguments
+- Update argument descriptions
