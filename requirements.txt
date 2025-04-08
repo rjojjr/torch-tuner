@@ -1,7 +1,7 @@
 # TODO - Lock down dep. versions?
 numpy
 scipy
-torch
+torch==2.6.0
 torchvision
 torchaudio
 accelerate
