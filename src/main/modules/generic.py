@@ -59,6 +59,7 @@ def fine_tune(arguments: TuneArguments) -> None:
     model_to_use = arguments.base_model if arguments.do_train else arguments.output_directory + os.sep + 'merged-models' + os.sep + arguments.new_model
 
     tokenizer = AutoTokenizer.from_pretrained(model_to_use)
+    tokenizer.chat_template = None
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
