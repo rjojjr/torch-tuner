@@ -1,3 +1,4 @@
+from sympy.abc import lamda
 from transformers import DataCollatorForLanguageModeling
 
 from exception.exceptions import TuningModuleFunctionException
@@ -113,23 +114,27 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
                 output_texts.append(text)
             return output_texts
 
-        def tokenize_jsonl_dataset(samples):
-            prompts = [prompt
-                       for prompt in samples["prompt"]]
-            return tokenizer(prompts,
-                             text_target=samples["completion"],
-                             truncation=True, padding='do_not_pad',
-                             max_length=arguments.max_seq_length,
-                             return_overflowing_tokens=True
-                             )
+        def tokenize_jsonl_dataset_factory(prediction_target = 'completion', template_func = None):
+            def tokenize_jsonl_dataset(samples):
+                prompts = [prompt
+                           for prompt in samples["prompt"]] if template_func is None else template_func(samples)
+                return tokenizer(prompts,
+                                 text_target=samples[prediction_target],
+                                 truncation=True, padding='do_not_pad',
+                                 max_length=arguments.max_seq_length,
+                                 return_overflowing_tokens=True
+                                 )
+
+
+            return tokenize_jsonl_dataset
 
         processed_dataset = ds['train'].map(
-            tokenize_jsonl_dataset,
+            tokenize_jsonl_dataset_factory(),
             batched=True,
             desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
 
         processed_eval_dataset = ds['eval'].map(
-            tokenize_jsonl_dataset,
+            tokenize_jsonl_dataset_factory(),
             batched=True,
             desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']
 
