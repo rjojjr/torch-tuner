@@ -36,11 +36,13 @@ class LlmArguments(CliArguments):
         self.max_parallel_requests = max_parallel_requests
 
     def validate(self) -> None:
-        if self.use_4bit and self.use_8bit:
-            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
-
-        if self.is_bf16 and self.is_fp16:
-            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+        dt_type_count = 0
+        dt_args = [self.use_4bit, self.use_8bit, self.is_bf16, self.is_fp16]
+        for dt_arg in dt_args:
+            if dt_arg:
+                dt_type_count += 1
+        if dt_type_count > 1:
+            raise ArgumentValidationException("only one of `use-4bit`, `use-8bit`, `is-bf16` or `is-fp16` data type options can be enabled at any instance in time")
 
         if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
             raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
@@ -81,11 +83,13 @@ class TunerFunctionArguments(CliArguments):
         if not is_valid:
             raise ArgumentValidationException("'Tuner Arguments' are missing required properties")
 
-        if self.use_4bit and self.use_8bit:
-            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
-
-        if self.is_bf16 and self.is_fp16:
-            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+        dt_type_count = 0
+        dt_args = [self.use_4bit, self.use_8bit, self.is_bf16, self.is_fp16]
+        for dt_arg in dt_args:
+            if dt_arg:
+                dt_type_count += 1
+        if dt_type_count > 1:
+            raise ArgumentValidationException("only one of `use-4bit`, `use-8bit`, `is-bf16` or `is-fp16` data type options can be enabled at any instance in time")
 
         if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
             raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
@@ -101,11 +105,13 @@ class LlmExecutorFactoryArguments(LlmArguments):
         self.use_cpu_only = use_cpu_only
 
     def validate(self) -> None:
-        if self.use_4bit and self.use_8bit:
-            raise ArgumentValidationException("`use-4bit` and `use-8bit` cannot be enabled at the same time")
-
-        if self.is_bf16 and self.is_fp16:
-            raise ArgumentValidationException("`is-bf16` and `is-fp16` cannot be enabled at the same time")
+        dt_type_count = 0
+        dt_args = [self.use_4bit, self.use_8bit, self.is_bf16, self.is_fp16]
+        for dt_arg in dt_args:
+            if dt_arg:
+                dt_type_count += 1
+        if dt_type_count > 1:
+            raise ArgumentValidationException("only one of `use-4bit`, `use-8bit`, `is-bf16` or `is-fp16` data type options can be enabled at any instance in time")
 
         if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
             raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
@@ -129,7 +135,7 @@ class TuneArguments(TunerFunctionArguments):
                  lora_dropout: float = 0.05,
                  no_checkpoint: bool = False,
                  bias: str = "none",
-                 optimizer_type: str = 'adamw_8bit',
+                 optimizer_type: str = 'adamw_torch_fused',
                  gradient_accumulation_steps: int = 4,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,

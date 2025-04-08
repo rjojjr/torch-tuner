@@ -47,6 +47,7 @@ def push(arguments: PushArguments) -> None:
         )
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
+
     if arguments.padding_side is not None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = arguments.padding_side
