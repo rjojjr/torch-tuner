@@ -69,6 +69,7 @@ def main_exception_handler(main: Callable, title: str, is_debug: bool = False) -
     except TunerException as e:
         print('')
         print(f"A TunerException has been caught: {e.to_string()}")
+
         if e.sub_type is not None and e.sub_type == 'ARGUMENT_VALIDATION':
             print('')
             print("Please verify that the provided program arguments are valid")
@@ -82,6 +83,9 @@ def main_exception_handler(main: Callable, title: str, is_debug: bool = False) -
         print('')
         print(f"An unexpected Exception has been caught: {str(e)}")
         print('')
+        if 'python.h' in (str(e)).lower() and 'cuda' in (str(e)).lower():
+            print('Please verify you are using the latest version of the Nvidia CUDA toolkit')
+            print()
         if is_debug:
             print(f"Rethrowing exception")
             raise e
