@@ -131,7 +131,7 @@ class TuneArguments(TunerFunctionArguments):
                  lora_dropout: float = 0.05,
                  no_checkpoint: bool = False,
                  bias: str = "none",
-                 optimizer_type: str = 'paged_adamw_23bit',
+                 optimizer_type: str = 'adamw_torch_fused',
                  gradient_accumulation_steps: int = 4,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,
