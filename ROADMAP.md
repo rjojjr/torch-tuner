@@ -29,7 +29,7 @@ but in the meantime I will track work/needs/bugs/requests here.
   - ~~Alpaca~~
   - ~~BERT~~
   - ~~ETC...~~
-- Optimize quantization(QLoRA)
+- ~~Optimize quantization(QLoRA)~~
 - Add `/sft/api/v1/tune` endpoint
 - Add documentation comments to all argument classes to describe the individual arguments in more detail
 - Reduce LLM server memory usage
@@ -46,4 +46,4 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Add ability to serve models on CPU
 - Add ability to use JSON configs instead of argument config
 - Add change serve model with API endpoint
-- Add ability to serve models with CPU
+- Fix eval_loss stat is not printed
