@@ -49,3 +49,4 @@ but in the meantime I will track work/needs/bugs/requests here.
 - Fix eval_loss stat is not printed
 - Add ability to use unsloth for memory/GPU constrained users
 - Add ability to use flash_attention
+- Add AMD GPU/CPU support
