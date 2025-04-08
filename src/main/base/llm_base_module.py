@@ -105,18 +105,18 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         )
 
         # TODO - custom dataset formatting
-        def formatting_prompts_func(example):
+        def formatting_prompts_func(sample):
             output_texts = []
-            for i in range(len(example['prompt'])):
-                text = f"### Prompt: {example['prompt'][i-1]}\n ### Completion: {example['completion'][i-1]}"
+            for i in range(len(sample['prompt'])):
+                text = f"### Prompt: {sample['prompt'][i - 1]}\n ### Completion: {sample['completion'][i - 1]}"
                 output_texts.append(text)
             return output_texts
 
-        def tokenize_jsonl_dataset(examples):
+        def tokenize_jsonl_dataset(samples):
             prompts = [prompt
-                     for prompt in examples["prompt"]]
+                       for prompt in samples["prompt"]]
             return tokenizer(prompts,
-                             text_target=examples["completion"],
+                             text_target=samples["completion"],
                              truncation=True, padding='do_not_pad',
                              max_length=arguments.max_seq_length,
                              return_overflowing_tokens=True
