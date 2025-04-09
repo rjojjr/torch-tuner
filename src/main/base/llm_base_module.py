@@ -1,4 +1,3 @@
-from sympy.abc import lamda
 from transformers import DataCollatorForLanguageModeling
 
 from exception.exceptions import TuningModuleFunctionException
@@ -61,6 +60,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         model = prepare_model_for_kbit_training(base_model)
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
+
         learning_rate = arguments.batch_size * arguments.base_learning_rate
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
@@ -76,7 +76,8 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             torch_empty_cache_steps=arguments.torch_empty_cache_steps,
             per_device_train_batch_size=arguments.batch_size,
             per_device_eval_batch_size=arguments.batch_size,
-            gradient_accumulation_steps=arguments.gradient_accumulation_steps,
+            gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
+            gradient_checkpointing=True,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
             overwrite_output_dir=arguments.overwrite_output,
             optim=arguments.optimizer_type,
@@ -123,7 +124,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
                 return tokenizer(prompts,
                                  text_target=samples[prediction_target],
                                  truncation=True, padding='do_not_pad',
-                                 max_length=arguments.max_seq_length if arguments.max_seq_length is not None else (1024 if 1024 >= tokenizer.model_max_length else tokenizer.model_max_length),
+                                 max_length=arguments.max_seq_length if arguments.max_seq_length is not None else (1024 if 1024 <= tokenizer.model_max_length else tokenizer.model_max_length),
                                  return_overflowing_tokens=True
                                  )
 
@@ -155,7 +156,6 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             if os.path.exists(output_dir) and not arguments.no_checkpoint:
                 print()
                 print('Loading checkpoint')
-                model.gradient_checkpointing_enable()
                 last_checkpoint = get_last_checkpoint(output_dir)
                 print()
                 print('Executing fine-tune job')

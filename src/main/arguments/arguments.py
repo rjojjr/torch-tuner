@@ -136,7 +136,7 @@ class TuneArguments(TunerFunctionArguments):
                  no_checkpoint: bool = False,
                  bias: str = "none",
                  optimizer_type: str = 'adamw_torch_fused',
-                 gradient_accumulation_steps: int = 4,
+                 gradient_accumulation_steps: int | None = None,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,
                  is_tf32: bool = False,
@@ -230,7 +230,7 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = is_valid and self.batch_size is not None
         is_valid = is_valid and self.base_learning_rate is not None and self.lora_dropout is not None
         is_valid = is_valid and self.no_checkpoint is not None and self.bias is not None
-        is_valid = is_valid and self.optimizer_type is not None and self.gradient_accumulation_steps is not None
+        is_valid = is_valid and self.optimizer_type is not None
         is_valid = is_valid and self.weight_decay is not None and self.max_gradient_norm is not None
         is_valid = is_valid and self.save_strategy is not None and self.save_steps is not None
         is_valid = is_valid and self.do_eval is not None and self.max_checkpoints is not None
@@ -242,6 +242,9 @@ class TuneArguments(TunerFunctionArguments):
 
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
+
+        if self.gradient_accumulation_steps is not None and int(self.gradient_accumulation_steps) == 0:
+            raise ArgumentValidationException("'--gradient-accumulation-steps' argument must not be zero")
 
         if self.hf_training_dataset_id is not None and self.hf_training_dataset_id.strip() == '':
             raise ArgumentValidationException("'--hf-training-dataset-id' argument value is invalid")
