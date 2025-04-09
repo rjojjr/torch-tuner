@@ -269,7 +269,10 @@ class TuneArguments(TunerFunctionArguments):
         super(TuneArguments, self).validate()
 
     def to_json(self):
-        return json.dumps(self)
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
 
 
 class MergeArguments(TunerFunctionArguments):
@@ -315,7 +318,10 @@ class MergeArguments(TunerFunctionArguments):
         super(MergeArguments, self).validate()
 
     def to_json(self):
-        return json.dumps(self)
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
 
 
 class PushArguments(TunerFunctionArguments):
@@ -352,7 +358,10 @@ class PushArguments(TunerFunctionArguments):
         super(PushArguments, self).validate()
 
     def to_json(self):
-        return json.dumps(self)
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
 
 
 class ArgumentsConfig:
@@ -363,7 +372,10 @@ class ArgumentsConfig:
         self.push_arguments = push_args
 
     def to_json(self):
-        return json.dumps(self)
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
 
     def from_json(self, json_string: str):
         loaded = json.loads(json_string)
