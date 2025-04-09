@@ -176,6 +176,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             train.model.save_pretrained(lora_dir)
             train.model.config.save_pretrained(lora_dir)
             tokenizer.save_pretrained(lora_dir)
+
+            with open(f"{lora_dir}/tune_config.json", "w") as file:
+                file.write(arguments.to_json())
+                file.close()
         else:
             print()
             print('Executing evaluation job')
@@ -227,6 +231,12 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         del model
         del base_model
         del tokenizer
+        with open(f"{model_dir}/merge_config.json", "w") as file:
+            file.write(arguments.to_json())
+            file.close()
+        tune_config_path = f'{lora_dir}/tune_config.json'
+        if os.path.exists(tune_config_path):
+            shutil.copyfile(tune_config_path, f'{model_dir}/tune_config.json')
 
 
 def push_base(arguments: PushArguments, tokenizer, model) -> None:
