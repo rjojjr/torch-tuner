@@ -201,7 +201,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-lbbs', '--load-best-before-save', default="false", help="Load best checkpoint before saving LoRA adapter(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-stm', '--show-token-metrics', default="false", help="Print token metrics during fine-tuning(WARNING - slows down tuning)(default: false)", type=lambda x: _parse_bool_arg(x))
 
-    parser.add_argument('-pa', '--push-adapter', help="Push LORA adapter to Huggingface when tuning complete(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-pa', '--push-adapter', help="Push LORA adapter to Huggingface when tuning complete(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
 
     parser.add_argument('-m', '--merge', default="true",

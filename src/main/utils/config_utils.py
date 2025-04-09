@@ -27,6 +27,8 @@ def print_tuner_mode_config(args, tuner: Tuner) -> None:
 
     print()
     print(f'Is Fine-Tuning: {str(args.fine_tune)}')
+    if args.fine_tune:
+        print(f'Push LoRA Adapter to HF: {str(args.push_adapter)}')
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')
 

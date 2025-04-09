@@ -185,6 +185,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
                 print()
                 print('Pushing LoRA adapter to huggingface')
                 # TODO - pass private push argument to here
+                # TODO - should this be async?
                 train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
                 tokenizer.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
                 print()
