@@ -351,3 +351,20 @@ class PushArguments(TunerFunctionArguments):
 
     def to_json(self):
         return json.dumps(self)
+
+
+class ArgumentsConfig:
+
+    def __init__(self, tune_args: TuneArguments | None, merge_args: MergeArguments | None, push_args: PushArguments | None):
+        self.tune_arguments = tune_args
+        self.merge_arguments = merge_args
+        self.push_arguments = push_args
+
+    def to_json(self):
+        return json.dumps(self)
+
+    def from_json(self, json_string: str):
+        loaded = json.loads(json_string)
+        self.push_arguments = loaded['push_arguments']
+        self.merge_arguments = loaded['merge_arguments']
+        self.tune_arguments = loaded['tune_arguments']
