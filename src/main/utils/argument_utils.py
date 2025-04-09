@@ -244,7 +244,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
     parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_torch_fused)", default="adamw_torch_fused")
-    parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 1)(MUST BE GREATER THAN 0)", type=int, default=1)
+    parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: None)(MUST NOT BE 0)", type=lambda x: _parse_nullable_int_arg(x), default=None)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")

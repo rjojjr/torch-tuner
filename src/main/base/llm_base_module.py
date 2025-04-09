@@ -1,4 +1,3 @@
-from sympy.abc import lamda
 from transformers import DataCollatorForLanguageModeling
 
 from exception.exceptions import TuningModuleFunctionException
@@ -61,6 +60,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         model = prepare_model_for_kbit_training(base_model)
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
+
         learning_rate = arguments.batch_size * arguments.base_learning_rate
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
