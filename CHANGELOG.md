@@ -3,6 +3,7 @@
 ## 2.3.1
 - disable gradient accumulation by default
 - add ability to use flash attention
+- fix fine-tune when `--do-eval` is false
 
 ## 2.3.0
 - upgrade all dependencies
