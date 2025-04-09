@@ -6,6 +6,7 @@ torchvision
 torchaudio
 accelerate
 peft
+flash-attn
 transformers
 datasets
 evaluate
