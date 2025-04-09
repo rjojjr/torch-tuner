@@ -76,6 +76,10 @@ def print_fine_tune_config(args, lora_scale, tune_arguments) -> None:
     print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
     print(f'Using LoRA Bias: {str(args.bias)}')
     print()
+    print(f'Using Flash Attention: {str(args.use_flash_attention)}')
+    if args.use_flash_attention:
+        print(f'Using Flash Attention Implementation: {str(args.flash_attention_impl)}')
+    print()
     print(f'Using Optimizer: {args.optimizer_type}')
     if 'adamw' in args.optimizer_type:
         print(f'Using Base Learning Rate: {str(args.base_learning_rate)}')
