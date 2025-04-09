@@ -180,6 +180,13 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             with open(f"{lora_dir}/tune_config.json", "w") as file:
                 file.write(arguments.to_json())
                 file.close()
+
+                if arguments.push_adapter:
+                    print()
+                    print('Pushing LoRA adapter to huggingface')
+                    train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tune LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}")
+                    print()
+
         else:
             print()
             print('Executing evaluation job')

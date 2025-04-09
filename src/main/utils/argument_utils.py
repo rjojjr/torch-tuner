@@ -112,7 +112,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             eval_strategy=prog_args.eval_strategy if prog_args.eval_strategy is not None else prog_args.save_strategy,
             eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps,
             use_flash_attention=prog_args.use_flash_attention,
-            flash_attention_impl=prog_args.flash_attention_impl
+            flash_attention_impl=prog_args.flash_attention_impl,
+            push_adapter=prog_args.push_adapter
         )
         tune_arguments.validate()
         return tune_arguments
@@ -199,6 +200,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ft', '--fine-tune', default="true", help="Run a fine-tune job(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-lbbs', '--load-best-before-save', default="false", help="Load best checkpoint before saving LoRA adapter(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-stm', '--show-token-metrics', default="false", help="Print token metrics during fine-tuning(WARNING - slows down tuning)(default: false)", type=lambda x: _parse_bool_arg(x))
+
+    parser.add_argument('-pa', '--push-adapter', help="Push LORA adapter to Huggingface when tuning complete(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
 
 
     parser.add_argument('-m', '--merge', default="true",
