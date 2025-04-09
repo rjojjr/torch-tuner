@@ -110,7 +110,9 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             do_train=prog_args.fine_tune,
             is_debug_mode=prog_args.debug,
             eval_strategy=prog_args.eval_strategy if prog_args.eval_strategy is not None else prog_args.save_strategy,
-            eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps
+            eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps,
+            use_flash_attention=prog_args.use_flash_attention,
+            flash_attention_impl=prog_args.flash_attention_impl
         )
         tune_arguments.validate()
         return tune_arguments
@@ -218,6 +220,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Tune with LangChain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-iim', '--is-instruct-model', help="Is the model being tuned intended for instruct(when set to true, enables several enhancements for instruct models)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-ufa', '--use-flash-attention', help="Use flash attention(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-fai', '--flash-attention-impl', help="Flash attention implementation to use(default: flash_attention_2)", type=str, default="flash_attention_2")
     parser.add_argument('-nna', '--neftune-noise-alpha', help="NEFTune Noise Alpha(ONLY applies when '--is-instruct-model' argument is set to true)(default 5.0)", type=lambda x: _parse_nullable_float_arg(x), default="5.0")
 
     parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
