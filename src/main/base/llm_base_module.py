@@ -184,7 +184,8 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             if arguments.push_adapter:
                 print()
                 print('Pushing LoRA adapter to huggingface')
-                train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tune LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}")
+                train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
+                tokenizer.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
                 print()
 
         else:
@@ -252,8 +253,8 @@ def push_base(arguments: PushArguments, tokenizer, model) -> None:
         print('')
 
         is_private = not arguments.public_push
-        model.push_to_hub(arguments.new_model, private=is_private)
-        tokenizer.push_to_hub(arguments.new_model, private=is_private)
+        model.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Merge {arguments.new_model} LoRA adapter with base model")
+        tokenizer.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Add {arguments.new_model} tokenizer")
         del model
         del tokenizer
 
