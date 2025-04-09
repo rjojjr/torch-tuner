@@ -4,6 +4,8 @@
 - disable gradient accumulation by default
 - add ability to use flash attention
 - fix fine-tune when `--do-eval` is false
+- add `--push-adapter` argument
+- save tuner config with models/adapters
 
 ## 2.3.0
 - upgrade all dependencies
