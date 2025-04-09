@@ -137,10 +137,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             batched=True,
             desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
 
-        processed_eval_dataset = ds['eval'].map(
+        processed_eval_dataset = (ds['eval'].map(
             tokenize_jsonl_dataset_factory(),
             batched=True,
-            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']
+            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']) if 'eval' in ds else processed_dataset
 
         train = SFTTrainer(
             model=model,
