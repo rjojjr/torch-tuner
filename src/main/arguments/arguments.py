@@ -1,3 +1,5 @@
+import json
+
 from exception.exceptions import ArgumentValidationException
 
 
@@ -264,6 +266,9 @@ class TuneArguments(TunerFunctionArguments):
 
         super(TuneArguments, self).validate()
 
+    def to_json(self):
+        return json.dumps(self)
+
 
 class MergeArguments(TunerFunctionArguments):
     """'merge' function arguments."""
@@ -307,6 +312,9 @@ class MergeArguments(TunerFunctionArguments):
 
         super(MergeArguments, self).validate()
 
+    def to_json(self):
+        return json.dumps(self)
+
 
 class PushArguments(TunerFunctionArguments):
     """'push' function arguments."""
@@ -340,3 +348,6 @@ class PushArguments(TunerFunctionArguments):
             raise ArgumentValidationException("'Push Arguments' are missing required properties")
 
         super(PushArguments, self).validate()
+
+    def to_json(self):
+        return json.dumps(self)
