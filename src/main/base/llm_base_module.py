@@ -132,7 +132,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
             return tokenize_jsonl_dataset
 
-        processed_dataset = ds['train'].map(
+        processed_tuning_dataset = ds['train'].map(
             tokenize_jsonl_dataset_factory(),
             batched=True,
             desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
@@ -140,12 +140,12 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         processed_eval_dataset = (ds['eval'].map(
             tokenize_jsonl_dataset_factory(),
             batched=True,
-            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']) if 'eval' in ds else processed_dataset
+            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']) if 'eval' in ds else processed_tuning_dataset
 
         train = SFTTrainer(
             model=model,
             # formatting_func=formatting_prompts_func,
-            train_dataset=processed_dataset if arguments.do_train else processed_eval_dataset,
+            train_dataset=processed_tuning_dataset if arguments.do_train else processed_eval_dataset,
             args=train_params,
             # TODO - FIXME - eval_loss stat is not printed
             eval_dataset=processed_eval_dataset if arguments.do_eval else None,
@@ -181,11 +181,11 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
                 file.write(arguments.to_json())
                 file.close()
 
-                if arguments.push_adapter:
-                    print()
-                    print('Pushing LoRA adapter to huggingface')
-                    train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tune LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}")
-                    print()
+            if arguments.push_adapter:
+                print()
+                print('Pushing LoRA adapter to huggingface')
+                train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tune LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}")
+                print()
 
         else:
             print()
