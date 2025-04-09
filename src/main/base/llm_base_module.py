@@ -77,6 +77,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             per_device_train_batch_size=arguments.batch_size,
             per_device_eval_batch_size=arguments.batch_size,
             gradient_accumulation_steps=arguments.gradient_accumulation_steps,
+            gradient_checkpointing=arguments.gradient_accumulation_steps is not None,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
             overwrite_output_dir=arguments.overwrite_output,
             optim=arguments.optimizer_type,
@@ -155,7 +156,6 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             if os.path.exists(output_dir) and not arguments.no_checkpoint:
                 print()
                 print('Loading checkpoint')
-                model.gradient_checkpointing_enable()
                 last_checkpoint = get_last_checkpoint(output_dir)
                 print()
                 print('Executing fine-tune job')

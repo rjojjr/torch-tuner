@@ -243,6 +243,9 @@ class TuneArguments(TunerFunctionArguments):
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
 
+        if self.gradient_accumulation_steps is not None and int(self.gradient_accumulation_steps) == 0:
+            raise ArgumentValidationException("'--gradient-accumulation-steps' argument must not be zero")
+
         if self.hf_training_dataset_id is not None and self.hf_training_dataset_id.strip() == '':
             raise ArgumentValidationException("'--hf-training-dataset-id' argument value is invalid")
 
