@@ -124,7 +124,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
                 return tokenizer(prompts,
                                  text_target=samples[prediction_target],
                                  truncation=True, padding='do_not_pad',
-                                 max_length=arguments.max_seq_length if arguments.max_seq_length is not None else (1024 if 1024 >= tokenizer.model_max_length else tokenizer.model_max_length),
+                                 max_length=arguments.max_seq_length if arguments.max_seq_length is not None else (1024 if 1024 <= tokenizer.model_max_length else tokenizer.model_max_length),
                                  return_overflowing_tokens=True
                                  )
 
