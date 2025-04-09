@@ -1,7 +1,7 @@
 from typing import Callable
 import arguments.arguments as arguments
 
-from main.arguments.arguments import ArgumentsConfig
+from arguments.arguments import ArgumentsConfig
 
 LLM_TYPES = {'generic': 'GENERIC', 'llama': 'LLAMA'}
 
