@@ -2,6 +2,7 @@ from utils.argument_utils import parse_arguments
 from exception.exceptions import main_exception_handler
 
 from utils.execution_utils import execute_command
+from base.llm_base_module import push_thread
 import os
 
 # TODO - Automate this
@@ -25,6 +26,10 @@ def main() -> None:
     print('---------------------------------------------')
     print('Run with --help flag for a list of available arguments.')
     execute_command(args)
+    if push_thread is not None:
+        print()
+        print('Waiting for LoRA adapter push to complete...')
+        push_thread.join()
     print()
     print('---------------------------------------------')
     print(f'{title} COMPLETED')
