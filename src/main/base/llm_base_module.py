@@ -19,7 +19,8 @@ import shutil
 
 def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
-        tokenizer.chat_template = None
+        if tokenizer.chat_template is not None:
+            tokenizer.chat_template = None
 
         if arguments.do_train:
             print(f"Starting fine-tuning of base model {arguments.base_model} for {arguments.new_model}")
@@ -131,20 +132,20 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
             return tokenize_jsonl_dataset
 
-        processed_dataset = ds['train'].map(
+        processed_tuning_dataset = ds['train'].map(
             tokenize_jsonl_dataset_factory(),
             batched=True,
             desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
 
-        processed_eval_dataset = ds['eval'].map(
+        processed_eval_dataset = (ds['eval'].map(
             tokenize_jsonl_dataset_factory(),
             batched=True,
-            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']
+            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']) if 'eval' in ds else processed_tuning_dataset
 
         train = SFTTrainer(
             model=model,
             # formatting_func=formatting_prompts_func,
-            train_dataset=processed_dataset if arguments.do_train else processed_eval_dataset,
+            train_dataset=processed_tuning_dataset if arguments.do_train else processed_eval_dataset,
             args=train_params,
             # TODO - FIXME - eval_loss stat is not printed
             eval_dataset=processed_eval_dataset if arguments.do_eval else None,
@@ -175,6 +176,20 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             train.model.save_pretrained(lora_dir)
             train.model.config.save_pretrained(lora_dir)
             tokenizer.save_pretrained(lora_dir)
+
+            with open(f"{lora_dir}/tune_config.json", "w") as file:
+                file.write(arguments.to_json())
+                file.close()
+
+            if arguments.push_adapter:
+                print()
+                print('Pushing LoRA adapter to huggingface')
+                # TODO - pass private push argument to here
+                # TODO - should this be async?
+                train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
+                tokenizer.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
+                print()
+
         else:
             print()
             print('Executing evaluation job')
@@ -192,7 +207,8 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
-        tokenizer.chat_template = None
+        if tokenizer.chat_template is not None:
+            tokenizer.chat_template = None
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
         lora_dir = f"{arguments.output_dir}{os.sep}adapters{os.sep}{arguments.new_model}"
@@ -225,6 +241,12 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         del model
         del base_model
         del tokenizer
+        with open(f"{model_dir}/merge_config.json", "w") as file:
+            file.write(arguments.to_json())
+            file.close()
+        tune_config_path = f'{lora_dir}/tune_config.json'
+        if os.path.exists(tune_config_path):
+            shutil.copyfile(tune_config_path, f'{model_dir}/tune_config.json')
 
 
 def push_base(arguments: PushArguments, tokenizer, model) -> None:
@@ -233,8 +255,8 @@ def push_base(arguments: PushArguments, tokenizer, model) -> None:
         print('')
 
         is_private = not arguments.public_push
-        model.push_to_hub(arguments.new_model, private=is_private)
-        tokenizer.push_to_hub(arguments.new_model, private=is_private)
+        model.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Merge {arguments.new_model} LoRA adapter with base model")
+        tokenizer.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Add {arguments.new_model} tokenizer")
         del model
         del tokenizer
 

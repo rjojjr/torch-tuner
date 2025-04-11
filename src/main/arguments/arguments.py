@@ -1,3 +1,5 @@
+import json
+
 from exception.exceptions import ArgumentValidationException
 
 
@@ -175,7 +177,10 @@ class TuneArguments(TunerFunctionArguments):
                  show_token_metrics: bool = False,
                  train_masked_language_model: bool = False,
                  mask_token: str = '\nObservation',
-                 mlm_probability: float = 0.15
+                 mlm_probability: float = 0.15,
+                 use_flash_attention: bool = False,
+                 flash_attention_impl: str = 'flash_attention_2',
+                 push_adapter: bool = True
                  ):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.r = r
@@ -221,6 +226,9 @@ class TuneArguments(TunerFunctionArguments):
         self.train_masked_language_model = train_masked_language_model
         self.mask_token = mask_token
         self.mlm_probability = mlm_probability
+        self.use_flash_attention = use_flash_attention
+        self.flash_attention_impl = flash_attention_impl
+        self.push_adapter = push_adapter
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
@@ -259,6 +267,12 @@ class TuneArguments(TunerFunctionArguments):
             raise ArgumentValidationException('`--mask-token` argument must be non-empty string')
 
         super(TuneArguments, self).validate()
+
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
 
 
 class MergeArguments(TunerFunctionArguments):
@@ -303,6 +317,12 @@ class MergeArguments(TunerFunctionArguments):
 
         super(MergeArguments, self).validate()
 
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
+
 
 class PushArguments(TunerFunctionArguments):
     """'push' function arguments."""
@@ -336,3 +356,29 @@ class PushArguments(TunerFunctionArguments):
             raise ArgumentValidationException("'Push Arguments' are missing required properties")
 
         super(PushArguments, self).validate()
+
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
+
+
+class ArgumentsConfig:
+
+    def __init__(self, tune_args: TuneArguments | None, merge_args: MergeArguments | None, push_args: PushArguments | None):
+        self.tune_arguments = tune_args
+        self.merge_arguments = merge_args
+        self.push_arguments = push_args
+
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
+
+    def from_json(self, json_string: str):
+        loaded = json.loads(json_string)
+        self.push_arguments = loaded['push_arguments']
+        self.merge_arguments = loaded['merge_arguments']
+        self.tune_arguments = loaded['tune_arguments']
