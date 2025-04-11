@@ -12,6 +12,9 @@ from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_mod
 from utils.dataset_utils import load_dataset
 import os
 import shutil
+from huggingface_hub import HfApi
+
+from exception.exceptions import TunerException
 
 
 # LLM independent base functions
@@ -249,16 +252,34 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
             shutil.copyfile(tune_config_path, f'{model_dir}/tune_config.json')
 
 
-def push_base(arguments: PushArguments, tokenizer, model) -> None:
+def push_base(arguments: PushArguments) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
         print(f"pushing {arguments.new_model} to HF")
         print('')
 
+        if not os.path.exists(arguments.model_dir):
+            raise TunerException(f'merged model directory {arguments.model_dir} for model {arguments.new_model} does not exist')
+
+        api = HfApi()
+
         is_private = not arguments.public_push
-        model.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Merge {arguments.new_model} LoRA adapter with base model")
-        tokenizer.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Add {arguments.new_model} tokenizer")
-        del model
-        del tokenizer
+
+        try:
+            api.create_repo(
+                repo_id=arguments.new_model,
+                private=is_private
+            )
+        except:
+            print(f'repo {arguments.new_model} exists')
+            print()
+
+        api.upload_folder(
+            repo_id=arguments.new_model,
+            folder_path=arguments.model_dir,
+            ignore_patterns=None,
+            allow_patterns=None,
+            commit_message=f"Merge {arguments.new_model} LoRA adapter with base model"
+        )
 
 
 
