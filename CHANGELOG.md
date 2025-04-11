@@ -1,5 +1,7 @@
 # Torch Tuner CHANGELOG
 
+## 2.3.2
+
 ## 2.3.1
 - disable gradient accumulation by default
 - add ability to use flash attention
