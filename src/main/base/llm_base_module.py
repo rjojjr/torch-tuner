@@ -12,9 +12,12 @@ from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_mod
 from utils.dataset_utils import load_dataset
 import os
 import shutil
-from huggingface_hub import HfApi
 
 from exception.exceptions import TunerException
+
+from hf.util import get_hf_username
+
+from hf.util import upload_large_folder
 
 
 # LLM independent base functions
@@ -187,10 +190,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             if arguments.push_adapter:
                 print()
                 print('Pushing LoRA adapter to huggingface')
-                # TODO - pass private push argument to here
-                # TODO - should this be async?
-                train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
-                tokenizer.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
+                upload_large_folder(f'{arguments.new_model}-lora-adapter', lora_dir, not arguments.public_push)
                 print()
 
         else:
@@ -260,26 +260,11 @@ def push_base(arguments: PushArguments) -> None:
         if not os.path.exists(arguments.model_dir):
             raise TunerException(f'merged model directory {arguments.model_dir} for model {arguments.new_model} does not exist')
 
-        api = HfApi()
-
         is_private = not arguments.public_push
+        username = get_hf_username()
+        repo_id = f'{username}/arguments.new_model'
 
-        try:
-            api.create_repo(
-                repo_id=arguments.new_model,
-                private=is_private
-            )
-        except:
-            print(f'repo {arguments.new_model} exists')
-            print()
-
-        api.upload_folder(
-            repo_id=arguments.new_model,
-            folder_path=arguments.model_dir,
-            ignore_patterns=None,
-            allow_patterns=None,
-            commit_message=f"Merge {arguments.new_model} LoRA adapter with base model"
-        )
+        upload_large_folder(repo_id, arguments.model_dir, is_private)
 
 
 
