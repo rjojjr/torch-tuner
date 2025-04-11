@@ -27,6 +27,8 @@ def print_tuner_mode_config(args, tuner: Tuner) -> None:
 
     print()
     print(f'Is Fine-Tuning: {str(args.fine_tune)}')
+    if args.fine_tune:
+        print(f'Push LoRA Adapter to HF: {str(args.push_adapter)}')
     print(f'Is Merging: {str(args.merge)}')
     print(f'Is Pushing: {str(args.push)}')
 
@@ -75,6 +77,10 @@ def print_fine_tune_config(args, lora_scale, tune_arguments) -> None:
     print(f'LoRA Adapter Scale(alpha/r): {str(lora_scale)}')
     print(f'Using LoRA Dropout: {str(args.lora_dropout)}')
     print(f'Using LoRA Bias: {str(args.bias)}')
+    print()
+    print(f'Using Flash Attention: {str(args.use_flash_attention)}')
+    if args.use_flash_attention:
+        print(f'Using Flash Attention Implementation: {str(args.flash_attention_impl)}')
     print()
     print(f'Using Optimizer: {args.optimizer_type}')
     if 'adamw' in args.optimizer_type:

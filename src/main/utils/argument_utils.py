@@ -110,7 +110,10 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             do_train=prog_args.fine_tune,
             is_debug_mode=prog_args.debug,
             eval_strategy=prog_args.eval_strategy if prog_args.eval_strategy is not None else prog_args.save_strategy,
-            eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps
+            eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps,
+            use_flash_attention=prog_args.use_flash_attention,
+            flash_attention_impl=prog_args.flash_attention_impl,
+            push_adapter=prog_args.push_adapter
         )
         tune_arguments.validate()
         return tune_arguments
@@ -198,6 +201,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-lbbs', '--load-best-before-save', default="false", help="Load best checkpoint before saving LoRA adapter(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-stm', '--show-token-metrics', default="false", help="Print token metrics during fine-tuning(WARNING - slows down tuning)(default: false)", type=lambda x: _parse_bool_arg(x))
 
+    parser.add_argument('-pa', '--push-adapter', help="Push LORA adapter to Huggingface when tuning complete(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+
 
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
@@ -218,6 +223,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
     parser.add_argument('-uat', '--use-agent-tokens', default="false", help="Tune with LangChain agent tokens(default: false)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-iim', '--is-instruct-model', help="Is the model being tuned intended for instruct(when set to true, enables several enhancements for instruct models)(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-ufa', '--use-flash-attention', help="Use flash attention(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
+    parser.add_argument('-fai', '--flash-attention-impl', help="Flash attention implementation to use(default: flash_attention_2)", type=str, default="flash_attention_2")
     parser.add_argument('-nna', '--neftune-noise-alpha', help="NEFTune Noise Alpha(ONLY applies when '--is-instruct-model' argument is set to true)(default 5.0)", type=lambda x: _parse_nullable_float_arg(x), default="5.0")
 
     parser.add_argument('-ps', '--padding-side', help="Padding side(when set to 'None' disables padding)(default: right)", type=lambda x: _parse_nullable_arg(x), default="right")
@@ -244,7 +251,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
     parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_torch_fused)", default="adamw_torch_fused")
-    parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: 1)(MUST BE GREATER THAN 0)", type=int, default=1)
+    parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: None)(MUST NOT BE 0)", type=lambda x: _parse_nullable_int_arg(x), default=None)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)
     parser.add_argument('-ss', '--save-strategy', help="Save strategy(default: epoch)", default="epoch")

@@ -8,6 +8,18 @@ This document is a work in progress, so please be patient.
 
 ### Question
 
+Why does the trainer print this warning:
+
+```bash
+Sliding Window Attention is enabled but not implemented for `sdpa`; unexpected results may be encountered.
+```
+
+#### Answer
+
+This is a [false warning produced by a bug](https://github.com/huggingface/transformers/pull/36316) that should be fixed with a future transformers update.
+
+### Question
+
 Why do I receive an exception about chat templates when merging my fine-tuned LoRA adapter?
 
 #### Answer

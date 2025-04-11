@@ -1,3 +1,5 @@
+import json
+
 from exception.exceptions import ArgumentValidationException
 
 
@@ -136,7 +138,7 @@ class TuneArguments(TunerFunctionArguments):
                  no_checkpoint: bool = False,
                  bias: str = "none",
                  optimizer_type: str = 'adamw_torch_fused',
-                 gradient_accumulation_steps: int = 4,
+                 gradient_accumulation_steps: int | None = None,
                  weight_decay: float = 0.01,
                  max_gradient_norm: float = 0.0,
                  is_tf32: bool = False,
@@ -175,7 +177,10 @@ class TuneArguments(TunerFunctionArguments):
                  show_token_metrics: bool = False,
                  train_masked_language_model: bool = False,
                  mask_token: str = '\nObservation',
-                 mlm_probability: float = 0.15
+                 mlm_probability: float = 0.15,
+                 use_flash_attention: bool = False,
+                 flash_attention_impl: str = 'flash_attention_2',
+                 push_adapter: bool = True
                  ):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.r = r
@@ -221,6 +226,9 @@ class TuneArguments(TunerFunctionArguments):
         self.train_masked_language_model = train_masked_language_model
         self.mask_token = mask_token
         self.mlm_probability = mlm_probability
+        self.use_flash_attention = use_flash_attention
+        self.flash_attention_impl = flash_attention_impl
+        self.push_adapter = push_adapter
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
@@ -230,7 +238,7 @@ class TuneArguments(TunerFunctionArguments):
         is_valid = is_valid and self.batch_size is not None
         is_valid = is_valid and self.base_learning_rate is not None and self.lora_dropout is not None
         is_valid = is_valid and self.no_checkpoint is not None and self.bias is not None
-        is_valid = is_valid and self.optimizer_type is not None and self.gradient_accumulation_steps is not None
+        is_valid = is_valid and self.optimizer_type is not None
         is_valid = is_valid and self.weight_decay is not None and self.max_gradient_norm is not None
         is_valid = is_valid and self.save_strategy is not None and self.save_steps is not None
         is_valid = is_valid and self.do_eval is not None and self.max_checkpoints is not None
@@ -242,6 +250,9 @@ class TuneArguments(TunerFunctionArguments):
 
         if not is_valid:
             raise ArgumentValidationException("'Tune Arguments' are missing required properties")
+
+        if self.gradient_accumulation_steps is not None and int(self.gradient_accumulation_steps) == 0:
+            raise ArgumentValidationException("'--gradient-accumulation-steps' argument must not be zero")
 
         if self.hf_training_dataset_id is not None and self.hf_training_dataset_id.strip() == '':
             raise ArgumentValidationException("'--hf-training-dataset-id' argument value is invalid")
@@ -256,6 +267,12 @@ class TuneArguments(TunerFunctionArguments):
             raise ArgumentValidationException('`--mask-token` argument must be non-empty string')
 
         super(TuneArguments, self).validate()
+
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
 
 
 class MergeArguments(TunerFunctionArguments):
@@ -300,6 +317,12 @@ class MergeArguments(TunerFunctionArguments):
 
         super(MergeArguments, self).validate()
 
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
+
 
 class PushArguments(TunerFunctionArguments):
     """'push' function arguments."""
@@ -333,3 +356,29 @@ class PushArguments(TunerFunctionArguments):
             raise ArgumentValidationException("'Push Arguments' are missing required properties")
 
         super(PushArguments, self).validate()
+
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
+
+
+class ArgumentsConfig:
+
+    def __init__(self, tune_args: TuneArguments | None, merge_args: MergeArguments | None, push_args: PushArguments | None):
+        self.tune_arguments = tune_args
+        self.merge_arguments = merge_args
+        self.push_arguments = push_args
+
+    def to_json(self):
+        return json.dumps(self,
+                          default=lambda o: o.__dict__,
+                          sort_keys=True,
+                          indent=4)
+
+    def from_json(self, json_string: str):
+        loaded = json.loads(json_string)
+        self.push_arguments = loaded['push_arguments']
+        self.merge_arguments = loaded['merge_arguments']
+        self.tune_arguments = loaded['tune_arguments']

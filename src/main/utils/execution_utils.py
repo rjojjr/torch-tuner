@@ -6,7 +6,7 @@ from utils.argument_utils import build_and_validate_push_args, build_and_validat
 from utils.config_utils import print_global_config, print_serve_mode_config, print_fine_tune_merge_common_config, print_tuner_mode_config, print_fine_tune_config
 from serve.llm_executor import build_llm_executor_factory
 from serve.serve import OpenAiLlmServer
-from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments
+from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments, ArgumentsConfig
 from utils.tuner_utils import build_llm_tuner_factory
 
 
@@ -37,6 +37,7 @@ def _execute_tuner_mode(args) -> None:
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
     push_arguments = build_and_validate_push_args(args, model_dir)
+    tuner.arguments_config = ArgumentsConfig(tune_args=tune_arguments, merge_args=merge_arguments, push_args=push_arguments)
     print_tuner_mode_config(args, tuner)
     if args.fine_tune or args.merge or args.do_eval:
         print_fine_tune_merge_common_config(args, model_dir)

@@ -1,9 +1,16 @@
 # Torch Tuner CHANGELOG
 
+## 2.3.1
+- disable gradient accumulation by default
+- add ability to use flash attention
+- fix fine-tune when `--do-eval` is false
+- add `--push-adapter` argument
+- save tuner config with models/adapters
+
 ## 2.3.0
-- Upgrade all dependencies
-- Improve memory efficiency
-- Fix QLORA
-- Update agent tokens
-- Update default arguments
-- Update argument descriptions
+- upgrade all dependencies
+- improve memory efficiency
+- fix QLORA
+- update agent tokens
+- update default arguments
+- update argument descriptions
