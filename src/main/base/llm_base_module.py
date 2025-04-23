@@ -143,8 +143,11 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             def tokenize_txt_dataset(samples):
                 prompts = [prompt
                            for prompt in samples["text"]] if template_func is None else template_func(samples)
+
+                completions = [""
+                           for prompt in samples["text"]] if template_func is None else template_func(samples)
                 return tokenizer(prompts,
-                                 text_target=samples["text"],
+                                 text_target=completions,
                                  truncation=True, padding='do_not_pad',
                                  max_length=arguments.max_seq_length if arguments.max_seq_length is not None else (1024 if 1024 <= tokenizer.model_max_length else tokenizer.model_max_length),
                                  return_overflowing_tokens=True

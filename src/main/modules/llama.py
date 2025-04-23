@@ -21,7 +21,6 @@ def merge(arguments: MergeArguments) -> None:
             torch_dtype=dtype
         )
 
-
         tokenizer = AutoTokenizer.from_pretrained(lora_dir)
         if arguments.padding_side is not None:
             tokenizer.pad_token = tokenizer.eos_token
