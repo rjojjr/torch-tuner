@@ -12,6 +12,7 @@ from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_mod
 from utils.dataset_utils import load_dataset
 import os
 import shutil
+import gc
 
 from exception.exceptions import TunerException
 
@@ -223,6 +224,9 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         del model
         del base_model
         del tokenizer
+        del train.model
+        del train
+        gc.collect()
 
 
 def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> None:
@@ -261,6 +265,7 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
         del model
         del base_model
         del tokenizer
+        gc.collect()
         with open(f"{model_dir}/merge_config.json", "w") as file:
             file.write(arguments.to_json())
             file.close()
