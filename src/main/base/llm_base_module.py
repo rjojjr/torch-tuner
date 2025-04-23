@@ -138,10 +138,27 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
             return tokenize_jsonl_dataset
 
+        def tokenize_txt_dataset_factory(prediction_target = 'completion', template_func = None):
+            def tokenize_txt_dataset(samples):
+                prompts = [prompt
+                           for prompt in samples["text"]] if template_func is None else template_func(samples)
+                return tokenizer(prompts,
+                                 text_target=samples["text"],
+                                 truncation=True, padding='do_not_pad',
+                                 max_length=arguments.max_seq_length if arguments.max_seq_length is not None else (1024 if 1024 <= tokenizer.model_max_length else tokenizer.model_max_length),
+                                 return_overflowing_tokens=True
+                                 )
+
+
+            return tokenize_txt_dataset
+
         processed_tuning_dataset = ds['train'].map(
             tokenize_jsonl_dataset_factory(),
             batched=True,
-            desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
+            desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train'].map(
+            tokenize_txt_dataset_factory(),
+            batched=True,
+            desc="Tokenized dataset")
 
         processed_eval_dataset = (ds['eval'].map(
             tokenize_jsonl_dataset_factory(),
