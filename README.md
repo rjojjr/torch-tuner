@@ -217,4 +217,4 @@ the [roadmap](ROADMAP.md)
 
 ## LICENSE
 
-This project is [licensed](LICENSE.txt) under MIT. 
+This project is [licensed](LICENSE.txt) under MIT.

@@ -2,10 +2,27 @@ import os.path
 from typing import Union
 
 from datasets import load_dataset as load_data_set, DatasetDict, Dataset, IterableDatasetDict, IterableDataset
+from datasets.arrow_dataset import Dataset as ArrowDataset
 
 from arguments.arguments import TuneArguments
 from exception.exceptions import ArgumentValidationException
-
+def parse_jsonl(data):
+    entries = []
+    for line in data:
+        entry = eval(line)
+        if 'messages' in entry:
+            messages = entry['messages']
+            prompt_parts = [msg['content'] for msg in messages if msg['role'] == 'system' or msg['role'] == 'user']
+            completion_parts = [msg['content'] for msg in messages if msg['role'] == 'assistant']
+            prompt = '\n'.join(prompt_parts)
+            completion = '\n'.join(completion_parts)
+        elif 'prompt' in entry and 'completion' in entry:
+            prompt = entry['prompt']
+            completion = entry['completion']
+        else:
+            raise ValueError('Invalid JSONL format')
+        entries.append({'prompt': prompt, 'completion': completion})
+    return entries
 
 def load_dataset(arguments: TuneArguments) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
     """Load dataset for SFT trainer."""
@@ -22,7 +39,9 @@ def load_dataset(arguments: TuneArguments) -> Union[DatasetDict, Dataset, Iterab
 
         elif arguments.train_file.endswith(".jsonl"):
             seperator = os.sep if not arguments.training_data_dir.endswith(os.sep) else ""
-            train_set = load_data_set("json", data_files={"train": f"{arguments.training_data_dir}{seperator}{arguments.train_file}"})
+            file_path = f"{arguments.training_data_dir}{seperator}{arguments.train_file}"
+            data = parse_jsonl(open(file_path).readlines())
+            train_set = Dataset.from_pandas(pd.DataFrame(data))
             if arguments.do_eval:
                 train_set = _load_eval_ds(arguments, train_set)
             return train_set
@@ -33,8 +52,6 @@ def load_dataset(arguments: TuneArguments) -> Union[DatasetDict, Dataset, Iterab
             return train_set
     else:
         return _load_eval_ds(arguments, DatasetDict({}))
-
-
 def _load_eval_ds(arguments: TuneArguments, train_set: Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]) -> Union[DatasetDict, Dataset, IterableDatasetDict, IterableDataset]:
     """Load evaluation dataset."""
 
@@ -49,8 +66,9 @@ def _load_eval_ds(arguments: TuneArguments, train_set: Union[DatasetDict, Datase
         print()
         return train_set
     elif os.path.isfile(arguments.eval_dataset) and arguments.eval_dataset.strip().endswith('jsonl'):
-        eval_set = load_data_set("json", data_files={"eval": arguments.eval_dataset})
-        train_set['eval'] = eval_set['eval']
+        eval_data = parse_jsonl(open(arguments.eval_dataset).readlines())
+        eval_set = Dataset.from_pandas(pd.DataFrame(eval_data))
+        train_set['eval'] = eval_set
         return train_set
     elif os.path.isfile(arguments.eval_dataset):
         eval_set = load_data_set(arguments.eval_dataset.replace(arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1], ''), data_files={"eval": arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1]})
