@@ -1,9 +1,9 @@
 import sys, os
 from argparse import ArgumentParser
-
+from jsonschema import validate, ValidationError
 from exception.exceptions import ArgumentValidationException
 from arguments.arguments import PushArguments, MergeArguments, TuneArguments
-
+from .json_config_utils import load_json_config, validate_json_config, json_config_schema
 
 def build_and_validate_push_args(prog_args, model_dir: str):
     """Construct/validate push arguments."""
@@ -30,7 +30,6 @@ def build_and_validate_push_args(prog_args, model_dir: str):
         model_dir=model_dir
     )
 
-
 def build_and_validate_merge_args(prog_args) -> MergeArguments:
     """Construct/validate merge arguments."""
     if prog_args.merge:
@@ -46,7 +45,7 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
-            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith(".jsonl")),
+            is_chat_model=prog_args.is_chat_model or (prog_args.training_data_file is not None and prog_args.training_data_file.endswith('.jsonl')),
             overwrite_output=prog_args.overwrite_output,
             huggingface_auth_token=prog_args.huggingface_auth_token
         )
@@ -54,7 +53,6 @@ def build_and_validate_merge_args(prog_args) -> MergeArguments:
         return merge_arguments
 
     return MergeArguments(new_model=prog_args.new_model)
-
 
 def build_and_validate_tune_args(prog_args) -> TuneArguments:
     """Construct/validate tune arguments."""
@@ -124,7 +122,6 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
         train_file=prog_args.training_data_file
     )
 
-
 def do_initial_arg_validation(args):
     """Do initial argument validations."""
     # TODO - FIXME - Some of these validations are unaware of the mode being ran, but they should be
@@ -139,44 +136,44 @@ def do_initial_arg_validation(args):
         raise ArgumentValidationException('training data directory or file not found')
     if args.new_model is None:
         raise ArgumentValidationException("'--new-mode' CLI argument must be provided")
-
-
 def parse_arguments(title: str, description: str):
     """Parse CLI arguments."""
     parser = _build_program_argument_parser(title, description)
-    return _parse_arguments(parser)
+    prog_args = _parse_arguments(parser)
 
+    # Load and validate JSON configuration if provided
+    if prog_args.config:
+        config_data = load_json_config(prog_args.config)
+        validate_json_config(config_data, json_config_schema)
 
+        # Override CLI arguments with JSON config values if not explicitly set in CLI
+        for key, value in config_data.items():
+            if getattr(prog_args, key) is None:
+                setattr(prog_args, key, value)
+
+    return prog_args
 def _parse_arguments(arg_parser):
     a_args = sys.argv
     a_args.pop(0)
     return arg_parser.parse_args(a_args)
-
-
 def _parse_bool_arg(arg: str | None) -> bool:
     return arg is not None and arg.lower().strip() == 'true'
-
-
 def _parse_nullable_arg(arg: str | None) -> str | None:
     if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
         return None
     return arg
-
 def _parse_nullable_int_arg(arg: str | None) -> int | None:
     if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
         return None
     return int(arg)
-
 def _parse_nullable_float_arg(arg: str | None) -> float | None:
     if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
         return None
     return float(arg)
-
 def _parse_nullable_list_arg(arg: str | None) -> list | None:
     if arg is None or arg.strip() == '' or arg.lower().strip() == 'none' or arg.lower().strip() == 'null':
         return None
     return arg.split(',')
-
 def _build_program_argument_parser(title: str, description: str) -> ArgumentParser:
     parser = ArgumentParser(
         prog=title,
@@ -203,7 +200,6 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
 
     parser.add_argument('-pa', '--push-adapter', help="Push LORA adapter to Huggingface when tuning complete(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
-
     parser.add_argument('-m', '--merge', default="true",
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
@@ -215,9 +211,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-sp', '--serve-port', help="Port to serve model on(default: 8080)", type=int, default=8080)
     parser.add_argument('-tmlm', '--train-masked-language-model', help="Train masked language model(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-mlmp', '--mlm-probability', help="MLM probability(default: 0.15)", type=lambda x: _parse_nullable_float_arg(x), default=0.15)
-    parser.add_argument('-mt', '--mask-token', help="Mask token(default: \nObservation)", default="\nObservation")
-    parser.add_argument('-mpr', '--max-parallel-requests', help="Maximum nuber of requests to execute against LLM in parallel(for serve only)(default: 1)", type=int, default=1)
-
+    parser.add_argument('-mt', '--mask-token', help="Mask token(default: [MASK])", default="[MASK]")
+    parser.add_argument('-mpr', '--max-parallel-requests', help="Maximum number of requests to execute against LLM in parallel(for serve only)(default: 1)", type=int, default=1)
 
     parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")
     parser.add_argument('-avt', '--additional-vocabulary-tokens', help="Add additional tokens to model vocabulary(This should be a comma separated list[ex: USER:,AI:])(default: None)", type=lambda x: _parse_nullable_list_arg(x), default="None")
@@ -236,7 +231,6 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-bf16', '--use-bf-16', help="Use bf-16 precision(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-tf32', '--use-tf-32', help="Use tf-32(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-f32cpu', '--fp32-cpu-offload', default="false", help="Offload fp32 to CPU(default: false)", type=lambda x: _parse_bool_arg(x))
-
 
     parser.add_argument('-bs', '--batch-size', help="Per-device training/eval batch size(default 4)", type=int, default=4)
     parser.add_argument('-gbl', '--group-by-length', help="Group training samples of similar lengths together(default false)", type=lambda x: _parse_bool_arg(x), default="false")
@@ -262,5 +256,6 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-llm', '--llm-type', help="LLM Type(default: generic[options: generic, llama])", default="generic")
     parser.add_argument('-evalstrat', '--eval-strategy', help="Eval strategy('None', 'epoch' or 'steps')(Defaults to SAVE_STRATEGY when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_arg(x))
     parser.add_argument('-evalsteps', '--eval-steps', help="Steps between evaluations(Ignored when EVAL_STRATEGY is set to 'epoch')(Defaults to SAVE_STEPS when set to None)(default: None)", default="None", type=lambda x: _parse_nullable_int_arg(x))
+    parser.add_argument('-c', '--config', help="Path to JSON configuration file", default=None, type=str)
 
     return parser
