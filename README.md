@@ -194,6 +194,18 @@ always evaluate all requests against the model that is provided by the `--serve-
 
 **WARNING** - Serve mode is currently in an experimental state and should NEVER be used in a production environment.
 
+### Testing
+
+The torch-tuner project includes a comprehensive test suite to verify CLI command behavior and argument handling.
+
+To run all tests:
+
+```shell
+python3 -m unittest discover -s _test -p "test_*.py" -v
+```
+
+For details on the test structure and how to add new tests, see the [testing documentation](_test/README.md).
+
 ### Useful Notes
 
 Most of the default CLI arguments are configured to consume the least amount of memory possible.

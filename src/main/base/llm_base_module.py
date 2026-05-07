@@ -67,11 +67,12 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             tokenizer._mask_token = arguments.mask_token
             data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=arguments.mlm_probability)
 
+        # transformers 5.0 / trl 1.x removed: include_tokens_per_second, overwrite_output_dir,
+        # group_by_length, use_ipex. max_seq_length was renamed to max_length.
         train_params = SFTConfig(
             output_dir=output_dir,
             load_best_model_at_end=arguments.load_best_before_save,
             do_train=arguments.do_train,
-            include_tokens_per_second=arguments.show_token_metrics,
             include_num_input_tokens_seen=arguments.show_token_metrics,
             num_train_epochs=arguments.epochs,
             torch_empty_cache_steps=arguments.torch_empty_cache_steps,
@@ -80,7 +81,6 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
             gradient_checkpointing=True,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
-            overwrite_output_dir=arguments.overwrite_output,
             optim=arguments.optimizer_type,
             save_strategy=arguments.save_strategy,
             save_steps=arguments.save_steps,
@@ -97,17 +97,15 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             max_grad_norm=arguments.max_gradient_norm,
             max_steps=-1,
             warmup_ratio=arguments.warmup_ratio,
-            group_by_length=arguments.group_by_length,
             lr_scheduler_type=arguments.lr_scheduler_type,
             report_to="tensorboard",
             do_eval=arguments.do_eval,
             eval_strategy=arguments.eval_strategy if arguments.do_eval else 'no',
             eval_on_start=arguments.do_eval,
-            max_seq_length=arguments.max_seq_length,
+            max_length=arguments.max_seq_length,
             neftune_noise_alpha=arguments.neftune_noise_alpha if arguments.is_instruct_model else None,
-            dataset_text_field="text" ,
+            dataset_text_field="text",
             label_names=["completions"] if arguments.train_file.endswith("jsonl") else ['labels'],
-            use_ipex=arguments.cpu_only_tuning,
         )
 
         # TODO - custom dataset formatting

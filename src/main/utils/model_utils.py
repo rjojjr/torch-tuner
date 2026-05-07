@@ -3,9 +3,41 @@ from transformers import Conv1D
 from utils.tokenizer_utils import add_agent_tokens, add_additional_tokens
 
 from arguments.arguments import TuneArguments, MergeArguments
-from trl import setup_chat_format
 
 all_modules = (torch.nn.Linear, torch.nn.Embedding, torch.nn.Conv2d, Conv1D)
+
+_CHATML_BOS = "<|im_start|>"
+_CHATML_EOS = "<|im_end|>"
+_CHATML_TEMPLATE = (
+    "{% for message in messages %}"
+    "{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}"
+    "{% endfor %}"
+    "{% if add_generation_prompt %}"
+    "{{ '<|im_start|>assistant\n' }}"
+    "{% endif %}"
+)
+
+
+def setup_chat_format(model, tokenizer, resize_to_multiple_of: int | None = None):
+    # Inlined replacement for trl.setup_chat_format (removed in trl 1.0+).
+    tokenizer.eos_token = _CHATML_EOS
+    tokenizer.pad_token = _CHATML_EOS
+    tokenizer.bos_token = _CHATML_BOS
+    tokenizer.add_special_tokens({"additional_special_tokens": [_CHATML_BOS, _CHATML_EOS]})
+    tokenizer.chat_template = _CHATML_TEMPLATE
+
+    model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=resize_to_multiple_of)
+
+    if getattr(model, "config", None) is not None:
+        model.config.pad_token_id = tokenizer.pad_token_id
+        model.config.bos_token_id = tokenizer.bos_token_id
+        model.config.eos_token_id = tokenizer.eos_token_id
+    if getattr(model, "generation_config", None) is not None:
+        model.generation_config.bos_token_id = tokenizer.bos_token_id
+        model.generation_config.eos_token_id = tokenizer.eos_token_id
+        model.generation_config.pad_token_id = tokenizer.pad_token_id
+
+    return model, tokenizer
 
 
 def get_all_layers(model):
