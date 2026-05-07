@@ -41,6 +41,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
         ds = load_dataset(arguments)
+        is_jsonl = arguments.train_file is not None and arguments.train_file.endswith("jsonl")
+        is_chat_jsonl = is_jsonl and 'train' in ds and "messages" in ds['train'].column_names
+        is_prompt_completion_jsonl = is_jsonl and not is_chat_jsonl
+
         if arguments.target_modules is None or len(arguments.target_modules) == 0:
             target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
         else:
@@ -105,7 +109,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             max_length=arguments.max_seq_length,
             neftune_noise_alpha=arguments.neftune_noise_alpha if arguments.is_instruct_model else None,
             dataset_text_field="text",
-            label_names=["completions"] if arguments.train_file.endswith("jsonl") else ['labels'],
+            label_names=["completions"] if is_prompt_completion_jsonl else ['labels'],
         )
 
         # TODO - custom dataset formatting
@@ -130,15 +134,16 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
             return tokenize_jsonl_dataset
 
-        processed_tuning_dataset = ds['train'].map(
-            tokenize_jsonl_dataset_factory(),
-            batched=True,
-            desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
+        # OpenAI chat-format JSONL ({"messages": [...]}) is passed through; SFTTrainer
+        # applies the tokenizer's chat template to the `messages` column at training time.
+        # Prompt/completion JSONL is pre-tokenized below.
+        def _process_split(split_ds, desc):
+            if is_prompt_completion_jsonl:
+                return split_ds.map(tokenize_jsonl_dataset_factory(), batched=True, desc=desc)
+            return split_ds
 
-        processed_eval_dataset = (ds['eval'].map(
-            tokenize_jsonl_dataset_factory(),
-            batched=True,
-            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']) if 'eval' in ds else processed_tuning_dataset
+        processed_tuning_dataset = _process_split(ds['train'], "Tokenized dataset")
+        processed_eval_dataset = _process_split(ds['eval'], "Tokenized eval dataset") if 'eval' in ds else processed_tuning_dataset
 
         train = SFTTrainer(
             model=model,

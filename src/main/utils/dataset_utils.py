@@ -48,17 +48,16 @@ def _load_eval_ds(arguments: TuneArguments, train_set: Union[DatasetDict, Datase
         print('If this is unintentional, please set the `--eval-dataset` CLI argument to your desired eval dataset.')
         print()
         return train_set
-    elif os.path.isfile(arguments.eval_dataset) and arguments.eval_dataset.strip().endswith('jsonl'):
+    if arguments.eval_dataset is None:
+        raise ArgumentValidationException('`--eval-dataset` argument is required for evaluation mode')
+    if os.path.isfile(arguments.eval_dataset) and arguments.eval_dataset.strip().endswith('jsonl'):
         eval_set = load_data_set("json", data_files={"eval": arguments.eval_dataset})
         train_set['eval'] = eval_set['eval']
         return train_set
-    elif os.path.isfile(arguments.eval_dataset):
+    if os.path.isfile(arguments.eval_dataset):
         eval_set = load_data_set(arguments.eval_dataset.replace(arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1], ''), data_files={"eval": arguments.eval_dataset.split(os.sep)[len(arguments.eval_dataset.split(os.sep)) - 1]})
         train_set['eval'] = eval_set['eval']
         return train_set
-    elif (not 'train' in train_set) and arguments.eval_dataset is None:
-        raise ArgumentValidationException('`--eval-dataset` argument is required for evaluation mode')
-    else:
-        eval_set = load_data_set(arguments.eval_dataset, split='eval')
-        train_set['eval'] = eval_set['eval']
-        return train_set
+    eval_set = load_data_set(arguments.eval_dataset, split='eval')
+    train_set['eval'] = eval_set['eval']
+    return train_set
