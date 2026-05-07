@@ -99,14 +99,34 @@ large amounts of plain/unstructured text.
 #### JSON Lines(JSONL)
 
 Torch Tuner accepts [JSONL](https://jsonlines.org/) training data in addition to plain text.
+Pass a `.jsonl` file via `--training-data-file` and the format is detected automatically
+from the columns of the loaded dataset:
 
-Accepted JSONL Formats:
+| Format | Trigger | How it is processed |
+| --- | --- | --- |
+| OpenAI chat | each row has a `messages` array | Passed straight to the SFT trainer; the tokenizer's chat template (ChatML by default) is applied per row at training time. |
+| Prompt / completion | each row has `prompt` and `completion` fields | Tokenized in advance with `tokenizer(prompts, text_target=completions, ...)`. |
 
-```json lines
-{"messages": [{"role": "system", "content": "You are helpful"}, {"role":  "user", "content":  "Hi!"}]}
+The same auto-detection applies to `--eval-dataset` when it points at a `.jsonl` file.
 
-OR
+##### OpenAI chat format
 
+Each line is a single `{"messages": [...]}` object. Roles are `system`, `user`, and
+`assistant`; multi-turn conversations are supported by listing more messages.
+
+```jsonl
+{"messages": [{"role": "system", "content": "You are a helper that extracts data into JSON."}, {"role": "user", "content": "The car is a red 2022 Tesla Model 3."}, {"role": "assistant", "content": "{\"make\": \"Tesla\", \"model\": \"Model 3\", \"color\": \"red\", \"year\": 2022}"}]}
+{"messages": [{"role": "user", "content": "Hi!"}, {"role": "assistant", "content": "Hello — how can I help?"}]}
+```
+
+This is the same schema used by OpenAI's fine-tuning API, so existing chat datasets
+can be used unchanged.
+
+##### Prompt / completion format
+
+Each line has a single prompt and the ideal response.
+
+```jsonl
 {"prompt": "<context & prompt>", "completion": "<ideal AI response>"}
 ```
 
