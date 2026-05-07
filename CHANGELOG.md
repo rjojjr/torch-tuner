@@ -6,6 +6,7 @@
 - add support for OpenAI chat JSONL dataset format
 - fix serve endpoint token count and request parsing
 - fix serve endpoint CUDA errors
+- add `--accepted-api-key` argument for serve mode
 
 ## 2.3.1
 - disable gradient accumulation by default
