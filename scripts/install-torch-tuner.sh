@@ -5,8 +5,24 @@ echo 'Installing Torch Tuner CLI'
 # TODO - version argument
 # TODO - argument to install from local repo(no git clone)
 
+# Branch is overridable via:
+#   * the --branch=<name> CLI arg, e.g.:
+#       curl ... | sudo bash -s -- --branch=my-branch
+#   * or the BRANCH env var when invoked directly (not via piped `sudo`):
+#       sudo BRANCH=my-branch bash ./install-torch-tuner.sh
+# Defaults to the repo's default (master).
+BRANCH="${BRANCH:-}"
+
 # TODO - install deps. for other OSes
-if [[ "$1" == "--install-apt-deps" ]]; then
+INSTALL_APT_DEPS=0
+for arg in "$@"; do
+  case "$arg" in
+    --install-apt-deps) INSTALL_APT_DEPS=1 ;;
+    --branch=*) BRANCH="${arg#--branch=}" ;;
+  esac
+done
+
+if [[ "$INSTALL_APT_DEPS" == "1" ]]; then
   echo 'Installing apt dependencies'
   {
     apt install python3-pip -y && \
@@ -30,12 +46,22 @@ if [ -d ./torch-tuner ]; then
   }
 fi
 
-{
-  git clone https://github.com/rjojjr/torch-tuner.git
-} || {
-  echo 'Failed to clone Torch Tuner CLI' && \
-    exit 1
-}
+if [[ -n "$BRANCH" ]]; then
+  echo "Cloning torch-tuner branch: $BRANCH"
+  {
+    git clone -b "$BRANCH" https://github.com/rjojjr/torch-tuner.git
+  } || {
+    echo "Failed to clone Torch Tuner CLI branch $BRANCH" && \
+      exit 1
+  }
+else
+  {
+    git clone https://github.com/rjojjr/torch-tuner.git
+  } || {
+    echo 'Failed to clone Torch Tuner CLI' && \
+      exit 1
+  }
+fi
 
 {
   cd torch-tuner && \
@@ -48,14 +74,19 @@ fi
 }
 
 {
-  echo 'Installing python dependencies' && \
-    pip install -I -r requirements.in && \
+  echo 'Upgrading pip + installing build prerequisites' && \
+    pip install --upgrade pip setuptools wheel && \
+    echo 'Pre-installing torch and build helpers (required for flash-attn build)' && \
+    grep -E '^torch==' requirements.in | xargs pip install && \
+    pip install ninja packaging && \
+    echo 'Installing python dependencies' && \
+    FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip install --no-build-isolation -I -r requirements.in && \
     deactivate
 } || {
-  deactivate && \
-    rm -rf /usr/local/torch-tuner && \
-    echo 'Failed to install Torch Tuner CLI python dependencies' && \
-    exit 1
+  deactivate 2>/dev/null
+  rm -rf /usr/local/torch-tuner
+  echo 'Failed to install Torch Tuner CLI python dependencies'
+  exit 1
 }
 
 {
