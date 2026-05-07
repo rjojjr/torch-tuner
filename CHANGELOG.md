@@ -8,6 +8,7 @@
 - fix serve endpoint CUDA errors
 - add `--accepted-api-key` argument for serve mode
 - extend JSONL dataset format support to include LangGraph / OpenAI tool-call schema
+- fix bash installer script to install CLI from a non-master branch
 
 ## 2.3.1
 - disable gradient accumulation by default
