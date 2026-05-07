@@ -11,6 +11,7 @@
 - fix bash installer script to install CLI from a non-master branch
 - add case-insensitive file extension support
 - fix broken precision/quantization options
+- replace deprecated transformers `warmup_ratio` argument with `warmup_steps`
 
 ## 2.3.1
 - disable gradient accumulation by default

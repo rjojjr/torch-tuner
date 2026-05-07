@@ -10,8 +10,26 @@ from trl import SFTTrainer, SFTConfig
 from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
 from utils.dataset_utils import load_dataset, is_jsonl_path
+import math
 import os
 import shutil
+
+
+def compute_warmup_steps(num_train_examples: int,
+                         batch_size: int,
+                         gradient_accumulation_steps: int | None,
+                         epochs: int,
+                         warmup_ratio: float) -> int:
+    """Convert a `warmup_ratio` (deprecated in transformers in favor of `warmup_steps`)
+    into an explicit step count. Mirrors transformers' internal calculation:
+    `ceil(num_examples / effective_batch_size) * epochs * warmup_ratio`."""
+    if num_train_examples <= 0 or epochs <= 0 or warmup_ratio <= 0:
+        return 0
+    grad_accum = gradient_accumulation_steps if gradient_accumulation_steps else 1
+    effective_batch_size = max(1, batch_size * grad_accum)
+    steps_per_epoch = math.ceil(num_train_examples / effective_batch_size)
+    total_steps = steps_per_epoch * epochs
+    return int(round(warmup_ratio * total_steps))
 
 
 # LLM independent base functions
@@ -67,6 +85,15 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         model.print_trainable_parameters()
 
         learning_rate = arguments.batch_size * arguments.base_learning_rate
+        # transformers >=5.x deprecated `warmup_ratio` in favor of `warmup_steps`; convert here.
+        num_train_examples = len(ds['train']) if 'train' in ds else 0
+        warmup_steps = compute_warmup_steps(
+            num_train_examples=num_train_examples,
+            batch_size=arguments.batch_size,
+            gradient_accumulation_steps=arguments.gradient_accumulation_steps,
+            epochs=arguments.epochs,
+            warmup_ratio=arguments.warmup_ratio,
+        )
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
             data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=arguments.mlm_probability)
@@ -100,7 +127,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             bf16=arguments.is_bf16,
             max_grad_norm=arguments.max_gradient_norm,
             max_steps=-1,
-            warmup_ratio=arguments.warmup_ratio,
+            warmup_steps=warmup_steps,
             lr_scheduler_type=arguments.lr_scheduler_type,
             report_to="tensorboard",
             do_eval=arguments.do_eval,
