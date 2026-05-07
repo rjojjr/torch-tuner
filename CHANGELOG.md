@@ -10,6 +10,7 @@
 - extend JSONL dataset format support to include LangGraph / OpenAI tool-call schema
 - fix bash installer script to install CLI from a non-master branch
 - add case-insensitive file extension support
+- fix broken precision/quantization options
 
 ## 2.3.1
 - disable gradient accumulation by default

@@ -119,29 +119,65 @@ class TestTrainingCLICommands(unittest.TestCase):
         self.assertTrue(default_output_dir.startswith("~"))
 
     def test_cli_quantization_options_mutually_exclusive(self):
-        """Test that quantization options are mutually exclusive."""
-        # Test 4bit alone
+        """Test that quantization options (4bit/8bit) are mutually exclusive with each other."""
+        # 4bit alone is valid
         mock_args = Mock()
         mock_args.use_4bit = True
         mock_args.use_8bit = False
-        mock_args.use_bf_16 = False
-        mock_args.use_fp_16 = False
         
-        dt_args = [mock_args.use_4bit, mock_args.use_8bit, mock_args.use_bf_16, mock_args.use_fp_16]
-        dt_type_count = sum(dt_args)
-        self.assertEqual(dt_type_count, 1)
+        quantization_args = [mock_args.use_4bit, mock_args.use_8bit]
+        quantization_count = sum(quantization_args)
+        self.assertEqual(quantization_count, 1)
 
     def test_cli_quantization_options_multiple_enabled_invalid(self):
-        """Test that multiple quantization options cannot be enabled."""
+        """Test that multiple quantization options (4bit and 8bit together) cannot be enabled."""
         mock_args = Mock()
         mock_args.use_4bit = True
         mock_args.use_8bit = True
-        mock_args.use_bf_16 = False
-        mock_args.use_fp_16 = False
         
-        dt_args = [mock_args.use_4bit, mock_args.use_8bit, mock_args.use_bf_16, mock_args.use_fp_16]
-        dt_type_count = sum(dt_args)
-        self.assertGreater(dt_type_count, 1)
+        quantization_args = [mock_args.use_4bit, mock_args.use_8bit]
+        quantization_count = sum(quantization_args)
+        self.assertGreater(quantization_count, 1)
+
+    def test_cli_precision_options_mutually_exclusive(self):
+        """Test that precision options (fp16/bf16) are mutually exclusive with each other."""
+        # fp16 alone is valid
+        mock_args = Mock()
+        mock_args.is_fp16 = True
+        mock_args.is_bf16 = False
+        
+        precision_args = [mock_args.is_fp16, mock_args.is_bf16]
+        precision_count = sum(precision_args)
+        self.assertEqual(precision_count, 1)
+
+    def test_cli_precision_options_multiple_enabled_invalid(self):
+        """Test that multiple precision options (fp16 and bf16 together) cannot be enabled."""
+        mock_args = Mock()
+        mock_args.is_fp16 = True
+        mock_args.is_bf16 = True
+        
+        precision_args = [mock_args.is_fp16, mock_args.is_bf16]
+        precision_count = sum(precision_args)
+        self.assertGreater(precision_count, 1)
+
+    def test_cli_quantization_and_precision_are_independent(self):
+        """Test that quantization (4bit/8bit) and precision (fp16/bf16) are independent."""
+        # 4bit + fp16 should be allowed
+        mock_args = Mock()
+        mock_args.use_4bit = True
+        mock_args.use_8bit = False
+        mock_args.is_fp16 = True
+        mock_args.is_bf16 = False
+        
+        quantization_args = [mock_args.use_4bit, mock_args.use_8bit]
+        precision_args = [mock_args.is_fp16, mock_args.is_bf16]
+        
+        quantization_count = sum(quantization_args)
+        precision_count = sum(precision_args)
+        
+        # Both should be valid independently
+        self.assertEqual(quantization_count, 1)
+        self.assertEqual(precision_count, 1)
 
     def test_cli_padding_side_valid_values(self):
         """Test that padding side accepts valid values."""
