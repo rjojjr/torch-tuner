@@ -128,6 +128,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
 def do_initial_arg_validation(args):
     """Do initial argument validations."""
     # TODO - FIXME - Some of these validations are unaware of the mode being ran, but they should be
+    if getattr(args, 'accepted_api_key', None) and not args.serve:
+        raise ArgumentValidationException("'--accepted-api-key' can only be used with '--serve true'")
     if args.lora_r <= 0 or args.lora_alpha <= 0:
         raise ArgumentValidationException("'lora-r' and 'lora-alpha' must both be greater than zero")
     if not args.fine_tune and not args.merge and not args.push:
@@ -217,6 +219,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-mlmp', '--mlm-probability', help="MLM probability(default: 0.15)", type=lambda x: _parse_nullable_float_arg(x), default=0.15)
     parser.add_argument('-mt', '--mask-token', help="Mask token(default: \nObservation)", default="\nObservation")
     parser.add_argument('-mpr', '--max-parallel-requests', help="Maximum nuber of requests to execute against LLM in parallel(for serve only)(default: 1)", type=int, default=1)
+    parser.add_argument('-aak', '--accepted-api-key', help="API key required to call serve endpoints (passed as `Authorization: Bearer <key>`). Only valid with --serve. When unset or empty, endpoints are unauthenticated.(default: None)", type=lambda x: _parse_nullable_arg(x), default="None")
 
 
     parser.add_argument('-cm', '--is-chat-model', help="Tune your new model for chat(default: false)", type=lambda x: _parse_bool_arg(x), default="false")

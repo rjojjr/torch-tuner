@@ -14,9 +14,11 @@ class CliArguments:
 class ServerArguments(CliArguments):
     """LLM REST API server arguments."""
 
-    def __init__(self, port: int = 8080, debug: bool = False):
+    def __init__(self, port: int = 8080, debug: bool = False, accepted_api_key: str | None = None):
         self.port = port
         self.debug = debug
+        # Empty string normalizes to None — auth is only enforced for non-empty keys.
+        self.accepted_api_key = accepted_api_key if accepted_api_key else None
 
     def validate(self) -> None:
         if self.port <= 0:

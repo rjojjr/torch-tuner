@@ -86,4 +86,4 @@ def _execute_serve_mode(args):
                                                    padding_side=args.padding_side, max_parallel_requests=args.max_parallel_requests, use_cpu_only=args.cpu_only_tuning)
     llm_executor_factory = build_llm_executor_factory(llm_factory_args)
     server = OpenAiLlmServer(llm_executor_factory())
-    server.start_server(ServerArguments(port=args.serve_port, debug=args.debug))
+    server.start_server(ServerArguments(port=args.serve_port, debug=args.debug, accepted_api_key=args.accepted_api_key))
