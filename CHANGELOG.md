@@ -3,6 +3,7 @@
 ## 2.4.0
 - upgrade all dependencies
 - add unit/integration test framework
+- add support for OpenAI chat JSONL dataset format
 
 ## 2.3.1
 - disable gradient accumulation by default
