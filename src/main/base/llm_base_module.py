@@ -147,6 +147,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
         train = SFTTrainer(
             model=model,
+            # Pass our tokenizer through; without `processing_class` SFTTrainer
+            # silently rebuilds one from the model config, dropping our
+            # ChatML/tool-call chat template.
+            processing_class=tokenizer,
             # formatting_func=formatting_prompts_func,
             train_dataset=processed_tuning_dataset if arguments.do_train else processed_eval_dataset,
             args=train_params,

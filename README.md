@@ -122,6 +122,24 @@ Each line is a single `{"messages": [...]}` object. Roles are `system`, `user`, 
 This is the same schema used by OpenAI's fine-tuning API, so existing chat datasets
 can be used unchanged.
 
+###### Tool calls (LangGraph / ReAct agents)
+
+Tool-using conversations are supported via the OpenAI tool-call extension to the
+chat schema. Assistant turns may carry a `tool_calls` array, and tool results
+are passed back as messages with `role: "tool"` and a `tool_call_id` that
+matches the originating call:
+
+```jsonl
+{"messages": [{"role": "system", "content": "You are Newton AI."}, {"role": "user", "content": "What is 100 divided by 8?"}, {"role": "assistant", "content": "", "tool_calls": [{"id": "call_020", "type": "function", "function": {"name": "divide", "arguments": "{\"input\": \"100,8\"}"}}]}, {"role": "tool", "tool_call_id": "call_020", "content": "12.5"}, {"role": "assistant", "content": "100 divided by 8 is 12.5."}]}
+```
+
+The chat template renders each tool call inside `<tool_call> ... </tool_call>`
+delimiters as a JSON object containing `id`, `name`, and `arguments`, and renders
+each `role: "tool"` message under a `tool` ChatML block as
+`{"tool_call_id": ..., "content": ...}`. The `<tool_call>` and `</tool_call>`
+delimiters are registered as single special tokens so they tokenize cleanly during
+training.
+
 ##### Prompt / completion format
 
 Each line has a single prompt and the ideal response.
