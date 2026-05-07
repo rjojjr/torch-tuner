@@ -9,7 +9,7 @@ from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, Ta
 from trl import SFTTrainer, SFTConfig
 from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
-from utils.dataset_utils import load_dataset
+from utils.dataset_utils import load_dataset, is_jsonl_path
 import os
 import shutil
 
@@ -41,7 +41,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
         ds = load_dataset(arguments)
-        is_jsonl = arguments.train_file is not None and arguments.train_file.endswith("jsonl")
+        is_jsonl = is_jsonl_path(arguments.train_file)
         is_chat_jsonl = is_jsonl and 'train' in ds and "messages" in ds['train'].column_names
         is_prompt_completion_jsonl = is_jsonl and not is_chat_jsonl
 

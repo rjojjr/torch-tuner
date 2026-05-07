@@ -16,7 +16,7 @@ from datasets import Dataset, DatasetDict  # noqa: E402
 
 from arguments.arguments import TuneArguments  # noqa: E402
 from exception.exceptions import ArgumentValidationException  # noqa: E402
-from utils.dataset_utils import load_dataset as project_load_dataset  # noqa: E402
+from utils.dataset_utils import load_dataset as project_load_dataset, is_jsonl_path  # noqa: E402
 
 
 def _write_jsonl(path, rows):
@@ -334,6 +334,85 @@ class TestChatFormatDetectionContract(unittest.TestCase):
         self.assertFalse(is_jsonl)
         self.assertFalse(is_chat)
         self.assertFalse(is_pc)
+
+
+class TestIsJsonlPathHelper(unittest.TestCase):
+    """`is_jsonl_path` is the single source of truth for JSONL detection — checked
+    case-insensitively so .JSONL / .JsonL / etc. all route through the JSONL path."""
+
+    def test_lowercase_jsonl(self):
+        self.assertTrue(is_jsonl_path("foo.jsonl"))
+
+    def test_uppercase_jsonl(self):
+        self.assertTrue(is_jsonl_path("foo.JSONL"))
+
+    def test_mixed_case_jsonl(self):
+        self.assertTrue(is_jsonl_path("foo.JsonL"))
+
+    def test_path_with_directories(self):
+        self.assertTrue(is_jsonl_path("/some/dir/newton-latest.JSONL"))
+
+    def test_whitespace_around_path_is_tolerated(self):
+        self.assertTrue(is_jsonl_path("  foo.JSONL  "))
+
+    def test_non_jsonl_extension_is_false(self):
+        for path in ["foo.json", "foo.txt", "foo.csv", "foo", "foo.jsonl.bak"]:
+            self.assertFalse(is_jsonl_path(path), f"{path!r} should NOT be classified as jsonl")
+
+    def test_none_and_empty_are_false(self):
+        self.assertFalse(is_jsonl_path(None))
+        self.assertFalse(is_jsonl_path(""))
+
+
+class TestLoadDatasetUppercaseJsonlExtension(unittest.TestCase):
+    """A `.JSONL` file should route through the same JSONL branch as `.jsonl`,
+    not fall through to HuggingFace's extension auto-detection (which doesn't
+    recognize the uppercase variant)."""
+
+    def test_uppercase_jsonl_training_file_loads_via_json_loader(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "newton-latest.JSONL")
+            _write_jsonl(path, [
+                {"prompt": "a", "completion": "b"},
+                {"prompt": "c", "completion": "d"},
+            ])
+            args = _make_tune_args(training_data_dir=tmp, train_file="newton-latest.JSONL")
+
+            ds = project_load_dataset(args)
+
+            self.assertIn("train", ds)
+            self.assertEqual(len(ds["train"]), 2)
+            self.assertEqual(ds["train"].column_names, ["prompt", "completion"])
+
+    def test_uppercase_jsonl_chat_file_is_classified_as_chat_format(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "newton-latest.JSONL")
+            _write_jsonl(path, [{"messages": [{"role": "user", "content": "hi"}]}])
+            args = _make_tune_args(training_data_dir=tmp, train_file="newton-latest.JSONL")
+
+            ds = project_load_dataset(args)
+
+            self.assertIn("messages", ds["train"].column_names,
+                          "uppercase chat JSONL should still expose the `messages` column")
+
+    def test_uppercase_jsonl_eval_dataset_loads_via_json_loader(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            train_path = os.path.join(tmp, "train.jsonl")
+            eval_path = os.path.join(tmp, "EVAL.JSONL")
+            _write_jsonl(train_path, [{"prompt": "p", "completion": "c"}])
+            _write_jsonl(eval_path, [{"prompt": "e", "completion": "v"}])
+            args = _make_tune_args(
+                training_data_dir=tmp,
+                train_file="train.jsonl",
+                do_eval=True,
+                eval_dataset=eval_path,
+            )
+
+            ds = project_load_dataset(args)
+
+            self.assertIn("eval", ds)
+            self.assertEqual(len(ds["eval"]), 1)
+            self.assertEqual(ds["eval"][0]["prompt"], "e")
 
 
 if __name__ == "__main__":

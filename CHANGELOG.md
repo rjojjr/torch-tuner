@@ -9,6 +9,7 @@
 - add `--accepted-api-key` argument for serve mode
 - extend JSONL dataset format support to include LangGraph / OpenAI tool-call schema
 - fix bash installer script to install CLI from a non-master branch
+- add case-insensitive file extension support
 
 ## 2.3.1
 - disable gradient accumulation by default
