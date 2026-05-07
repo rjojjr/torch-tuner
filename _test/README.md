@@ -84,14 +84,12 @@ python3 -m unittest _test.main.exception.test_exceptions.TestTunerException.test
   - Flash attention and target modules
   - Debug mode and output settings
 
-- `test_training_integration.py` - Tests for CLI command behavior and function call layers (11 tests)
-  - **Fine-tune command**: Executes fine_tune function, doesn't execute merge/push (2 tests - PASSING)
-  - **Merge command**: Executes merge function, doesn't execute fine_tune/push (2 tests - PASSING)
-  - **Push command**: Executes push function, doesn't execute fine_tune/merge (2 tests - PASSING)
-  - **Tuner factory**: Creates Tuner with llama or generic training functions based on LLM type (2 tests - SKIPPED: torch not installed)
-  - **Argument passing**: TuneArguments, MergeArguments, and PushArguments passed correctly through layers (3 tests - PASSING)
-
-**Total: 78 tests (2 skipped due to missing torch dependency)**
+- `test_training_integration.py` - Tests for CLI command behavior and function call layers
+  - Fine-tune command execution and isolation
+  - Merge command execution and isolation
+  - Push command execution and isolation
+  - Tuner factory with different LLM types
+  - Argument passing through layers
 
 ## Adding New Tests
 
