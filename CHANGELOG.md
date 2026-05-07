@@ -12,6 +12,7 @@
 - add case-insensitive file extension support
 - fix broken precision/quantization options
 - replace deprecated transformers `warmup_ratio` argument with `warmup_steps`
+- fix `--fp32-cpu-offload` when using quantization
 
 ## 2.3.1
 - disable gradient accumulation by default

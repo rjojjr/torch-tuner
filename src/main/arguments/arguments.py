@@ -307,6 +307,7 @@ class MergeArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
+                 fp32_cpu_offload: bool = False,
                  output_dir: str = '../../models',
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
@@ -317,7 +318,7 @@ class MergeArguments(TunerFunctionArguments):
                  is_debug_mode: bool = False,
                  train_masked_language_model: bool = False,
                  mask_token: str = '\nObservation'):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload=fp32_cpu_offload, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.base_model = base_model
         self.output_dir = output_dir
         self.overwrite_output = overwrite_output
@@ -356,6 +357,7 @@ class PushArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
+                 fp32_cpu_offload: bool = False,
                  public_push: bool = False,
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
@@ -363,7 +365,7 @@ class PushArguments(TunerFunctionArguments):
                  additional_vocabulary_tokens: list | None = None,
                  huggingface_auth_token: str | None = None,
                  is_debug_mode: bool = False):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload=fp32_cpu_offload, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.model_dir = model_dir
         self.public_push = public_push
 
