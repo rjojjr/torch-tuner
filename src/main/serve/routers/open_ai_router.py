@@ -3,31 +3,21 @@ import uuid
 
 from utils import time_utils
 from utils.serve_utils import parse_temp
-import tiktoken
 from serve.llm_executor import LlmExecutor
-
-encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 
 def build_routes(app: Flask, llm: LlmExecutor) -> None:
-
-    # TODO - How does Open AI parse chat messages?
-    def _construct_chat_prompt(body: dict) -> str:
-        prompt = ""
-        for msg in body['messages']:
-            prompt = f"{prompt}{msg['role']}: {msg['content']}\n"
-        return prompt
 
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
         # TODO - implement other body properties that configure how response is generated
         body = request.get_json(force=True)
 
-        prompt = _construct_chat_prompt(body)
+        prompt = llm.apply_chat_template(body['messages'])
         max_tokens = int(body['max_tokens']) if 'max_tokens' in body else 100
         completion = llm.completion(prompt, max_tokens, parse_temp(float(body['temperature']) if 'temperature' in body else 0), stops=body['stop'] if 'stop' in body else None, repetition_penalty=body['frequency_penalty'] if 'frequency_penalty' in body else None)
-        prompt_tokens = len(encoding.encode(prompt))
-        completion_tokens = len(encoding.encode(completion))
+        prompt_tokens = llm.count_tokens(prompt)
+        completion_tokens = llm.count_tokens(completion)
         chat_response = {
             "id": str(uuid.uuid4()),
             "object": "chat.completion",
@@ -56,8 +46,8 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
         body = request.get_json(force=True)
         max_tokens = int(body['max_tokens']) if 'max_tokens' in body else 100
         completion = llm.completion(body['prompt'], max_tokens, parse_temp(float(body['temperature']) if 'temperature' in body else 0), stops=body['stop'] if 'stop' in body else None, repetition_penalty=body['frequency_penalty'] if 'frequency_penalty' in body else None)
-        prompt_tokens = len(encoding.encode(body['prompt']))
-        completion_tokens = len(encoding.encode(completion))
+        prompt_tokens = llm.count_tokens(body['prompt'])
+        completion_tokens = llm.count_tokens(completion)
 
         completion_response = {
             "id": str(uuid.uuid4()),

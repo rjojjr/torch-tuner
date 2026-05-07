@@ -26,4 +26,6 @@ class OpenAiLlmServer(LlmServer):
 
         open_ai_router.build_routes(app, self._llm)
 
-        app.run(host='0.0.0.0', port=arguments.port, debug=arguments.debug)
+        # use_reloader=False is critical: the reloader forks a child process
+        # that re-loads the LLM, doubling GPU/CPU memory.
+        app.run(host='0.0.0.0', port=arguments.port, debug=arguments.debug, use_reloader=False)
