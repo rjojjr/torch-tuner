@@ -4,6 +4,8 @@
 - upgrade all dependencies
 - add unit/integration test framework
 - add support for OpenAI chat JSONL dataset format
+- fix serve endpoint token count and request parsing
+- fix serve endpoint CUDA errors
 
 ## 2.3.1
 - disable gradient accumulation by default
