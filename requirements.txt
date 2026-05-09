@@ -24,4 +24,3 @@ intel_extension_for_pytorch==2.8.0
 
 # Serve Dependencies
 Flask==3.1.3
-tiktoken==0.12.0

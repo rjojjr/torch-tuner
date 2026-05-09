@@ -91,6 +91,15 @@ python3 -m unittest _test.main.exception.test_exceptions.TestTunerException.test
   - Tuner factory with different LLM types
   - Argument passing through layers
 
+- `test_dataset_utils.py` - Tests for dataset parsing logic (16 tests)
+  - Prompt/completion JSONL loading
+  - OpenAI chat-format JSONL loading (`{"messages": [...]}`)
+  - Non-JSONL training files (CSV)
+  - Hugging Face training-dataset-id routing (mocked)
+  - Eval routing: train-as-eval fallback, eval JSONL/CSV, eval-only mode, HF eval id
+  - Missing eval-dataset raises `ArgumentValidationException`
+  - Chat-format detection contract (what `llm_base_module` relies on)
+
 ## Adding New Tests
 
 1. Create a new file named `test_*.py` in the appropriate subdirectory under `_test/main/`

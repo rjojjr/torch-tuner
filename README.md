@@ -99,14 +99,52 @@ large amounts of plain/unstructured text.
 #### JSON Lines(JSONL)
 
 Torch Tuner accepts [JSONL](https://jsonlines.org/) training data in addition to plain text.
+Pass a `.jsonl` file via `--training-data-file` and the format is detected automatically
+from the columns of the loaded dataset:
 
-Accepted JSONL Formats:
+| Format | Trigger | How it is processed |
+| --- | --- | --- |
+| OpenAI chat | each row has a `messages` array | Passed straight to the SFT trainer; the tokenizer's chat template (ChatML by default) is applied per row at training time. |
+| Prompt / completion | each row has `prompt` and `completion` fields | Tokenized in advance with `tokenizer(prompts, text_target=completions, ...)`. |
 
-```json lines
-{"messages": [{"role": "system", "content": "You are helpful"}, {"role":  "user", "content":  "Hi!"}]}
+The same auto-detection applies to `--eval-dataset` when it points at a `.jsonl` file.
 
-OR
+##### OpenAI chat format
 
+Each line is a single `{"messages": [...]}` object. Roles are `system`, `user`, and
+`assistant`; multi-turn conversations are supported by listing more messages.
+
+```jsonl
+{"messages": [{"role": "system", "content": "You are a helper that extracts data into JSON."}, {"role": "user", "content": "The car is a red 2022 Tesla Model 3."}, {"role": "assistant", "content": "{\"make\": \"Tesla\", \"model\": \"Model 3\", \"color\": \"red\", \"year\": 2022}"}]}
+{"messages": [{"role": "user", "content": "Hi!"}, {"role": "assistant", "content": "Hello — how can I help?"}]}
+```
+
+This is the same schema used by OpenAI's fine-tuning API, so existing chat datasets
+can be used unchanged.
+
+###### Tool calls (LangGraph / ReAct agents)
+
+Tool-using conversations are supported via the OpenAI tool-call extension to the
+chat schema. Assistant turns may carry a `tool_calls` array, and tool results
+are passed back as messages with `role: "tool"` and a `tool_call_id` that
+matches the originating call:
+
+```jsonl
+{"messages": [{"role": "system", "content": "You are Newton AI."}, {"role": "user", "content": "What is 100 divided by 8?"}, {"role": "assistant", "content": "", "tool_calls": [{"id": "call_020", "type": "function", "function": {"name": "divide", "arguments": "{\"input\": \"100,8\"}"}}]}, {"role": "tool", "tool_call_id": "call_020", "content": "12.5"}, {"role": "assistant", "content": "100 divided by 8 is 12.5."}]}
+```
+
+The chat template renders each tool call inside `<tool_call> ... </tool_call>`
+delimiters as a JSON object containing `id`, `name`, and `arguments`, and renders
+each `role: "tool"` message under a `tool` ChatML block as
+`{"tool_call_id": ..., "content": ...}`. The `<tool_call>` and `</tool_call>`
+delimiters are registered as single special tokens so they tokenize cleanly during
+training.
+
+##### Prompt / completion format
+
+Each line has a single prompt and the ideal response.
+
+```jsonl
 {"prompt": "<context & prompt>", "completion": "<ideal AI response>"}
 ```
 

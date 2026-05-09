@@ -3,31 +3,45 @@ import uuid
 
 from utils import time_utils
 from utils.serve_utils import parse_temp
-import tiktoken
 from serve.llm_executor import LlmExecutor
 
-encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+
+_FORBIDDEN_BODY = {"error": {"message": "Forbidden", "type": "invalid_request_error", "code": 403}}
 
 
-def build_routes(app: Flask, llm: LlmExecutor) -> None:
+def _extract_bearer_token(req) -> str | None:
+    header = req.headers.get("Authorization", "")
+    if header.startswith("Bearer "):
+        return header[len("Bearer "):].strip() or None
+    return None
 
-    # TODO - How does Open AI parse chat messages?
-    def _construct_chat_prompt(body: dict) -> str:
-        prompt = ""
-        for msg in body['messages']:
-            prompt = f"{prompt}{msg['role']}: {msg['content']}\n"
-        return prompt
+
+def build_routes(app: Flask, llm: LlmExecutor, accepted_api_key: str | None = None) -> None:
+    # Normalize: empty string disables auth, same as not providing the arg.
+    expected_key = accepted_api_key if accepted_api_key else None
+
+    def _check_auth():
+        if expected_key is None:
+            return None
+        if _extract_bearer_token(request) != expected_key:
+            return jsonify(_FORBIDDEN_BODY), 403
+        return None
 
     @app.route("/v1/chat/completions", methods=['POST'])
     def chat_completions_endpoint():
+        unauthorized = _check_auth()
+        if unauthorized is not None:
+            return unauthorized
+        # TODO - implement other body properties that configure how response is generated
+        body = request.get_json(force=True)
         # TODO - implement other body properties that configure how response is generated
         body = request.get_json(force=True)
 
-        prompt = _construct_chat_prompt(body)
+        prompt = llm.apply_chat_template(body['messages'])
         max_tokens = int(body['max_tokens']) if 'max_tokens' in body else 100
         completion = llm.completion(prompt, max_tokens, parse_temp(float(body['temperature']) if 'temperature' in body else 0), stops=body['stop'] if 'stop' in body else None, repetition_penalty=body['frequency_penalty'] if 'frequency_penalty' in body else None)
-        prompt_tokens = len(encoding.encode(prompt))
-        completion_tokens = len(encoding.encode(completion))
+        prompt_tokens = llm.count_tokens(prompt)
+        completion_tokens = llm.count_tokens(completion)
         chat_response = {
             "id": str(uuid.uuid4()),
             "object": "chat.completion",
@@ -53,11 +67,14 @@ def build_routes(app: Flask, llm: LlmExecutor) -> None:
 
     @app.route("/v1/completions", methods=['POST'])
     def completions_endpoint():
+        unauthorized = _check_auth()
+        if unauthorized is not None:
+            return unauthorized
         body = request.get_json(force=True)
         max_tokens = int(body['max_tokens']) if 'max_tokens' in body else 100
         completion = llm.completion(body['prompt'], max_tokens, parse_temp(float(body['temperature']) if 'temperature' in body else 0), stops=body['stop'] if 'stop' in body else None, repetition_penalty=body['frequency_penalty'] if 'frequency_penalty' in body else None)
-        prompt_tokens = len(encoding.encode(body['prompt']))
-        completion_tokens = len(encoding.encode(completion))
+        prompt_tokens = llm.count_tokens(body['prompt'])
+        completion_tokens = llm.count_tokens(completion)
 
         completion_response = {
             "id": str(uuid.uuid4()),

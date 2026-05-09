@@ -33,23 +33,19 @@ def merge(arguments: MergeArguments) -> None:
 def push(arguments: PushArguments) -> None:
     """Llama specific push function."""
     with debugging_wrapper(arguments.is_debug_mode):
-        bnb_config, dtype = get_bnb_config_and_dtype(arguments)
+        _, dtype = get_bnb_config_and_dtype(arguments)
 
-        if not arguments.use_8bit and not arguments.use_4bit:
-            model = LlamaForCausalLM.from_pretrained(
-                arguments.model_dir,
-                low_cpu_mem_usage=False,
-                return_dict=True,
-                torch_dtype=dtype
-            )
-        else:
-            model = LlamaForCausalLM.from_pretrained(
-                arguments.model_dir,
-                low_cpu_mem_usage=True,
-                return_dict=True,
-                quantization_config=bnb_config,
-                device_map="auto"
-            )
+        # Push only uploads weights to the Hub — no inference happens here, so
+        # we deliberately load without `quantization_config` even when --use-4bit/
+        # --use-8bit is set. Re-quantizing at push time is unnecessary and trips
+        # transformers/bitsandbytes version drift (Params4bit.__new__ rejecting
+        # `_is_hf_initialized` leaked via `**old_value.__dict__`).
+        model = LlamaForCausalLM.from_pretrained(
+            arguments.model_dir,
+            low_cpu_mem_usage=True,
+            return_dict=True,
+            torch_dtype=dtype
+        )
 
         tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
         if arguments.padding_side is not None:

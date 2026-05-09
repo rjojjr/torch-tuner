@@ -1,5 +1,6 @@
 #!/bin/bash
 
-source /usr/local/torch-tuner/.venv/bin/activate
-python3.10 /usr/local/torch-tuner/src/main/main.py "$@"
-deactivate
+# Invoke the venv's python interpreter directly. This works regardless of which
+# python (3.10/3.11/3.12) the venv was created from and avoids the cost +
+# subshell side-effects of `source activate`.
+exec /usr/local/torch-tuner/.venv/bin/python /usr/local/torch-tuner/src/main/main.py "$@"
