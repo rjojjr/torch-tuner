@@ -9,9 +9,27 @@ from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, Ta
 from trl import SFTTrainer, SFTConfig
 from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
-from utils.dataset_utils import load_dataset
+from utils.dataset_utils import load_dataset, is_jsonl_path
+import math
 import os
 import shutil
+
+
+def compute_warmup_steps(num_train_examples: int,
+                         batch_size: int,
+                         gradient_accumulation_steps: int | None,
+                         epochs: int,
+                         warmup_ratio: float) -> int:
+    """Convert a `warmup_ratio` (deprecated in transformers in favor of `warmup_steps`)
+    into an explicit step count. Mirrors transformers' internal calculation:
+    `ceil(num_examples / effective_batch_size) * epochs * warmup_ratio`."""
+    if num_train_examples <= 0 or epochs <= 0 or warmup_ratio <= 0:
+        return 0
+    grad_accum = gradient_accumulation_steps if gradient_accumulation_steps else 1
+    effective_batch_size = max(1, batch_size * grad_accum)
+    steps_per_epoch = math.ceil(num_train_examples / effective_batch_size)
+    total_steps = steps_per_epoch * epochs
+    return int(round(warmup_ratio * total_steps))
 
 
 # LLM independent base functions
@@ -41,6 +59,10 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             base_model, tokenizer = prepare_model_vocabulary(arguments, base_model, tokenizer)
 
         ds = load_dataset(arguments)
+        is_jsonl = is_jsonl_path(arguments.train_file)
+        is_chat_jsonl = is_jsonl and 'train' in ds and "messages" in ds['train'].column_names
+        is_prompt_completion_jsonl = is_jsonl and not is_chat_jsonl
+
         if arguments.target_modules is None or len(arguments.target_modules) == 0:
             target_modules = get_all_layers(base_model) if arguments.target_all_modules else get_all_linear_layers(base_model)
         else:
@@ -63,15 +85,25 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
         model.print_trainable_parameters()
 
         learning_rate = arguments.batch_size * arguments.base_learning_rate
+        # transformers >=5.x deprecated `warmup_ratio` in favor of `warmup_steps`; convert here.
+        num_train_examples = len(ds['train']) if 'train' in ds else 0
+        warmup_steps = compute_warmup_steps(
+            num_train_examples=num_train_examples,
+            batch_size=arguments.batch_size,
+            gradient_accumulation_steps=arguments.gradient_accumulation_steps,
+            epochs=arguments.epochs,
+            warmup_ratio=arguments.warmup_ratio,
+        )
         if arguments.train_masked_language_model:
             tokenizer._mask_token = arguments.mask_token
             data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=arguments.mlm_probability)
 
+        # transformers 5.0 / trl 1.x removed: include_tokens_per_second, overwrite_output_dir,
+        # group_by_length, use_ipex. max_seq_length was renamed to max_length.
         train_params = SFTConfig(
             output_dir=output_dir,
             load_best_model_at_end=arguments.load_best_before_save,
             do_train=arguments.do_train,
-            include_tokens_per_second=arguments.show_token_metrics,
             include_num_input_tokens_seen=arguments.show_token_metrics,
             num_train_epochs=arguments.epochs,
             torch_empty_cache_steps=arguments.torch_empty_cache_steps,
@@ -80,7 +112,6 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
             gradient_checkpointing=True,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
-            overwrite_output_dir=arguments.overwrite_output,
             optim=arguments.optimizer_type,
             save_strategy=arguments.save_strategy,
             save_steps=arguments.save_steps,
@@ -96,18 +127,16 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             bf16=arguments.is_bf16,
             max_grad_norm=arguments.max_gradient_norm,
             max_steps=-1,
-            warmup_ratio=arguments.warmup_ratio,
-            group_by_length=arguments.group_by_length,
+            warmup_steps=warmup_steps,
             lr_scheduler_type=arguments.lr_scheduler_type,
             report_to="tensorboard",
             do_eval=arguments.do_eval,
             eval_strategy=arguments.eval_strategy if arguments.do_eval else 'no',
             eval_on_start=arguments.do_eval,
-            max_seq_length=arguments.max_seq_length,
+            max_length=arguments.max_seq_length,
             neftune_noise_alpha=arguments.neftune_noise_alpha if arguments.is_instruct_model else None,
-            dataset_text_field="text" ,
-            label_names=["completions"] if arguments.train_file.endswith("jsonl") else ['labels'],
-            use_ipex=arguments.cpu_only_tuning,
+            dataset_text_field="text",
+            label_names=["completions"] if is_prompt_completion_jsonl else ['labels'],
         )
 
         # TODO - custom dataset formatting
@@ -132,18 +161,23 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
 
             return tokenize_jsonl_dataset
 
-        processed_tuning_dataset = ds['train'].map(
-            tokenize_jsonl_dataset_factory(),
-            batched=True,
-            desc="Tokenized dataset") if arguments.train_file.endswith("jsonl") else ds['train']
+        # OpenAI chat-format JSONL ({"messages": [...]}) is passed through; SFTTrainer
+        # applies the tokenizer's chat template to the `messages` column at training time.
+        # Prompt/completion JSONL is pre-tokenized below.
+        def _process_split(split_ds, desc):
+            if is_prompt_completion_jsonl:
+                return split_ds.map(tokenize_jsonl_dataset_factory(), batched=True, desc=desc)
+            return split_ds
 
-        processed_eval_dataset = (ds['eval'].map(
-            tokenize_jsonl_dataset_factory(),
-            batched=True,
-            desc="Tokenized eval dataset") if arguments.train_file.endswith("jsonl") else ds['eval']) if 'eval' in ds else processed_tuning_dataset
+        processed_tuning_dataset = _process_split(ds['train'], "Tokenized dataset")
+        processed_eval_dataset = _process_split(ds['eval'], "Tokenized eval dataset") if 'eval' in ds else processed_tuning_dataset
 
         train = SFTTrainer(
             model=model,
+            # Pass our tokenizer through; without `processing_class` SFTTrainer
+            # silently rebuilds one from the model config, dropping our
+            # ChatML/tool-call chat template.
+            processing_class=tokenizer,
             # formatting_func=formatting_prompts_func,
             train_dataset=processed_tuning_dataset if arguments.do_train else processed_eval_dataset,
             args=train_params,

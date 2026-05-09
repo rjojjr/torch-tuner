@@ -14,9 +14,11 @@ class CliArguments:
 class ServerArguments(CliArguments):
     """LLM REST API server arguments."""
 
-    def __init__(self, port: int = 8080, debug: bool = False):
+    def __init__(self, port: int = 8080, debug: bool = False, accepted_api_key: str | None = None):
         self.port = port
         self.debug = debug
+        # Empty string normalizes to None — auth is only enforced for non-empty keys.
+        self.accepted_api_key = accepted_api_key if accepted_api_key else None
 
     def validate(self) -> None:
         if self.port <= 0:
@@ -38,13 +40,23 @@ class LlmArguments(CliArguments):
         self.max_parallel_requests = max_parallel_requests
 
     def validate(self) -> None:
-        dt_type_count = 0
-        dt_args = [self.use_4bit, self.use_8bit, self.is_bf16, self.is_fp16]
-        for dt_arg in dt_args:
-            if dt_arg:
-                dt_type_count += 1
-        if dt_type_count > 1:
-            raise ArgumentValidationException("only one of `use-4bit`, `use-8bit`, `is-bf16` or `is-fp16` data type options can be enabled at any instance in time")
+        # Quantization options (4bit/8bit) are mutually exclusive with each other
+        quantization_count = 0
+        quantization_args = [self.use_4bit, self.use_8bit]
+        for quant_arg in quantization_args:
+            if quant_arg:
+                quantization_count += 1
+        if quantization_count > 1:
+            raise ArgumentValidationException("only one of `use-4bit` or `use-8bit` can be enabled at any instance in time")
+
+        # Precision options (fp16/bf16) are mutually exclusive with each other
+        precision_count = 0
+        precision_args = [self.is_bf16, self.is_fp16]
+        for prec_arg in precision_args:
+            if prec_arg:
+                precision_count += 1
+        if precision_count > 1:
+            raise ArgumentValidationException("only one of `is-bf16` or `is-fp16` can be enabled at any instance in time")
 
         if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
             raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
@@ -85,13 +97,23 @@ class TunerFunctionArguments(CliArguments):
         if not is_valid:
             raise ArgumentValidationException("'Tuner Arguments' are missing required properties")
 
-        dt_type_count = 0
-        dt_args = [self.use_4bit, self.use_8bit, self.is_bf16, self.is_fp16]
-        for dt_arg in dt_args:
-            if dt_arg:
-                dt_type_count += 1
-        if dt_type_count > 1:
-            raise ArgumentValidationException("only one of `use-4bit`, `use-8bit`, `is-bf16` or `is-fp16` data type options can be enabled at any instance in time")
+        # Quantization options (4bit/8bit) are mutually exclusive with each other
+        quantization_count = 0
+        quantization_args = [self.use_4bit, self.use_8bit]
+        for quant_arg in quantization_args:
+            if quant_arg:
+                quantization_count += 1
+        if quantization_count > 1:
+            raise ArgumentValidationException("only one of `use-4bit` or `use-8bit` can be enabled at any instance in time")
+
+        # Precision options (fp16/bf16) are mutually exclusive with each other
+        precision_count = 0
+        precision_args = [self.is_bf16, self.is_fp16]
+        for prec_arg in precision_args:
+            if prec_arg:
+                precision_count += 1
+        if precision_count > 1:
+            raise ArgumentValidationException("only one of `is-bf16` or `is-fp16` can be enabled at any instance in time")
 
         if self.padding_side is not None and not (self.padding_side == 'right' or self.padding_side == 'left'):
             raise ArgumentValidationException("`padding-side` must be one of either 'None', 'left' or 'right'")
@@ -285,6 +307,7 @@ class MergeArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
+                 fp32_cpu_offload: bool = False,
                  output_dir: str = '../../models',
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
@@ -295,7 +318,7 @@ class MergeArguments(TunerFunctionArguments):
                  is_debug_mode: bool = False,
                  train_masked_language_model: bool = False,
                  mask_token: str = '\nObservation'):
-        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
+        super(MergeArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload=fp32_cpu_offload, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.base_model = base_model
         self.output_dir = output_dir
         self.overwrite_output = overwrite_output
@@ -334,6 +357,7 @@ class PushArguments(TunerFunctionArguments):
                  is_bf16: bool = False,
                  use_4bit: bool = False,
                  use_8bit: bool = False,
+                 fp32_cpu_offload: bool = False,
                  public_push: bool = False,
                  is_chat_model: bool = True,
                  padding_side: str | None = 'right',
@@ -341,7 +365,7 @@ class PushArguments(TunerFunctionArguments):
                  additional_vocabulary_tokens: list | None = None,
                  huggingface_auth_token: str | None = None,
                  is_debug_mode: bool = False):
-        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
+        super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload=fp32_cpu_offload, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.model_dir = model_dir
         self.public_push = public_push
 
