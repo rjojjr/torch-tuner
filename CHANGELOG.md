@@ -1,5 +1,8 @@
 # Torch Tuner CHANGELOG
 
+## 2.4.1
+- update installer staller script in install launcher in `/usr/local/bin`
+
 ## 2.4.0
 - upgrade all dependencies
 - add unit/integration test framework
