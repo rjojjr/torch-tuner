@@ -48,7 +48,7 @@ and execute it with one of the following single commands:
 
 ```shell
 # Linux, MacOS & WSL
-curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | bash
 
 # Windows(non-WSL) (requires git & python3.11 already installed on target machine)
 curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
@@ -68,7 +68,7 @@ You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
 # Linux, MacOS & WSL
-sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
+/usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
 
 # Windows 
 "%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
