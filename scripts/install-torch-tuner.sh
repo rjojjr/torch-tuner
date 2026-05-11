@@ -34,12 +34,21 @@ if [[ "$INSTALL_APT_DEPS" == "1" ]]; then
 
 fi
 
-cd /usr/local || (mkdir -p /usr/local && (cd /usr/local || (echo 'failed to create install directory at /usr/local' && exit 1)))
+cd /usr/local || (mkdir -p /usr/local/bin && (cd /usr/local || (echo 'failed to create install directory at /usr/local' && exit 1)))
 
 if [ -d ./torch-tuner ]; then
   echo "Removing old Torch Tuner CLI install"
   {
     rm -rf ./torch-tuner
+    if [ -d /bin/torch-tuner ]; then
+      echo "Removing old Torch Tuner CLI launcher"
+      {
+        rm /bin/torch-tuner
+      } || {
+        echo 'Failed to remove old Torch Tuner CLI launcher' && \
+        exit 1
+      }
+    fi
   } || {
     echo 'Failed to remove old Torch Tuner CLI install' && \
     exit 1
@@ -90,11 +99,11 @@ fi
 }
 
 {
-    cp scripts/torch-tuner /bin/torch-tuner && \
-      chmod +x /bin/torch-tuner && \
-      chmod -R 755 /usr/local/torch-tuner
+    cp scripts/torch-tuner /usr/local/bin/torch-tuner && \
+      chmod -R 755 /usr/local/torch-tuner && \
+      chmod +x /usr/local/bin/torch-tuner
 } || {
-  rm -rf /usr/local/torch-tuner && \
+  rm -rf /usr/local/torch-tuner && rm /usr/local/bin/torch-tuner \
   echo 'Failed to install Torch Tuner CLI bash cmd in /bin'
 }
 
