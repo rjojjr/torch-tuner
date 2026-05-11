@@ -41,9 +41,9 @@ if [ -d ./torch-tuner ]; then
   {
     rm -rf ./torch-tuner
     if [ -d /bin/torch-tuner ]; then
-      echo "Removing old Torch Tuner CLI launcher"
+      echo "Removing old Torch Tuner CLI launcher(REQUIRES SUDO)"
       {
-        rm /bin/torch-tuner
+        sudo rm /bin/torch-tuner
       } || {
         echo 'Failed to remove old Torch Tuner CLI launcher' && \
         exit 1
