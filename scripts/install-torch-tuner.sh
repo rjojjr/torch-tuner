@@ -116,10 +116,12 @@ fi
 
 {
     cp scripts/torch-tuner "$INSTALL_PREFIX/bin/torch-tuner" && \
+      cp scripts/uninstall-torch-tuner.sh "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh" && \
       chmod -R 755 "$INSTALL_PREFIX/torch-tuner" && \
-      chmod +x "$INSTALL_PREFIX/bin/torch-tuner"
+      chmod +x "$INSTALL_PREFIX/bin/torch-tuner" && \
+      chmod +x "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
 } || {
-  rm -rf "$INSTALL_PREFIX/torch-tuner" && rm "$INSTALL_PREFIX/bin/torch-tuner" \
+  rm -rf "$INSTALL_PREFIX/torch-tuner" && rm "$INSTALL_PREFIX/bin/torch-tuner" && rm "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
   echo 'Failed to install Torch Tuner CLI bash cmd in /bin'
 }
 

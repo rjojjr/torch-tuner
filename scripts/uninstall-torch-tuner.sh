@@ -9,5 +9,6 @@ if [[ "$(uname)" == "Darwin" ]] && [[ "$(uname -m)" == "arm64" ]]; then
 fi
 
 rm -rf "$INSTALL_PREFIX/bin/torch-tuner"
+rm -rf "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
 rm -rf "$INSTALL_PREFIX/torch-tuner"
 echo 'Uninstalled Torch Tuner CLI'
