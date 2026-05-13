@@ -1,6 +1,12 @@
 from arguments.arguments import TunerFunctionArguments, LlmExecutorFactoryArguments
 import torch
-from transformers import BitsAndBytesConfig
+
+_bitsandbytes_available = False
+try:
+    from transformers import BitsAndBytesConfig
+    _bitsandbytes_available = True
+except ImportError:
+    BitsAndBytesConfig = None  # type: ignore
 
 
 def get_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -> torch.dtype:
@@ -14,8 +20,11 @@ def get_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -
     return dtype
 
 
-def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -> tuple[BitsAndBytesConfig, torch.dtype]:
-    """Construct configured BitsAndBytesConfig."""
+def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -> tuple[object | None, torch.dtype]:
+    """Construct configured BitsAndBytesConfig, or None on MPS/CPU."""
+    if torch.backends.mps.is_available():
+        return None, torch.float16
+
     dtype = get_dtype(arguments)
     bnb_config = BitsAndBytesConfig(
         llm_int8_enable_fp32_cpu_offload=arguments.fp32_cpu_offload,

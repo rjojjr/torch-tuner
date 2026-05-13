@@ -91,11 +91,21 @@ fi
 {
   echo 'Upgrading pip + installing build prerequisites' && \
     pip install --upgrade pip setuptools wheel && \
-    echo 'Pre-installing torch and build helpers (required for flash-attn build)' && \
-    grep -E '^torch==' requirements.in | xargs pip install && \
-    pip install ninja packaging && \
-    echo 'Installing python dependencies' && \
-    FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip install --no-build-isolation -I -r requirements.in && \
+    {
+      if [[ "$(uname)" == "Darwin" ]]; then
+        echo 'Installing MPS-compatible PyTorch for macOS (no CUDA build)' && \
+          pip install torch torchvision && \
+          grep -v '^torch==' requirements.in > /tmp/requirements-macos.in && \
+          FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip install --no-build-isolation -I -r /tmp/requirements-macos.in && \
+          rm /tmp/requirements-macos.in
+      else
+        echo 'Pre-installing torch (required for flash-attn build)' && \
+          grep -E '^torch==' requirements.in | xargs pip install && \
+          pip install ninja packaging && \
+          echo 'Installing python dependencies' && \
+          FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip install --no-build-isolation -I -r requirements.in
+      fi
+    } && \
     deactivate
 } || {
   deactivate 2>/dev/null
