@@ -12,31 +12,37 @@ fi
 # TODO - argument to install from local repo(no git clone)
 
 # Branch is overridable via:
-#   * the --branch=<name> CLI arg, e.g.:
+#    * the --branch=<name> CLI arg, e.g.:
 #       curl ... | sudo bash -s -- --branch=my-branch
-#   * or the BRANCH env var when invoked directly (not via piped `sudo`):
+#    * or the BRANCH env var when invoked directly (not via piped `sudo`):
 #       sudo BRANCH=my-branch bash ./install-torch-tuner.sh
 # Defaults to the repo's default (master).
 BRANCH="${BRANCH:-}"
 
 # TODO - install deps. for other OSes
 INSTALL_APT_DEPS=0
+USER_INSTALL=0
 for arg in "$@"; do
   case "$arg" in
-    --install-apt-deps) INSTALL_APT_DEPS=1 ;;
-    --branch=*) BRANCH="${arg#--branch=}" ;;
+     --install-apt-deps) INSTALL_APT_DEPS=1 ;;
+     --branch=*) BRANCH="${arg#--branch=}" ;;
+     --user) USER_INSTALL=1 ;;
   esac
 done
 
+if [[ "$USER_INSTALL" == "1" ]]; then
+  INSTALL_PREFIX="$HOME/.local"
+fi
+
 if [[ "$INSTALL_APT_DEPS" == "1" ]]; then
   echo 'Installing apt dependencies'
-  {
+   {
     apt install python3-pip -y && \
       apt install python3-venv -y
-  } || {
+   } || {
     echo 'Failed to install Torch Tuner CLI apt dependencies' && \
       exit 1
-  }
+   }
 
 fi
 
@@ -44,38 +50,38 @@ cd "$INSTALL_PREFIX" || (mkdir -p "$INSTALL_PREFIX/bin" && (cd "$INSTALL_PREFIX"
 
 if [ -d ./torch-tuner ]; then
   echo "Removing old Torch Tuner CLI install"
-  {
+   {
     rm -rf ./torch-tuner
-    if [ -d "/bin/torch-tuner" ]; then
-      echo "Removing old Torch Tuner CLI launcher(REQUIRES SUDO)"
-      {
-        sudo rm "/bin/torch-tuner"
-      } || {
-        echo 'Failed to remove old Torch Tuner CLI launcher' && \
-        exit 1
-      }
+    if [[ "$USER_INSTALL" == "1" ]]; then
+      echo "Removing old Torch Tuner CLI launcher from ~/.local"
+      rm -rf "$HOME/.local/bin/torch-tuner"
+      rm -rf "$HOME/.local/bin/uninstall-torch-tuner.sh"
+    else
+      echo "Removing old Torch Tuner CLI launcher"
+      rm -rf "$INSTALL_PREFIX/bin/torch-tuner"
+      rm -rf "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
     fi
-  } || {
+   } || {
     echo 'Failed to remove old Torch Tuner CLI install' && \
     exit 1
-  }
+   }
 fi
 
 if [[ -n "$BRANCH" ]]; then
   echo "Cloning torch-tuner branch: $BRANCH"
-  {
+   {
     git clone -b "$BRANCH" https://github.com/rjojjr/torch-tuner.git
-  } || {
+   } || {
     echo "Failed to clone Torch Tuner CLI branch $BRANCH" && \
       exit 1
-  }
+   }
 else
-  {
+   {
     git clone https://github.com/rjojjr/torch-tuner.git
-  } || {
+   } || {
     echo 'Failed to clone Torch Tuner CLI' && \
       exit 1
-  }
+   }
 fi
 
 {
@@ -91,7 +97,7 @@ fi
 {
   echo 'Upgrading pip + installing build prerequisites' && \
     pip install --upgrade pip setuptools wheel && \
-    {
+     {
       if [[ "$(uname)" == "Darwin" ]]; then
         echo 'Installing MPS-compatible PyTorch for macOS (no CUDA build)' && \
           pip install torch torchvision && \
@@ -105,7 +111,7 @@ fi
           echo 'Installing python dependencies' && \
           FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip install --no-build-isolation -I -r requirements.in
       fi
-    } && \
+     } && \
     deactivate
 } || {
   deactivate 2>/dev/null
