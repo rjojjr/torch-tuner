@@ -112,7 +112,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
             gradient_checkpointing=True,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
-            optim=arguments.optimizer_type,
+            optim="adamw_torch" if torch.backends.mps.is_available() and arguments.optimizer_type == "adamw_torch_fused" else arguments.optimizer_type,
             save_strategy=arguments.save_strategy,
             save_steps=arguments.save_steps,
             eval_steps=arguments.eval_steps,
