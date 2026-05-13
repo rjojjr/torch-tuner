@@ -67,11 +67,8 @@ You can update the installed torch-tuner CLI instance at anytime by running the 
 You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
-# Linux, MacOS (Intel) & WSL
-/usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
-
-# MacOS (Apple Silicon)
-/opt/homebrew/torch-tuner/scripts/uninstall-torch-tuner.sh
+# Linux, MacOS & WSL
+torch-tuner uninstall
 
 # Windows 
 "%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
