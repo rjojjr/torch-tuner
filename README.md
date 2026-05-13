@@ -41,7 +41,7 @@ with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows O
 if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
 
-**NOTE** - You must run the script with root/admin privileges.
+**NOTE** - On Apple Silicon Macs, the CLI installs to `/opt/homebrew` instead of `/usr/local`.
 
 You can download the latest installer script from this repo
 and execute it with one of the following single commands:
@@ -67,8 +67,11 @@ You can update the installed torch-tuner CLI instance at anytime by running the 
 You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
-# Linux, MacOS & WSL
+# Linux, MacOS (Intel) & WSL
 /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
+
+# MacOS (Apple Silicon)
+/opt/homebrew/torch-tuner/scripts/uninstall-torch-tuner.sh
 
 # Windows 
 "%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
