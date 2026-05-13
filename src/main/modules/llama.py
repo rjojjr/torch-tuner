@@ -1,4 +1,5 @@
 from utils.torch_utils import get_bnb_config_and_dtype
+import torch
 
 from transformers import LlamaForCausalLM, AutoTokenizer
 
@@ -67,7 +68,7 @@ def fine_tune(arguments: TuneArguments) -> None:
 
         bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-        model = LlamaForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, device_map="auto" if not arguments.cpu_only_tuning else "cpu")
+        model = LlamaForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, device_map="cpu" if arguments.cpu_only_tuning else ("mps" if torch.backends.mps.is_available() else "auto"))
 
         base_module.fine_tune_eval_base(arguments, tokenizer, model)
 
