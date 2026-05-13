@@ -2,6 +2,7 @@
 
 ## 2.4.1
 - update installer script to support rootless install
+- add support for LLM tuning on Apple Silicon Macs
 - add support for Apple Silicon Macs to installer script
 
 ## 2.4.0
