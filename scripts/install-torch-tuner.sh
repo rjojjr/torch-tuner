@@ -2,6 +2,12 @@
 
 echo 'Installing Torch Tuner CLI'
 
+# Detect install prefix: use /opt/homebrew on Apple Silicon Macs, /usr/local otherwise.
+INSTALL_PREFIX="/usr/local"
+if [[ "$(uname)" == "Darwin" ]] && [[ "$(uname -m)" == "arm64" ]]; then
+  INSTALL_PREFIX="/opt/homebrew"
+fi
+
 # TODO - version argument
 # TODO - argument to install from local repo(no git clone)
 
@@ -34,16 +40,16 @@ if [[ "$INSTALL_APT_DEPS" == "1" ]]; then
 
 fi
 
-cd /usr/local || (mkdir -p /usr/local/bin && (cd /usr/local || (echo 'failed to create install directory at /usr/local' && exit 1)))
+cd "$INSTALL_PREFIX" || (mkdir -p "$INSTALL_PREFIX/bin" && (cd "$INSTALL_PREFIX" || (echo "failed to create install directory at $INSTALL_PREFIX" && exit 1)))
 
 if [ -d ./torch-tuner ]; then
   echo "Removing old Torch Tuner CLI install"
   {
     rm -rf ./torch-tuner
-    if [ -d /bin/torch-tuner ]; then
+    if [ -d "$INSTALL_PREFIX/bin/torch-tuner" ]; then
       echo "Removing old Torch Tuner CLI launcher(REQUIRES SUDO)"
       {
-        sudo rm /bin/torch-tuner
+        sudo rm "$INSTALL_PREFIX/bin/torch-tuner"
       } || {
         echo 'Failed to remove old Torch Tuner CLI launcher' && \
         exit 1
@@ -77,7 +83,7 @@ fi
     python3 -m venv ./.venv && \
     source .venv/bin/activate
 } || {
-  rm -rf /usr/local/torch-tuner && \
+  rm -rf "$INSTALL_PREFIX/torch-tuner" && \
     echo 'Failed to create Torch Tuner CLI venv' && \
       exit 1
 }
@@ -93,17 +99,17 @@ fi
     deactivate
 } || {
   deactivate 2>/dev/null
-  rm -rf /usr/local/torch-tuner
+  rm -rf "$INSTALL_PREFIX/torch-tuner"
   echo 'Failed to install Torch Tuner CLI python dependencies'
   exit 1
 }
 
 {
-    cp scripts/torch-tuner /usr/local/bin/torch-tuner && \
-      chmod -R 755 /usr/local/torch-tuner && \
-      chmod +x /usr/local/bin/torch-tuner
+    cp scripts/torch-tuner "$INSTALL_PREFIX/bin/torch-tuner" && \
+      chmod -R 755 "$INSTALL_PREFIX/torch-tuner" && \
+      chmod +x "$INSTALL_PREFIX/bin/torch-tuner"
 } || {
-  rm -rf /usr/local/torch-tuner && rm /usr/local/bin/torch-tuner \
+  rm -rf "$INSTALL_PREFIX/torch-tuner" && rm "$INSTALL_PREFIX/bin/torch-tuner"
   echo 'Failed to install Torch Tuner CLI bash cmd in /bin'
 }
 
