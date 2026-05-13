@@ -1,7 +1,8 @@
 # Torch Tuner CHANGELOG
 
 ## 2.4.1
-- update installer staller script in install launcher in `/usr/local/bin`
+- update installer script to support rootless install
+- add support for Apple Silicon Macs to installer script
 
 ## 2.4.0
 - upgrade all dependencies
