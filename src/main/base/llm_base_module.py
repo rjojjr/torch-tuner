@@ -1,3 +1,5 @@
+import torch
+
 from transformers import DataCollatorForLanguageModeling
 
 from exception.exceptions import TuningModuleFunctionException
@@ -106,7 +108,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             do_train=arguments.do_train,
             include_num_input_tokens_seen=arguments.show_token_metrics,
             num_train_epochs=arguments.epochs,
-            torch_empty_cache_steps=arguments.torch_empty_cache_steps,
+            torch_empty_cache_steps=None if torch.backends.mps.is_available() else arguments.torch_empty_cache_steps,
             per_device_train_batch_size=arguments.batch_size,
             per_device_eval_batch_size=arguments.batch_size,
             gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
