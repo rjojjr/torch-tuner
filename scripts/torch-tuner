@@ -4,12 +4,27 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 INSTALL_PREFIX="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Handle `torch-tuner uninstall` → delegate to the bundled uninstall script.
+# Handle `torch-tuner uninstall` → inline uninstall logic (self-contained, no external script needed).
 if [[ "${1:-}" == "uninstall" ]]; then
-  if [[ "$INSTALL_PREFIX" == "$HOME/.local" ]]; then
-    exec bash "$SCRIPT_DIR/uninstall-torch-tuner.sh" --user
+  echo 'Uninstalling Torch Tuner CLI'
+
+  # Detect install prefix (same logic as install script).
+  INSTALL_PREFIX="/usr/local"
+  if [[ "$(uname)" == "Darwin" ]] && [[ "$(uname -m)" == "arm64" ]]; then
+    INSTALL_PREFIX="/opt/homebrew"
   fi
-  exec bash "$SCRIPT_DIR/uninstall-torch-tuner.sh"
+
+  rm -rf "$INSTALL_PREFIX/bin/torch-tuner"
+  rm -rf "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
+  rm -rf "$INSTALL_PREFIX/torch-tuner"
+
+  # Also clean up user-local install if present.
+  rm -rf "$HOME/.local/bin/torch-tuner"
+  rm -rf "$HOME/.local/bin/uninstall-torch-tuner.sh"
+  rm -rf "$HOME/.local/torch-tuner"
+
+  echo 'Uninstalled Torch Tuner CLI'
+  exit 0
 fi
 
 # Invoke the venv's python interpreter directly. This works regardless of which

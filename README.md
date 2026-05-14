@@ -48,7 +48,7 @@ and execute it with one of the following single commands:
 # Linux, MacOS & WSL (system-wide install, requires sudo)
 curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
 
-# Linux, MacOS & WSL (user-local install to ~/.local, no sudo required)
+# Linux, MacOS & WSL /* (user-local install to ~/.local, no sudo required)
 curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | bash -s -- --user
 
 # Install a specific branch (e.g. optimize-linux-installer)
