@@ -124,8 +124,8 @@ echo "Using $PYTHON_BIN ($($PYTHON_BIN --version 2>&1))"
      {
       if [[ "$(uname)" == "Darwin" ]]; then
         echo 'Installing MPS-compatible PyTorch for macOS (no CUDA build)' && \
-          pip install torch torchvision && \
-          grep -vE '^(torch==|torchvision==|triton==|flash-attn==|bitsandbytes==|intel-extension-for-pytorch==|nvidia-)' requirements.in > /tmp/requirements-macos.in && \
+          pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 && \
+          grep -vE '^(torch==|torchvision==|torchaudio==|triton==|flash-attn==|bitsandbytes==|intel-extension-for-pytorch==|nvidia-)' requirements.in > /tmp/requirements-macos.in && \
           pip install --no-build-isolation -I -r /tmp/requirements-macos.in && \
           rm /tmp/requirements-macos.in
       else
