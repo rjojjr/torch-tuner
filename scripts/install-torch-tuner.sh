@@ -125,8 +125,8 @@ echo "Using $PYTHON_BIN ($($PYTHON_BIN --version 2>&1))"
       if [[ "$(uname)" == "Darwin" ]]; then
         echo 'Installing MPS-compatible PyTorch for macOS (no CUDA build)' && \
           pip install torch torchvision && \
-          grep -v '^torch==' requirements.in > /tmp/requirements-macos.in && \
-          FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip install --no-build-isolation -I -r /tmp/requirements-macos.in && \
+          grep -vE '^(torch==|torchvision==|triton==|flash-attn==|bitsandbytes==|intel-extension-for-pytorch==|nvidia-)' requirements.in > /tmp/requirements-macos.in && \
+          pip install --no-build-isolation -I -r /tmp/requirements-macos.in && \
           rm /tmp/requirements-macos.in
       else
         echo 'Pre-installing torch (required for flash-attn build)' && \
