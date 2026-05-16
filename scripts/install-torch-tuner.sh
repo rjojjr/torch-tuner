@@ -84,9 +84,33 @@ else
    }
 fi
 
+# Pick the newest available python>=3.10 on PATH. Required because the locked
+# requirements (e.g. absl-py==2.4.0) need >=3.10, and macOS/older distros still
+# ship python3 -> 3.9.
+PYTHON_BIN=""
+for candidate in python3.13 python3.12 python3.11 python3.10 python3; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    if "$candidate" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
+      PYTHON_BIN="$(command -v "$candidate")"
+      break
+    fi
+  fi
+done
+
+if [[ -z "$PYTHON_BIN" ]]; then
+  echo 'Torch Tuner CLI requires Python >= 3.10, but no compatible python3.1x was found on PATH.'
+  if [[ "$(uname)" == "Darwin" ]]; then
+    echo 'Install one with Homebrew, e.g.: brew install python@3.12'
+  else
+    echo 'Install one via your package manager, e.g.: apt install python3.12 python3.12-venv'
+  fi
+  exit 1
+fi
+echo "Using $PYTHON_BIN ($($PYTHON_BIN --version 2>&1))"
+
 {
   cd torch-tuner && \
-    python3 -m venv ./.venv && \
+    "$PYTHON_BIN" -m venv ./.venv && \
     source .venv/bin/activate
 } || {
   rm -rf "$INSTALL_PREFIX/torch-tuner" && \
