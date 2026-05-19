@@ -145,15 +145,44 @@ echo "Using $PYTHON_BIN ($($PYTHON_BIN --version 2>&1))"
 }
 
 {
-    cp scripts/torch-tuner "$INSTALL_PREFIX/bin/torch-tuner" && \
-      cp scripts/uninstall-torch-tuner.sh "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh" && \
+    cp scripts/torch-tuner "$INSTALL_PREFIX/torch-tuner/bin/torch-tuner" && \
+      cp scripts/uninstall-torch-tuner.sh "$INSTALL_PREFIX/torch-tuner/bin/uninstall-torch-tuner.sh" && \
       chmod -R 755 "$INSTALL_PREFIX/torch-tuner" && \
-      chmod +x "$INSTALL_PREFIX/bin/torch-tuner" && \
-      chmod +x "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
+      chmod +x "$INSTALL_PREFIX/torch-tuner/bin/torch-tuner" && \
+      chmod +x "$INSTALL_PREFIX/torch-tuner/bin/uninstall-torch-tuner.sh"
 } || {
-  rm -rf "$INSTALL_PREFIX/torch-tuner" && rm "$INSTALL_PREFIX/bin/torch-tuner" && rm "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
+  rm -rf "$INSTALL_PREFIX/torch-tuner"
   echo 'Failed to install Torch Tuner CLI bash cmd in /bin'
 }
+
+# Add torch-tuner/bin to PATH in the user's shell profile(s).
+TUNER_BIN="$INSTALL_PREFIX/torch-tuner/bin"
+echo "Adding $TUNER_BIN to PATH..."
+
+# Detect the actual user's home directory (when run via sudo, $HOME is root's).
+PROFILE_HOME="$HOME"
+if [[ -n "$SUDO_USER" ]] && [[ -n "$SUDO_HOME" ]]; then
+  PROFILE_HOME="$SUDO_HOME"
+fi
+
+for profile in "$PROFILE_HOME/.bashrc" "$PROFILE_HOME/.zshrc" "$PROFILE_HOME/.profile" "$PROFILE_HOME/.bash_profile"; do
+  if [[ -f "$profile" ]]; then
+    if ! grep -qF "$TUNER_BIN" "$profile" 2>/dev/null; then
+      echo "" >> "$profile"
+      echo "# Torch Tuner CLI" >> "$profile"
+      echo "export PATH=\"$TUNER_BIN:\$PATH\"" >> "$profile"
+      echo "Added $TUNER_BIN to $profile"
+    fi
+  fi
+done
+
+# Source the profile file that was just edited so PATH takes effect immediately.
+for profile in "$PROFILE_HOME/.bashrc" "$PROFILE_HOME/.zshrc" "$PROFILE_HOME/.profile" "$PROFILE_HOME/.bash_profile"; do
+  if [[ -f "$profile" ]] && grep -qF "$TUNER_BIN" "$profile" 2>/dev/null; then
+    source "$profile"
+    break
+  fi
+done
 
 echo 'Torch Tuner CLI installed successfully!'
 echo "You can now access the Torch Tuner CLI with the 'torch-tuner' command."

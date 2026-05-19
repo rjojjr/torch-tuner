@@ -2,7 +2,7 @@
 
 # Detect install prefix to locate the uninstall script relative to this launcher.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-INSTALL_PREFIX="$(cd "$SCRIPT_DIR/.." && pwd)"
+INSTALL_PREFIX="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Handle `torch-tuner uninstall` → inline uninstall logic (self-contained, no external script needed).
 if [[ "${1:-}" == "uninstall" ]]; then
@@ -14,13 +14,9 @@ if [[ "${1:-}" == "uninstall" ]]; then
     INSTALL_PREFIX="/opt/homebrew"
   fi
 
-  rm -rf "$INSTALL_PREFIX/bin/torch-tuner"
-  rm -rf "$INSTALL_PREFIX/bin/uninstall-torch-tuner.sh"
   rm -rf "$INSTALL_PREFIX/torch-tuner"
 
   # Also clean up user-local install if present.
-  rm -rf "$HOME/.local/bin/torch-tuner"
-  rm -rf "$HOME/.local/bin/uninstall-torch-tuner.sh"
   rm -rf "$HOME/.local/torch-tuner"
 
   echo 'Uninstalled Torch Tuner CLI'
