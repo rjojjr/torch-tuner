@@ -115,7 +115,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps,
             use_flash_attention=prog_args.use_flash_attention,
             flash_attention_impl=prog_args.flash_attention_impl,
-            push_adapter=prog_args.push_adapter
+            push_adapter=prog_args.push_adapter,
+            use_gradient_checkpointing=prog_args.use_gradient_checkpointing
         )
         tune_arguments.validate()
         return tune_arguments
@@ -256,6 +257,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
     parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_torch_fused)", default="adamw_torch_fused")
+    parser.add_argument('-gc', '--use-gradient-checkpointing', help="Enable gradient checkpointing(trades compute for memory; on MPS this often causes 2-3x slower steps with 'spurts' of GPU activity, so set to false if the model fits in memory without it)(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: None)(MUST NOT BE 0)", type=lambda x: _parse_nullable_int_arg(x), default=None)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)

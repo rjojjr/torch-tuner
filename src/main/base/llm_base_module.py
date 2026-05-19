@@ -83,7 +83,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             task_type=TaskType.CAUSAL_LM
         )
 
-        model = prepare_model_for_kbit_training(base_model)
+        model = prepare_model_for_kbit_training(base_model, use_gradient_checkpointing=arguments.use_gradient_checkpointing)
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
@@ -113,7 +113,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             per_device_train_batch_size=arguments.batch_size,
             per_device_eval_batch_size=arguments.batch_size,
             gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
-            gradient_checkpointing=True,
+            gradient_checkpointing=arguments.use_gradient_checkpointing,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
             optim=resolve_optim(arguments.optimizer_type),
             save_strategy=arguments.save_strategy,

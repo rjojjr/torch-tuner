@@ -202,7 +202,8 @@ class TuneArguments(TunerFunctionArguments):
                  mlm_probability: float = 0.15,
                  use_flash_attention: bool = False,
                  flash_attention_impl: str = 'flash_attention_2',
-                 push_adapter: bool = True
+                 push_adapter: bool = True,
+                 use_gradient_checkpointing: bool = True
                  ):
         super(TuneArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload, is_chat_model, padding_side, use_agent_tokens, additional_vocabulary_tokens, huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.r = r
@@ -251,6 +252,7 @@ class TuneArguments(TunerFunctionArguments):
         self.use_flash_attention = use_flash_attention
         self.flash_attention_impl = flash_attention_impl
         self.push_adapter = push_adapter
+        self.use_gradient_checkpointing = use_gradient_checkpointing
 
     def validate(self) -> None:
         # I know it's bad, I will clean it up eventually
