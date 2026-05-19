@@ -52,7 +52,7 @@ curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/i
 curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | bash -s -- --user
 
 # Install a specific branch (e.g. optimize-linux-installer)
-curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/some-branch/scripts/install-torch-tuner.sh | sudo bash -s -- --branch=some-branch
+curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/optimize-linux-installer/scripts/install-torch-tuner.sh | sudo bash -s -- --branch=optimize-linux-installer
 
 # Windows(non-WSL) (requires git & python3.11 already installed on target machine)
 curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
