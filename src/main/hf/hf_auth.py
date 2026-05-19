@@ -8,11 +8,15 @@ def upload_model_folder(folder_path: str, repo_id: str, private: bool, commit_me
     """Upload an on-disk model folder to HF without loading the model.
 
     Replaces the load-then-`push_to_hub` round-trip, which materializes the
-    full model in memory just to re-serialize and upload — wasteful for
+    full model in memory just to re-serialize and upload -- wasteful for
     large merged models, especially on memory-constrained boxes.
     """
     api = HfApi()
-    api.create_repo(repo_id=repo_id, repo_type="model", private=private, exist_ok=True)
+    try:
+        api.create_repo(repo_id=repo_id, repo_type="model", private=private, exist_ok=True)
+    except (HfHubHTTPError, RepositoryNotFoundError):
+        pass   # repo may already exist or creation may have partially succeeded
+
     api.upload_folder(
         repo_id=repo_id,
         repo_type="model",
@@ -33,11 +37,10 @@ def delete_hf_repo_if_exists(repo_id: str) -> None:
         api.delete_repo(repo_id=repo_id, repo_type="model", missing_ok=True)
         print(f'Deleted existing HF repo {repo_id} (--overwrite-repo)')
     except RepositoryNotFoundError:
-        # `missing_ok=True` already handles this on newer hub clients; older
-        # clients raise instead. Either way, nothing to delete.
-        pass
+        pass   # `missing_ok=True` already handles this on newer hub clients; older
+               # clients raise instead. Either way, nothing to delete.
     except HfHubHTTPError as e:
-        # Surface non-fatal so the push still gets attempted.
+        pass   # Surface non-fatal so the push still gets attempted.
         print(f'WARNING - could not delete HF repo {repo_id} before push: {e}')
 
 

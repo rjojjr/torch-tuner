@@ -298,6 +298,15 @@ def push_base(arguments: PushArguments) -> None:
         is_private = not arguments.public_push
         if arguments.overwrite_repo:
             delete_hf_repo_if_exists(arguments.new_model)
+        # Ensure model directory exists before attempting upload.
+        # When --fine-tune false and --merge false, no model is built,
+        # so model_dir may not exist on disk.
+        if not os.path.exists(arguments.model_dir):
+            raise TuningModuleFunctionException(
+                f'model directory does not exist: {arguments.model_dir}. '
+                f'Run fine-tuning and/or merging first, or provide a valid --output-directory.',
+                    'PUSH',
+                )
         # Upload directly from the saved merged-model directory so push does
         # not materialize the model in memory. The model and tokenizer were
         # already serialized to model_dir during merge_base.save_pretrained.
