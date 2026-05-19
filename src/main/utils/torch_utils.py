@@ -23,15 +23,22 @@ def release_memory() -> None:
 # package itself is not installed (e.g., on macOS, where our installer strips
 # bnb from the requirements). Detect the actual package, not the config class.
 _bitsandbytes_available = importlib.util.find_spec("bitsandbytes") is not None
-_hqq_available = importlib.util.find_spec("hqq") is not None
+# `optimum-quanto` is our MPS-compatible 4/8-bit quantizer (bitsandbytes has no
+# Apple Silicon build, and transformers 5.x has gutted its HQQ integration).
+# `find_spec` raises ModuleNotFoundError when the parent package `optimum` is
+# itself missing, so guard the lookup.
+try:
+    _optimum_quanto_available = importlib.util.find_spec("optimum.quanto") is not None
+except ModuleNotFoundError:
+    _optimum_quanto_available = False
 try:
     from transformers import BitsAndBytesConfig
 except ImportError:
     BitsAndBytesConfig = None  # type: ignore
 try:
-    from transformers import HqqConfig
+    from transformers import QuantoConfig
 except ImportError:
-    HqqConfig = None  # type: ignore
+    QuantoConfig = None  # type: ignore
 
 # Optimizers in transformers' OptimizerNames that require the `bitsandbytes`
 # package. Selecting any of these without bnb installed raises:
@@ -92,9 +99,10 @@ def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFact
     """Construct quantization config + compute dtype for the current host.
 
     - CUDA: returns BitsAndBytesConfig per --use-4bit/--use-8bit.
-    - MPS: returns HqqConfig per --use-4bit/--use-8bit (bitsandbytes has no
-      Apple Silicon build; HQQ is the supported 4/8-bit quantizer there).
-    - Neither flag set, or HQQ not installed: returns (None, dtype).
+    - MPS: returns QuantoConfig per --use-4bit/--use-8bit (bitsandbytes has no
+      Apple Silicon build; transformers 5.x disabled its HQQ integration;
+      optimum-quanto is the working HF-integrated quantizer on MPS).
+    - Neither flag set, or optimum-quanto not installed: returns (None, dtype).
     """
     if torch.backends.mps.is_available():
         # Respect the user's explicit dtype choice; otherwise default to fp16
@@ -106,16 +114,16 @@ def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFact
         else:
             dtype = torch.float16
         if arguments.use_8bit or arguments.use_4bit:
-            if HqqConfig is None or not _hqq_available:
+            if QuantoConfig is None or not _optimum_quanto_available:
                 print(
                     "WARNING - --use-4bit/--use-8bit was requested on Apple Silicon "
-                    "but the `hqq` package is not installed. Re-run the installer or "
-                    "`pip install hqq` inside the torch-tuner venv. Falling back to "
-                    "unquantized weights."
+                    "but the `optimum-quanto` package is not installed. Re-run the "
+                    "installer or `pip install optimum-quanto` inside the torch-tuner "
+                    "venv. Falling back to unquantized weights."
                 )
                 return None, dtype
-            nbits = 8 if arguments.use_8bit else 4
-            return HqqConfig(nbits=nbits, group_size=64), dtype
+            weights = "int8" if arguments.use_8bit else "int4"
+            return QuantoConfig(weights=weights), dtype
         return None, dtype
 
     dtype = get_dtype(arguments)
