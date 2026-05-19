@@ -13,7 +13,7 @@ from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
 from utils.dataset_utils import load_dataset, is_jsonl_path
 from utils.torch_utils import resolve_optim
-from hf.hf_auth import delete_hf_repo_if_exists
+from hf.hf_auth import delete_hf_repo_if_exists, upload_model_folder
 import math
 import os
 import shutil
@@ -290,7 +290,7 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
             shutil.copyfile(tune_config_path, f'{model_dir}/tune_config.json')
 
 
-def push_base(arguments: PushArguments, tokenizer, model) -> None:
+def push_base(arguments: PushArguments) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
         print(f"pushing {arguments.new_model} to HF")
         print('')
@@ -298,10 +298,15 @@ def push_base(arguments: PushArguments, tokenizer, model) -> None:
         is_private = not arguments.public_push
         if arguments.overwrite_repo:
             delete_hf_repo_if_exists(arguments.new_model)
-        model.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Merge {arguments.new_model} LoRA adapter with base model")
-        tokenizer.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Add {arguments.new_model} tokenizer")
-        del model
-        del tokenizer
+        # Upload directly from the saved merged-model directory so push does
+        # not materialize the model in memory. The model and tokenizer were
+        # already serialized to model_dir during merge_base.save_pretrained.
+        upload_model_folder(
+            folder_path=arguments.model_dir,
+            repo_id=arguments.new_model,
+            private=is_private,
+            commit_message=f"Push {arguments.new_model} (merged LoRA adapter + base)",
+        )
 
 
 

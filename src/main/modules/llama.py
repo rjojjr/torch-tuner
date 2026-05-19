@@ -17,9 +17,10 @@ def merge(arguments: MergeArguments) -> None:
 
         base_model = LlamaForCausalLM.from_pretrained(
             arguments.base_model,
-            low_cpu_mem_usage=False,
+            low_cpu_mem_usage=True,
             return_dict=True,
-            torch_dtype=dtype
+            torch_dtype=dtype,
+            device_map="cpu"
         )
 
 
@@ -34,26 +35,10 @@ def merge(arguments: MergeArguments) -> None:
 def push(arguments: PushArguments) -> None:
     """Llama specific push function."""
     with debugging_wrapper(arguments.is_debug_mode):
-        _, dtype = get_bnb_config_and_dtype(arguments)
-
-        # Push only uploads weights to the Hub — no inference happens here, so
-        # we deliberately load without `quantization_config` even when --use-4bit/
-        # --use-8bit is set. Re-quantizing at push time is unnecessary and trips
-        # transformers/bitsandbytes version drift (Params4bit.__new__ rejecting
-        # `_is_hf_initialized` leaked via `**old_value.__dict__`).
-        model = LlamaForCausalLM.from_pretrained(
-            arguments.model_dir,
-            low_cpu_mem_usage=True,
-            return_dict=True,
-            torch_dtype=dtype
-        )
-
-        tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
-        if arguments.padding_side is not None:
-            tokenizer.pad_token = tokenizer.eos_token
-            tokenizer.padding_side = arguments.padding_side
-
-        base_module.push_base(arguments, tokenizer, model)
+        # The merged model and tokenizer are already on disk at model_dir
+        # from the merge phase; push_base uploads that folder directly via
+        # HfApi.upload_folder, so we don't materialize the model at all.
+        base_module.push_base(arguments)
 
 
 def fine_tune(arguments: TuneArguments) -> None:

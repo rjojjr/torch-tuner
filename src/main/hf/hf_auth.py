@@ -4,6 +4,23 @@ import os
 from exception.exceptions import HuggingfaceAuthException
 
 
+def upload_model_folder(folder_path: str, repo_id: str, private: bool, commit_message: str) -> None:
+    """Upload an on-disk model folder to HF without loading the model.
+
+    Replaces the load-then-`push_to_hub` round-trip, which materializes the
+    full model in memory just to re-serialize and upload — wasteful for
+    large merged models, especially on memory-constrained boxes.
+    """
+    api = HfApi()
+    api.create_repo(repo_id=repo_id, repo_type="model", private=private, exist_ok=True)
+    api.upload_folder(
+        repo_id=repo_id,
+        repo_type="model",
+        folder_path=folder_path,
+        commit_message=commit_message,
+    )
+
+
 def delete_hf_repo_if_exists(repo_id: str) -> None:
     """Delete the HF model repo for `repo_id` if it exists, otherwise no-op.
 
