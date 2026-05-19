@@ -67,6 +67,6 @@ def fine_tune(arguments: TuneArguments) -> None:
 
         bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-        model = AutoModelForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, device_map="cpu" if arguments.cpu_only_tuning else ("mps" if torch.backends.mps.is_available() else "auto"), attn_implementation=arguments.flash_attention_impl if arguments.use_flash_attention else None)
+        model = AutoModelForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, torch_dtype=dtype, device_map="cpu" if arguments.cpu_only_tuning else ("mps" if torch.backends.mps.is_available() else "auto"), attn_implementation=arguments.flash_attention_impl if arguments.use_flash_attention else None)
 
         base_module.fine_tune_eval_base(arguments, tokenizer, model)
