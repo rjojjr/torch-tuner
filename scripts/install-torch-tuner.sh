@@ -127,7 +127,9 @@ echo "Using $PYTHON_BIN ($($PYTHON_BIN --version 2>&1))"
           pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 && \
           grep -vE '^(torch==|torchvision==|torchaudio==|triton==|flash-attn==|bitsandbytes==|intel-extension-for-pytorch==|nvidia-)' requirements.in > /tmp/requirements-macos.in && \
           pip install --no-build-isolation -r /tmp/requirements-macos.in && \
-          rm /tmp/requirements-macos.in
+          rm /tmp/requirements-macos.in && \
+          echo 'Installing HQQ for 4/8-bit quantization on Apple Silicon (bitsandbytes substitute)' && \
+          pip install hqq
       else
         echo 'Pre-installing torch (required for flash-attn build)' && \
           grep -E '^torch==' requirements.in | xargs pip install && \

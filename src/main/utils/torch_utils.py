@@ -6,10 +6,15 @@ import torch
 # package itself is not installed (e.g., on macOS, where our installer strips
 # bnb from the requirements). Detect the actual package, not the config class.
 _bitsandbytes_available = importlib.util.find_spec("bitsandbytes") is not None
+_hqq_available = importlib.util.find_spec("hqq") is not None
 try:
     from transformers import BitsAndBytesConfig
 except ImportError:
     BitsAndBytesConfig = None  # type: ignore
+try:
+    from transformers import HqqConfig
+except ImportError:
+    HqqConfig = None  # type: ignore
 
 # Optimizers in transformers' OptimizerNames that require the `bitsandbytes`
 # package. Selecting any of these without bnb installed raises:
@@ -67,9 +72,34 @@ def get_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -
 
 
 def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFactoryArguments) -> tuple[object | None, torch.dtype]:
-    """Construct configured BitsAndBytesConfig, or None on MPS/CPU."""
+    """Construct quantization config + compute dtype for the current host.
+
+    - CUDA: returns BitsAndBytesConfig per --use-4bit/--use-8bit.
+    - MPS: returns HqqConfig per --use-4bit/--use-8bit (bitsandbytes has no
+      Apple Silicon build; HQQ is the supported 4/8-bit quantizer there).
+    - Neither flag set, or HQQ not installed: returns (None, dtype).
+    """
     if torch.backends.mps.is_available():
-        return None, torch.float16
+        # Respect the user's explicit dtype choice; otherwise default to fp16
+        # on MPS, which has broader kernel coverage than fp32 / bf16 fallbacks.
+        if arguments.is_bf16:
+            dtype = torch.bfloat16
+        elif arguments.is_fp16:
+            dtype = torch.float16
+        else:
+            dtype = torch.float16
+        if arguments.use_8bit or arguments.use_4bit:
+            if HqqConfig is None or not _hqq_available:
+                print(
+                    "WARNING - --use-4bit/--use-8bit was requested on Apple Silicon "
+                    "but the `hqq` package is not installed. Re-run the installer or "
+                    "`pip install hqq` inside the torch-tuner venv. Falling back to "
+                    "unquantized weights."
+                )
+                return None, dtype
+            nbits = 8 if arguments.use_8bit else 4
+            return HqqConfig(nbits=nbits, group_size=64), dtype
+        return None, dtype
 
     dtype = get_dtype(arguments)
     bnb_config = BitsAndBytesConfig(
