@@ -13,6 +13,7 @@ from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
 from utils.dataset_utils import load_dataset, is_jsonl_path
 from utils.torch_utils import resolve_optim
+from hf.hf_auth import delete_hf_repo_if_exists
 import math
 import os
 import shutil
@@ -223,8 +224,11 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
                 print('Pushing LoRA adapter to huggingface')
                 # TODO - pass private push argument to here
                 # TODO - should this be async?
-                train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
-                tokenizer.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
+                adapter_repo_id = f'{arguments.new_model}-lora-adaptor'
+                if arguments.overwrite_repo:
+                    delete_hf_repo_if_exists(adapter_repo_id)
+                train.model.push_to_hub(repo_id=adapter_repo_id, commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
+                tokenizer.push_to_hub(repo_id=adapter_repo_id, commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
                 print()
 
         else:
@@ -292,6 +296,8 @@ def push_base(arguments: PushArguments, tokenizer, model) -> None:
         print('')
 
         is_private = not arguments.public_push
+        if arguments.overwrite_repo:
+            delete_hf_repo_if_exists(arguments.new_model)
         model.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Merge {arguments.new_model} LoRA adapter with base model")
         tokenizer.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Add {arguments.new_model} tokenizer")
         del model

@@ -21,7 +21,8 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
-            huggingface_auth_token=prog_args.huggingface_auth_token
+            huggingface_auth_token=prog_args.huggingface_auth_token,
+            overwrite_repo=prog_args.overwrite_repo
         )
         push_arguments.validate()
         return push_arguments
@@ -116,7 +117,8 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             use_flash_attention=prog_args.use_flash_attention,
             flash_attention_impl=prog_args.flash_attention_impl,
             push_adapter=prog_args.push_adapter,
-            use_gradient_checkpointing=prog_args.use_gradient_checkpointing
+            use_gradient_checkpointing=prog_args.use_gradient_checkpointing,
+            overwrite_repo=prog_args.overwrite_repo
         )
         tune_arguments.validate()
         return tune_arguments
@@ -213,6 +215,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-pp', '--public-push', help="Push to public HF repo(push is private if false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-owr', '--overwrite-repo', help="Delete the target HF repo (if it exists) before push so the push always reflects exactly the current artifact, with no stale files (e.g. old shards) left behind from prior runs. Applies to both the merged-model push and the --push-adapter LoRA adapter push.(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-de', '--do-eval', help="Do evaluation on each configured step(does full evaluation when `--fine-tune` argument is set to false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
