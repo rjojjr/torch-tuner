@@ -1,7 +1,7 @@
 import os
 
 from utils.argument_utils import do_initial_arg_validation
-from hf.hf_auth import authenticate_with_hf, resolve_hf_token
+from hf.hf_auth import authenticate_with_hf, resolve_hf_token, get_hf_username
 from utils.argument_utils import build_and_validate_push_args, build_and_validate_tune_args, build_and_validate_merge_args
 from utils.config_utils import print_global_config, print_serve_mode_config, print_fine_tune_merge_common_config, print_tuner_mode_config, print_fine_tune_config
 from serve.llm_executor import build_llm_executor_factory
@@ -35,9 +35,32 @@ def _execute_tuner_mode(args) -> None:
     tuner = tuner_factory()
     lora_scale = round(args.lora_alpha / args.lora_r, 1)
     model_dir = os.path.expanduser(f'{args.output_directory}{os.sep}merged-models{os.sep}{args.new_model}')
+
+    # Derive HF repo ID for push: use --target-repo if set, otherwise derive from auth token.
+    # When no auth token is provided, --target-repo is required.
+    hf_token = resolve_hf_token(args.huggingface_auth_token)
+    target_repo = getattr(args, 'target_repo', None)
+    if args.push:
+        if target_repo is None or target_repo.strip() == '':
+            if hf_token is None:
+                raise ArgumentValidationException(
+                    "No --huggingface-auth-token provided; either set HUGGING_FACE_TOKEN "
+                    "or pass --target-repo 'user/model-name' to specify the HF repo to push to."
+                )
+          # Derive repo from authenticated user
+            username = get_hf_username(hf_token)
+            if username is None:
+                raise ArgumentValidationException(
+                    "Failed to resolve Huggingface username from auth token; "
+                    "pass --target-repo 'user/model-name' to specify the repo explicitly."
+                )
+            target_repo = f'{username}/{args.new_model}'
+        else:
+          # Strip leading/trailing whitespace from --target-repo
+            target_repo = target_repo.strip()
     tune_arguments = build_and_validate_tune_args(args)
     merge_arguments = build_and_validate_merge_args(args)
-    push_arguments = build_and_validate_push_args(args, model_dir)
+    push_arguments = build_and_validate_push_args(args, model_dir, target_repo)
     tuner.arguments_config = ArgumentsConfig(tune_args=tune_arguments, merge_args=merge_arguments, push_args=push_arguments)
     print_tuner_mode_config(args, tuner)
     if args.fine_tune or args.merge or args.do_eval:

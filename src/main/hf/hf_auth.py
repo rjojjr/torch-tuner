@@ -62,3 +62,14 @@ def resolve_hf_token(auth_token: str | None = None) -> str | None:
         return os.environ.get('HUGGING_FACE_TOKEN') if auth_token is None else auth_token
     except Exception as e:
         return None
+
+
+def get_hf_username(auth_token: str | None = None) -> str | None:
+    """Return the Huggingface username for the authenticated token, or None."""
+    try:
+        token = resolve_hf_token(auth_token)
+        if token is None:
+            return None
+        return HfApi().whoami(token=token)
+    except Exception:
+        return None

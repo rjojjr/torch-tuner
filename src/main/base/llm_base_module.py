@@ -312,7 +312,7 @@ def push_base(arguments: PushArguments) -> None:
         # already serialized to model_dir during merge_base.save_pretrained.
         upload_model_folder(
             folder_path=arguments.model_dir,
-            repo_id=arguments.new_model,
+            repo_id=arguments.target_repo or arguments.new_model,
             private=is_private,
             commit_message=f"Push {arguments.new_model} (merged LoRA adapter + base)",
         )

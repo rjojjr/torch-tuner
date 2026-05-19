@@ -5,7 +5,7 @@ from exception.exceptions import ArgumentValidationException
 from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
 
-def build_and_validate_push_args(prog_args, model_dir: str):
+def build_and_validate_push_args(prog_args, model_dir: str, target_repo: str | None = None):
     """Construct/validate push arguments."""
     if prog_args.push:
         push_arguments = PushArguments(
@@ -22,7 +22,8 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
             huggingface_auth_token=prog_args.huggingface_auth_token,
-            overwrite_repo=prog_args.overwrite_repo
+            overwrite_repo=prog_args.overwrite_repo,
+            target_repo=prog_args.target_repo
         )
         push_arguments.validate()
         return push_arguments
@@ -216,6 +217,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-pp', '--public-push', help="Push to public HF repo(push is private if false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-owr', '--overwrite-repo', help="Delete the target HF repo (if it exists) before push so the push always reflects exactly the current artifact, with no stale files (e.g. old shards) left behind from prior runs. Applies to both the merged-model push and the --push-adapter LoRA adapter push.(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-tr', '--target-repo', help="Explicit HF repo ID to push to (e.g. 'user/newton-latest'). Required when no --huggingface-auth-token is provided; when auth token is set, the repo is auto-derived from the authenticated user unless overridden here.")
     parser.add_argument('-de', '--do-eval', help="Do evaluation on each configured step(does full evaluation when `--fine-tune` argument is set to false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))

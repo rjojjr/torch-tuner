@@ -369,11 +369,13 @@ class PushArguments(TunerFunctionArguments):
                  additional_vocabulary_tokens: list | None = None,
                  huggingface_auth_token: str | None = None,
                  is_debug_mode: bool = False,
-                 overwrite_repo: bool = False):
+                 overwrite_repo: bool = False,
+                 target_repo: str | None = None):
         super(PushArguments, self).__init__(new_model, is_fp16, is_bf16, use_4bit, use_8bit, fp32_cpu_offload=fp32_cpu_offload, is_chat_model=is_chat_model, padding_side=padding_side, use_agent_tokens=use_agent_tokens, additional_vocabulary_tokens=additional_vocabulary_tokens, huggingface_auth_token=huggingface_auth_token, is_debug_mode=is_debug_mode)
         self.model_dir = model_dir
         self.public_push = public_push
         self.overwrite_repo = overwrite_repo
+        self.target_repo = target_repo
 
     def validate(self) -> None:
         is_valid = self.new_model is not None and self.model_dir is not None
