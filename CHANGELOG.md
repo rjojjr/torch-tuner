@@ -5,6 +5,7 @@
 - add support for LLM tuning on Apple Silicon Macs
 - add support for Apple Silicon Macs to installer script
 - add `uninstall` CLI command
+- add `--use-gradient-checkpointing` CLI argument
 
 ## 2.4.0
 - upgrade all dependencies
