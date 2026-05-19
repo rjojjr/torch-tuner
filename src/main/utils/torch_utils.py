@@ -1,6 +1,23 @@
 from arguments.arguments import TunerFunctionArguments, LlmExecutorFactoryArguments
+import gc
 import importlib.util
 import torch
+
+
+def release_memory() -> None:
+    """Force a full GC pass and drain the active device's caching allocator.
+
+    Between tune -> merge -> push phases, each phase loads a fresh copy of the
+    base / merged model. Python's cyclic GC is lazy and transformers models
+    carry cycles, so unreferenced models linger; PyTorch's MPS / CUDA caching
+    allocators then hold those blocks. On unified-memory Macs this stacks
+    quickly and OOMs the next phase. Run explicitly between phases.
+    """
+    gc.collect()
+    if torch.backends.mps.is_available():
+        torch.mps.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 # `BitsAndBytesConfig` is exported by transformers even when the `bitsandbytes`
 # package itself is not installed (e.g., on macOS, where our installer strips

@@ -8,6 +8,7 @@ from serve.llm_executor import build_llm_executor_factory
 from serve.serve import OpenAiLlmServer
 from arguments.arguments import ServerArguments, LlmExecutorFactoryArguments, ArgumentsConfig
 from utils.tuner_utils import build_llm_tuner_factory
+from utils.torch_utils import release_memory
 
 
 def execute_command(args) -> None:
@@ -48,6 +49,7 @@ def _execute_tuner_mode(args) -> None:
             f'Tuning LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
         print('')
         tuner.fine_tune(tune_arguments)
+        release_memory()
         print('')
         print(
             f'Tuned LoRA adapter for model {args.new_model} on base model {args.base_model} with {args.training_data_file} to {args.epochs} epochs')
@@ -58,6 +60,7 @@ def _execute_tuner_mode(args) -> None:
         print(f'Running full evaluation against model {args.new_model}')
         print('')
         tuner.fine_tune(tune_arguments)
+        release_memory()
         print('')
         print(f'Ran full evaluation against model {args.new_model}')
     if args.merge:
@@ -65,6 +68,7 @@ def _execute_tuner_mode(args) -> None:
         print(f'Merging LoRA Adapter for {args.new_model} with base model {args.base_model}')
         print('')
         tuner.merge(merge_arguments)
+        release_memory()
         print('')
         print(f'Merged LoRA Adapter for {args.new_model} with base model {args.base_model}')
     if args.push:
@@ -72,6 +76,7 @@ def _execute_tuner_mode(args) -> None:
         print(f'Pushing {args.new_model} to Huggingface')
         print('')
         tuner.push(push_arguments)
+        release_memory()
         print('')
         print(f'Pushed {args.new_model} to Huggingface')
 
