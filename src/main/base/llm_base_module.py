@@ -12,6 +12,7 @@ from trl import SFTTrainer, SFTConfig
 from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
 from utils.dataset_utils import load_dataset, is_jsonl_path
+from utils.torch_utils import resolve_optim
 import math
 import os
 import shutil
@@ -114,7 +115,7 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
             gradient_checkpointing=True,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
-            optim="adamw_torch" if torch.backends.mps.is_available() and arguments.optimizer_type == "adamw_torch_fused" else arguments.optimizer_type,
+            optim=resolve_optim(arguments.optimizer_type),
             save_strategy=arguments.save_strategy,
             save_steps=arguments.save_steps,
             eval_steps=arguments.eval_steps,
