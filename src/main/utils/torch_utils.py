@@ -22,6 +22,8 @@ def release_memory() -> None:
 # `BitsAndBytesConfig` is exported by transformers even when the `bitsandbytes`
 # package itself is not installed (e.g., on macOS, where our installer strips
 # bnb from the requirements). Detect the actual package, not the config class.
+# Guard object for the Apple Silicon warning printed once on first MPS detection.
+_APPLE_SILICON_WARNING_SHOWN = type("_Guard", (), {"val": False})()
 _bitsandbytes_available = importlib.util.find_spec("bitsandbytes") is not None
 # `optimum-quanto` is our MPS-compatible 4/8-bit quantizer (bitsandbytes has no
 # Apple Silicon build, and transformers 5.x has gutted its HQQ integration).
@@ -104,7 +106,9 @@ def get_bnb_config_and_dtype(arguments: TunerFunctionArguments | LlmExecutorFact
       optimum-quanto is the working HF-integrated quantizer on MPS).
     - Neither flag set, or optimum-quanto not installed: returns (None, dtype).
     """
-    if torch.backends.mps.is_available():
+    if torch.backends.mps.is_available() and not getattr(_APPLE_SILICON_WARNING_SHOWN, 'val', False):
+        _APPLE_SILICON_WARNING_SHOWN.val = True
+        print('\x1b[33mWARNING - Support for Apple Silicon is currently EXPERIMENTAL!\x1b[0m')
         # Respect the user's explicit dtype choice; otherwise default to fp16
         # on MPS, which has broader kernel coverage than fp32 / bf16 fallbacks.
         if arguments.is_bf16:

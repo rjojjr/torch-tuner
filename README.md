@@ -58,6 +58,8 @@ curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/optimize-linux-i
 curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
 ```
 
+**NOTE** - Apple Silicon support is currently **EXPERIMENTAL**.
+
 **NOTE** - On Apple Silicon Macs, the CLI installs to `/opt/homebrew` instead of `/usr/local`.
 
 **NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian-Based Linux,
