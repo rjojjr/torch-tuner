@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Detect install prefix to locate the uninstall script relative to this launcher.
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-INSTALL_PREFIX="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+INSTALL_PREFIX="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Handle `torch-tuner uninstall` → inline uninstall logic (self-contained, no external script needed).
 if [[ "${1:-}" == "uninstall" ]]; then
