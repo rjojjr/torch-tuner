@@ -51,8 +51,8 @@ curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/i
 # Linux, MacOS & WSL /* (user-local install to ~/.local, no sudo required)
 curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | bash -s -- --user
 
-# Install a specific branch (e.g. optimize-linux-installer)
-curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/optimize-linux-installer/scripts/install-torch-tuner.sh | sudo bash -s -- --branch=optimize-linux-installer
+# Install from a specific branch(replace all occurrences of `${DESIRED_BRANCH}` with the git branch you want to install from)
+curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/${DESIRED_BRANCH}/scripts/install-torch-tuner.sh | sudo bash -s -- --branch=${DESIRED_BRANCH}
 
 # Windows(non-WSL) (requires git & python3.11 already installed on target machine)
 curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
@@ -65,6 +65,8 @@ curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/wi
 **NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian-Based Linux,
 try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv)
 and run the torch-tuner CLI installer script again.
+
+**NOTE** - You can generate an installation command targeted at the current branch with [this script](scripts/generate-install-cmd-for-current-branch.sh)
 
 **NOTE** - If you choose the user-local install, make sure `~/.local/bin` is in your `$PATH` (add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.bashrc` or `~/.zshrc`).
 

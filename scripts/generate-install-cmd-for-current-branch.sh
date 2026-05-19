@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Generate an install command for the current git branch.
-# Usage: ./scripts/generate-install-cmd.sh
+# Usage: ./scripts/generate-install-cmd-for-current-branch.sh
 
 set -euo pipefail
 
