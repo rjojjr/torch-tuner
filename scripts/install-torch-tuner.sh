@@ -135,6 +135,8 @@ echo "Using $PYTHON_BIN ($($PYTHON_BIN --version 2>&1))"
           FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip install --no-build-isolation -I -r requirements.in
       fi
      } && \
+    echo 'Fixing permissions on optimum-quanto MPS extensions' && \
+    chmod -R u+w .venv/lib/python*/site-packages/optimum/quanto 2>/dev/null || true && \
     deactivate
 } || {
   deactivate 2>/dev/null

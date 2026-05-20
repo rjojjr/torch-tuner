@@ -19,6 +19,35 @@ import os
 import shutil
 
 
+def _has_quanto_weights(model) -> bool:
+    """Check if model uses optimum-quanto quantization (WeightQBitsTensor)."""
+    try:
+        from optimum.quanto import WeightQBitsTensor
+        for param in model.parameters():
+            if isinstance(param, WeightQBitsTensor):
+                return True
+    except ImportError:
+        pass
+    return False
+
+
+def _prepare_model_for_kbit_training_safe(model, **kwargs):
+    """Wrapper around prepare_model_for_kbit_training that handles
+    quantized models (bitsandbytes or optimum-quanto) where weight casting fails."""
+    try:
+        return prepare_model_for_kbit_training(model, **kwargs)
+    except (RuntimeError, AttributeError, TypeError) as e:
+        error_str = str(e).lower()
+        if "weightqbitstensor" in error_str or "dtype" in error_str or "cannot be changed" in error_str:
+            # Model is quantized (bitsandbytes or optimum-quanto); weights can't be
+            # recast. Manually apply the essential PEFT setup without dtype casting.
+            model.train()
+            for param in model.parameters():
+                param.requires_grad = False
+            return model
+        raise
+
+
 def compute_warmup_steps(num_train_examples: int,
                          batch_size: int,
                          gradient_accumulation_steps: int | None,
@@ -84,7 +113,18 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             task_type=TaskType.CAUSAL_LM
         )
 
-        model = prepare_model_for_kbit_training(base_model, use_gradient_checkpointing=arguments.use_gradient_checkpointing)
+        # Only call prepare_model_for_kbit_training if the model is actually quantized
+        # with bitsandbytes (not optimum-quanto). Check if model has quantized weights.
+        if _has_quanto_weights(base_model):
+            # Model uses optimum-quanto quantization; skip prepare_model_for_kbit_training
+            # and manually set up for training
+            base_model.train()
+            for param in base_model.parameters():
+                param.requires_grad = False
+            model = base_model
+        else:
+            model = _prepare_model_for_kbit_training_safe(base_model, use_gradient_checkpointing=arguments.use_gradient_checkpointing)
+        
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
