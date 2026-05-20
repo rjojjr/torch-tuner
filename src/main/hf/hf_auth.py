@@ -70,6 +70,9 @@ def get_hf_username(auth_token: str | None = None) -> str | None:
         token = resolve_hf_token(auth_token)
         if token is None:
             return None
-        return HfApi().whoami(token=token)
+        user_info = HfApi().whoami(token=token)
+        if isinstance(user_info, dict):
+            return user_info.get('name')
+        return str(user_info)
     except Exception:
         return None

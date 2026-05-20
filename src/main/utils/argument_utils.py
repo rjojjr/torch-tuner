@@ -23,7 +23,7 @@ def build_and_validate_push_args(prog_args, model_dir: str, target_repo: str | N
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
             huggingface_auth_token=prog_args.huggingface_auth_token,
             overwrite_repo=prog_args.overwrite_repo,
-            target_repo=prog_args.target_repo
+            target_repo=target_repo if target_repo is not None else prog_args.target_repo
         )
         push_arguments.validate()
         return push_arguments
