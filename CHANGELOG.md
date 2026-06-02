@@ -1,5 +1,13 @@
 # Torch Tuner CHANGELOG
 
+## 2.4.1
+- update installer script to support rootless install
+- add support for LLM tuning on Apple Silicon(**EXPERIMENTAL**)
+- add `uninstall` CLI command
+- add `--use-gradient-checkpointing` CLI argument
+- add `--overwrite-repo` CLI argument
+- add `--target-repo` CLI argument for pushes
+
 ## 2.4.0
 - upgrade all dependencies
 - add unit/integration test framework

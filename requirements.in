@@ -98,6 +98,7 @@ huggingface-hub==1.14.0
     #   accelerate
     #   datasets
     #   evaluate
+    #   optimum-quanto
     #   peft
     #   tokenizers
     #   transformers
@@ -147,6 +148,8 @@ multivolumefile==0.2.3
     # via py7zr
 networkx==3.6.1
     # via torch
+ninja==1.13.0
+    # via optimum-quanto
 nltk==3.9.4
     # via rouge-score
 numpy==2.4.4
@@ -157,6 +160,7 @@ numpy==2.4.4
     #   datasets
     #   evaluate
     #   intel-extension-for-pytorch
+    #   optimum-quanto
     #   pandas
     #   peft
     #   rouge-score
@@ -203,6 +207,8 @@ nvidia-nvjitlink-cu12==12.8.93
 nvidia-nvtx-cu12==12.8.90
     # via torch
 openpyxl==3.1.5
+    # via -r requirements.txt
+optimum-quanto==0.2.7
     # via -r requirements.txt
 packaging==26.2
     # via
@@ -278,6 +284,7 @@ rouge-score==0.1.2
 safetensors==0.7.0
     # via
     #   accelerate
+    #   optimum-quanto
     #   peft
     #   transformers
 scipy==1.17.1
@@ -308,6 +315,7 @@ torch==2.8.0
     #   accelerate
     #   bitsandbytes
     #   flash-attn
+    #   optimum-quanto
     #   peft
     #   torchaudio
     #   torchvision

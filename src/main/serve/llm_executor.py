@@ -20,10 +20,17 @@ class LlmExecutor:
     """Manage served LLM instance."""
 
     # TODO - Another instance of a constructor to that needs to be made "private"
-    def __init__(self, model, tokenizer, padding_side: str | None, cpu_only: bool = False, max_parallel_requests: int = 1, max_new_tokens_cap: int = 4096):
+    def __init__(self, model, tokenizer, padding_side: str | None, cpu_only: bool = False, max_parallel_requests: int = 1, max_new_tokens_cap: int = 4096, device: str | None = None):
         self._padding_side = padding_side
         self._cpu_only = cpu_only
-        self._device = "cpu" if cpu_only else "cuda"
+        if device is not None:
+            self._device = device
+        elif cpu_only:
+            self._device = "cpu"
+        elif torch.backends.mps.is_available():
+            self._device = "mps"
+        else:
+            self._device = "cuda"
         self._max_new_tokens_cap = max_new_tokens_cap
         if padding_side is not None:
             tokenizer.pad_token = tokenizer.eos_token
@@ -89,14 +96,19 @@ class LlmExecutor:
         except torch.OutOfMemoryError:
             gc.collect()
             if not self._cpu_only:
-                torch.cuda.empty_cache()
+                if self._device == "mps":
+                    pass  # MPS has no manual cache clearing
+                else:
+                    torch.cuda.empty_cache()
             if max_attempts is None or attempt <= max_attempts:
-                print(f"CUDA OOM: retrying (attempt {attempt}/{max_attempts})")
+                device_name = "CUDA" if self._device == "cuda" else "MPS"
+                print(f"{device_name} OOM: retrying (attempt {attempt}/{max_attempts})")
                 time.sleep(retry_interval * attempt)
                 # NOTE: bypass the gate-keeper here — we already hold the slot.
                 return self._execute_completion(prompt, max_tokens, temperature, attempt + 1, stops, repetition_penalty)
-            print("CUDA OOM: raising exception")
-            raise LlmServerException(message="CUDA OOM, exceeded max_attempts")
+            device_name = "CUDA" if self._device == "cuda" else "MPS"
+            print(f"{device_name} OOM: raising exception")
+            raise LlmServerException(message=f"{device_name} OOM, exceeded max_attempts")
 
 
 # Only use this function to construct LLM executors
@@ -106,12 +118,22 @@ def build_llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callab
 
     bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
+    if arguments.use_cpu_only:
+        device_map = "cpu"
+        device = "cpu"
+    elif torch.backends.mps.is_available():
+        device_map = "mps"
+        device = "mps"
+    else:
+        device_map = {"": 0}
+        device = "cuda"
+
     return lambda: LlmExecutor(
         AutoModelForCausalLM.from_pretrained(
             arguments.model,
-            device_map={"": 0} if not arguments.use_cpu_only else "cpu",
+            device_map=device_map,
             low_cpu_mem_usage=True,
-            quantization_config=None if arguments.use_cpu_only else bnb_config,
+            quantization_config=None if arguments.use_cpu_only or device == "mps" else bnb_config,
             torch_dtype="auto",
             token=resolve_hf_token(arguments.huggingface_auth_token),
         ),
@@ -119,6 +141,7 @@ def build_llm_executor_factory(arguments: LlmExecutorFactoryArguments) -> Callab
         padding_side=arguments.padding_side,
         cpu_only=arguments.use_cpu_only,
         max_parallel_requests=arguments.max_parallel_requests,
+        device=device,
     )
 
 

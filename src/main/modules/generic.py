@@ -1,5 +1,6 @@
 from utils.torch_utils import get_bnb_config_and_dtype
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
 from arguments.arguments import TuneArguments, MergeArguments, PushArguments
 import base.llm_base_module as base_module
@@ -13,10 +14,16 @@ def merge(arguments: MergeArguments) -> None:
         lora_dir = f"{arguments.output_dir}{os.sep}adapters{os.sep}{arguments.new_model}"
         bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
+        # Merge always happens on CPU at the configured dtype. The 4/8-bit
+        # quantized base is the wrong starting point for merge_and_unload
+        # (PEFT would dequantize on-the-fly), and the GPU usually can't fit
+        # the full unquantized model anyway -- e.g. a 9B fp32 is ~36GB.
         base_model = AutoModelForCausalLM.from_pretrained(
             arguments.base_model,
-            low_cpu_mem_usage=False,
-            return_dict=True
+            low_cpu_mem_usage=True,
+            return_dict=True,
+            torch_dtype=dtype,
+            device_map="cpu"
         )
 
         tokenizer = AutoTokenizer.from_pretrained(lora_dir)
@@ -30,28 +37,10 @@ def merge(arguments: MergeArguments) -> None:
 def push(arguments: PushArguments) -> None:
     """Generic LLM type specific push function."""
     with debugging_wrapper(arguments.is_debug_mode):
-
-        _, dtype = get_bnb_config_and_dtype(arguments)
-
-        # Push only uploads weights to the Hub — no inference happens here, so
-        # we deliberately load without `quantization_config` even when --use-4bit/
-        # --use-8bit is set. Re-quantizing at push time is unnecessary and trips
-        # transformers/bitsandbytes version drift (Params4bit.__new__ rejecting
-        # `_is_hf_initialized` leaked via `**old_value.__dict__`).
-        model = AutoModelForCausalLM.from_pretrained(
-            arguments.model_dir,
-            low_cpu_mem_usage=True,
-            return_dict=True,
-            torch_dtype=dtype
-        )
-
-        tokenizer = AutoTokenizer.from_pretrained(arguments.model_dir)
-
-        if arguments.padding_side is not None:
-            tokenizer.pad_token = tokenizer.eos_token
-            tokenizer.padding_side = arguments.padding_side
-
-        base_module.push_base(arguments, tokenizer, model)
+        # The merged model and tokenizer are already on disk at model_dir
+        # from the merge phase; push_base uploads that folder directly via
+        # HfApi.upload_folder, so we don't materialize the model at all.
+        base_module.push_base(arguments)
 
 
 def fine_tune(arguments: TuneArguments) -> None:
@@ -66,6 +55,11 @@ def fine_tune(arguments: TuneArguments) -> None:
 
         bnb_config, dtype = get_bnb_config_and_dtype(arguments)
 
-        model = AutoModelForCausalLM.from_pretrained(model_to_use, quantization_config=bnb_config, device_map="auto" if not arguments.cpu_only_tuning else "cpu", attn_implementation=arguments.flash_attention_impl if arguments.use_flash_attention else None)
+        model_kwargs = dict(quantization_config=bnb_config, device_map="cpu" if arguments.cpu_only_tuning else ("mps" if torch.backends.mps.is_available() else "auto"))
+        if bnb_config is None:
+            model_kwargs['torch_dtype'] = dtype
+        if arguments.use_flash_attention:
+            model_kwargs['attn_implementation'] = arguments.flash_attention_impl
+        model = AutoModelForCausalLM.from_pretrained(model_to_use, **model_kwargs)
 
         base_module.fine_tune_eval_base(arguments, tokenizer, model)

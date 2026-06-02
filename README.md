@@ -37,26 +37,38 @@ installed on the host. I would like to add CPU based tuning in the near future.
 
 You can install the torch tuner CLI as a system-wide application on any OS(including Windows 
 OS[although the linux script will probably work on WSL(Windows Subsystem for Linux), which you should probably be using anyway]) 
-with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS[NON-WSL]](scripts/win/install-torch-tuner.bat)) 
+with [this script](scripts/install-torch-tuner.sh)(or [this script for Windows OS[NON-WSL]](scripts/win/install-torch-tuner.bat))
 if you don't want to have to mess with python or the repository in general. After installation,
 you can run the CLI with the `torch-tuner` command.
-
-**NOTE** - You must run the script with root/admin privileges.
 
 You can download the latest installer script from this repo
 and execute it with one of the following single commands:
 
 ```shell
-# Linux, MacOS & WSL
+# Linux, MacOS & WSL (system-wide install, requires sudo)
 curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | sudo bash
+
+# Linux, MacOS & WSL /* (user-local install to ~/.local, no sudo required)
+curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/install-torch-tuner.sh | bash -s -- --user
+
+# Install from a specific branch(replace all occurrences of `${DESIRED_BRANCH}` with the git branch you want to install from)
+curl -fsSL https://raw.githubusercontent.com/rjojjr/torch-tuner/${DESIRED_BRANCH}/scripts/install-torch-tuner.sh | sudo bash -s -- --branch=${DESIRED_BRANCH}
 
 # Windows(non-WSL) (requires git & python3.11 already installed on target machine)
 curl -sSL https://raw.githubusercontent.com/rjojjr/torch-tuner/master/scripts/win/install-torch-tuner.bat -o install-torch-tuner.bat && install-torch-tuner.bat && del install-torch-tuner.bat
 ```
 
-**NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian-Based Linux, 
+**NOTE** - Apple Silicon support is currently **EXPERIMENTAL**.
+
+**NOTE** - On Apple Silicon Macs, the CLI installs to `/opt/homebrew` instead of `/usr/local`.
+
+**NOTE** - If the Unix installer script fails with OS level python dependency errors, and you are using Debian-Based Linux,
 try running the script with the `--install-apt-deps` flag. Otherwise, install the missing OS packages(python3, pip and python3-venv)
 and run the torch-tuner CLI installer script again.
+
+**NOTE** - You can generate an installation command targeted at the current branch with [this script](scripts/generate-install-cmd-for-current-branch.sh)
+
+**NOTE** - If you choose the user-local install, make sure `~/.local/bin` is in your `$PATH` (add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.bashrc` or `~/.zshrc`).
 
 ##### Updating Torch Tuner CLI
 
@@ -67,10 +79,13 @@ You can update the installed torch-tuner CLI instance at anytime by running the 
 You can uninstall the torch-tuner CLI by running the uninstaller script:
 
 ```shell
-# Linux, MacOS & WSL
-sudo bash /usr/local/torch-tuner/scripts/uninstall-torch-tuner.sh
+# Linux, MacOS & WSL (system-wide)
+torch-tuner uninstall
 
-# Windows 
+# Linux, MacOS & WSL (user-local, ~/.local)
+torch-tuner uninstall --user
+
+# Windows
 "%UserProfile%\AppData\Local\torch-tuner\scripts\win\uninstall-torch-tuner.bat"
 ```
 
