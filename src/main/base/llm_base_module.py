@@ -1,3 +1,5 @@
+import torch
+
 from transformers import DataCollatorForLanguageModeling
 
 from exception.exceptions import TuningModuleFunctionException
@@ -10,9 +12,40 @@ from trl import SFTTrainer, SFTConfig
 from transformers.trainer_utils import get_last_checkpoint
 from utils.model_utils import get_all_layers, get_all_linear_layers, prepare_model_vocabulary
 from utils.dataset_utils import load_dataset, is_jsonl_path
+from utils.torch_utils import resolve_optim
+from hf.hf_auth import delete_hf_repo_if_exists, upload_model_folder
 import math
 import os
 import shutil
+
+
+def _has_quanto_weights(model) -> bool:
+    """Check if model uses optimum-quanto quantization (WeightQBitsTensor)."""
+    try:
+        from optimum.quanto import WeightQBitsTensor
+        for param in model.parameters():
+            if isinstance(param, WeightQBitsTensor):
+                return True
+    except ImportError:
+        pass
+    return False
+
+
+def _prepare_model_for_kbit_training_safe(model, **kwargs):
+    """Wrapper around prepare_model_for_kbit_training that handles
+    quantized models (bitsandbytes or optimum-quanto) where weight casting fails."""
+    try:
+        return prepare_model_for_kbit_training(model, **kwargs)
+    except (RuntimeError, AttributeError, TypeError) as e:
+        error_str = str(e).lower()
+        if "weightqbitstensor" in error_str or "dtype" in error_str or "cannot be changed" in error_str:
+            # Model is quantized (bitsandbytes or optimum-quanto); weights can't be
+            # recast. Manually apply the essential PEFT setup without dtype casting.
+            model.train()
+            for param in model.parameters():
+                param.requires_grad = False
+            return model
+        raise
 
 
 def compute_warmup_steps(num_train_examples: int,
@@ -80,7 +113,18 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             task_type=TaskType.CAUSAL_LM
         )
 
-        model = prepare_model_for_kbit_training(base_model)
+        # Only call prepare_model_for_kbit_training if the model is actually quantized
+        # with bitsandbytes (not optimum-quanto). Check if model has quantized weights.
+        if _has_quanto_weights(base_model):
+            # Model uses optimum-quanto quantization; skip prepare_model_for_kbit_training
+            # and manually set up for training
+            base_model.train()
+            for param in base_model.parameters():
+                param.requires_grad = False
+            model = base_model
+        else:
+            model = _prepare_model_for_kbit_training_safe(base_model, use_gradient_checkpointing=arguments.use_gradient_checkpointing)
+        
         model = get_peft_model(model, lora_config)
         model.print_trainable_parameters()
 
@@ -106,13 +150,13 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
             do_train=arguments.do_train,
             include_num_input_tokens_seen=arguments.show_token_metrics,
             num_train_epochs=arguments.epochs,
-            torch_empty_cache_steps=arguments.torch_empty_cache_steps,
+            torch_empty_cache_steps=None if torch.backends.mps.is_available() else arguments.torch_empty_cache_steps,
             per_device_train_batch_size=arguments.batch_size,
             per_device_eval_batch_size=arguments.batch_size,
             gradient_accumulation_steps=int(arguments.gradient_accumulation_steps) if arguments.gradient_accumulation_steps is not None else 1,
-            gradient_checkpointing=True,
+            gradient_checkpointing=arguments.use_gradient_checkpointing,
             eval_accumulation_steps=arguments.gradient_accumulation_steps,
-            optim=arguments.optimizer_type,
+            optim=resolve_optim(arguments.optimizer_type),
             save_strategy=arguments.save_strategy,
             save_steps=arguments.save_steps,
             eval_steps=arguments.eval_steps,
@@ -220,8 +264,11 @@ def fine_tune_eval_base(arguments: TuneArguments, tokenizer, base_model) -> None
                 print('Pushing LoRA adapter to huggingface')
                 # TODO - pass private push argument to here
                 # TODO - should this be async?
-                train.model.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
-                tokenizer.push_to_hub(repo_id=f'{arguments.new_model}-lora-adaptor', commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
+                adapter_repo_id = f'{arguments.new_model}-lora-adaptor'
+                if arguments.overwrite_repo:
+                    delete_hf_repo_if_exists(adapter_repo_id)
+                train.model.push_to_hub(repo_id=adapter_repo_id, commit_message=f"Tuned LORA adapter for {arguments.new_model}.", commit_description=f"Tuning Config: {arguments.to_json()}", private=True)
+                tokenizer.push_to_hub(repo_id=adapter_repo_id, commit_message=f"Add tokenizer for tuned LORA adapter {arguments.new_model}.", commit_description=f"Add tokenizer", private=True)
                 print()
 
         else:
@@ -283,16 +330,32 @@ def merge_base(arguments: MergeArguments, tokenizer, base_model, bnb_config) -> 
             shutil.copyfile(tune_config_path, f'{model_dir}/tune_config.json')
 
 
-def push_base(arguments: PushArguments, tokenizer, model) -> None:
+def push_base(arguments: PushArguments) -> None:
     with debugging_wrapper(arguments.is_debug_mode):
         print(f"pushing {arguments.new_model} to HF")
         print('')
 
         is_private = not arguments.public_push
-        model.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Merge {arguments.new_model} LoRA adapter with base model")
-        tokenizer.push_to_hub(arguments.new_model, private=is_private, commit_message=f"Add {arguments.new_model} tokenizer")
-        del model
-        del tokenizer
+        if arguments.overwrite_repo:
+            delete_hf_repo_if_exists(arguments.new_model)
+        # Ensure model directory exists before attempting upload.
+        # When --fine-tune false and --merge false, no model is built,
+        # so model_dir may not exist on disk.
+        if not os.path.exists(arguments.model_dir):
+            raise TuningModuleFunctionException(
+                f'model directory does not exist: {arguments.model_dir}. '
+                f'Run fine-tuning and/or merging first, or provide a valid --output-directory.',
+                    'PUSH',
+                )
+        # Upload directly from the saved merged-model directory so push does
+        # not materialize the model in memory. The model and tokenizer were
+        # already serialized to model_dir during merge_base.save_pretrained.
+        upload_model_folder(
+            folder_path=arguments.model_dir,
+            repo_id=arguments.target_repo or arguments.new_model,
+            private=is_private,
+            commit_message=f"Push {arguments.new_model} (merged LoRA adapter + base)",
+        )
 
 
 

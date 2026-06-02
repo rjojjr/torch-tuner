@@ -81,6 +81,7 @@ def print_fine_tune_config(args, lora_scale, tune_arguments) -> None:
     print(f'Using Flash Attention: {str(args.use_flash_attention)}')
     if args.use_flash_attention:
         print(f'Using Flash Attention Implementation: {str(args.flash_attention_impl)}')
+    print(f'Using Gradient Checkpointing: {str(args.use_gradient_checkpointing)}')
     print()
     print(f'Using Optimizer: {args.optimizer_type}')
     if 'adamw' in args.optimizer_type:

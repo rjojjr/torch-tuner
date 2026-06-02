@@ -5,7 +5,7 @@ from exception.exceptions import ArgumentValidationException
 from arguments.arguments import PushArguments, MergeArguments, TuneArguments
 
 
-def build_and_validate_push_args(prog_args, model_dir: str):
+def build_and_validate_push_args(prog_args, model_dir: str, target_repo: str | None = None):
     """Construct/validate push arguments."""
     if prog_args.push:
         push_arguments = PushArguments(
@@ -21,7 +21,9 @@ def build_and_validate_push_args(prog_args, model_dir: str):
             padding_side=prog_args.padding_side,
             use_agent_tokens=prog_args.use_agent_tokens,
             additional_vocabulary_tokens=prog_args.additional_vocabulary_tokens,
-            huggingface_auth_token=prog_args.huggingface_auth_token
+            huggingface_auth_token=prog_args.huggingface_auth_token,
+            overwrite_repo=prog_args.overwrite_repo,
+            target_repo=target_repo if target_repo is not None else prog_args.target_repo
         )
         push_arguments.validate()
         return push_arguments
@@ -115,7 +117,9 @@ def build_and_validate_tune_args(prog_args) -> TuneArguments:
             eval_steps=prog_args.eval_steps if prog_args.eval_steps is not None else prog_args.save_steps,
             use_flash_attention=prog_args.use_flash_attention,
             flash_attention_impl=prog_args.flash_attention_impl,
-            push_adapter=prog_args.push_adapter
+            push_adapter=prog_args.push_adapter,
+            use_gradient_checkpointing=prog_args.use_gradient_checkpointing,
+            overwrite_repo=prog_args.overwrite_repo
         )
         tune_arguments.validate()
         return tune_arguments
@@ -212,6 +216,8 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
                         help="Merge the tuned LoRA adapter with the base model(default: true)", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-p', '--push', help="Push merged model to Huggingface(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-pp', '--public-push', help="Push to public HF repo(push is private if false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-owr', '--overwrite-repo', help="Delete the target HF repo (if it exists) before push so the push always reflects exactly the current artifact, with no stale files (e.g. old shards) left behind from prior runs. Applies to both the merged-model push and the --push-adapter LoRA adapter push.(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
+    parser.add_argument('-tr', '--target-repo', help="Explicit HF repo ID to push to (e.g. 'user/newton-latest'). Required when no --huggingface-auth-token is provided; when auth token is set, the repo is auto-derived from the authenticated user unless overridden here.")
     parser.add_argument('-de', '--do-eval', help="Do evaluation on each configured step(does full evaluation when `--fine-tune` argument is set to false)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
 
     parser.add_argument('-serve', '--serve', help="Serve model(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
@@ -256,6 +262,7 @@ def _build_program_argument_parser(title: str, description: str) -> ArgumentPars
     parser.add_argument('-ncp', '--no-checkpoint', help="Don't use checkpointing(does not save trainer state until tuning is complete and creating the LoRA adapter when set to true)(default: false)", default="false", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-bias', '--bias', help="Bias(default: none)", default="none")
     parser.add_argument('-ot', '--optimizer-type', help="Optimizer type(default: adamw_torch_fused)", default="adamw_torch_fused")
+    parser.add_argument('-gc', '--use-gradient-checkpointing', help="Enable gradient checkpointing(trades compute for memory; on MPS this often causes 2-3x slower steps with 'spurts' of GPU activity, so set to false if the model fits in memory without it)(default: true)", default="true", type=lambda x: _parse_bool_arg(x))
     parser.add_argument('-gas', '--gradient-accumulation-steps', help="Gradient accumulation steps(default: None)(MUST NOT BE 0)", type=lambda x: _parse_nullable_int_arg(x), default=None)
     parser.add_argument('-wd', '--weight-decay', help="Weight decay(default: 0.01)", type=float, default=0.01)
     parser.add_argument('-mgn', '--max-gradient-norm', help="Max gradient norm(default: 0.0)", type=float, default=0.0)

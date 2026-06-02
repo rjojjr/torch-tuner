@@ -10,6 +10,7 @@ transformers==5.8.0
 datasets==4.8.5
 evaluate==0.4.6
 bitsandbytes==0.49.2
+optimum-quanto==0.2.7
 loralib==0.1.2
 rouge-score==0.1.2
 tensorboard==2.20.0
